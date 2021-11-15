@@ -1,0 +1,10 @@
+# environment
+.env*
+
+# node / javascript
+node_modules/
+dist/
+
+# terraform
+.terraform/
+deploy/
