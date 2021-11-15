@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "local": "npx ts-node src/local.ts",
     "zip": "mkdir deploy && zip deploy/reservation-lambda.zip -r dist"
   },
   "author": "",

@@ -14,17 +14,17 @@ const run = async (request: IncomingRequest) => {
 // get supplied args
 const args = process.argv.filter((_, index) => index >= 2)
 if (args.length !== 7) {
-  console.error('Usage: ./local <year> <month> <day> <startTime> <endTime> <opponentName> <opponentId>')
+  console.error('Usage: npm run local <username> <password> <year> <month> <day> <startTime> <endTime> <opponentName> <opponentId>')
   process.exit(1)
 }
 
-const [year, month, day, startTime, endTime, opponentName, opponentId] = args
+const [username, password, year, month, day, startTime, endTime, opponentName, opponentId] = args
 const [startHour, startMinute] = startTime.split(':').map((t) => Number.parseInt(t))
 const [endHour, endMinute] = endTime.split(':').map((t) => Number.parseInt(t))
 
 run({
-  username: process.env.USERNAME ?? '',
-  password: process.env.PASSWORD ?? '',
+  username: username,
+  password: password,
   dateTimes: [{
     year: Number.parseInt(year),
     month: Number.parseInt(month),
