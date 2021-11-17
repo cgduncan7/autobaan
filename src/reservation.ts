@@ -18,15 +18,16 @@ export interface DateTime {
   }
 }
 
-export const timeToString = ({ hour, minute }: Time): string => `${`${hour}`.padStart(2, '0')}:${`${minute}`.padStart(2, '0')}`
+export const timeToString = ({ hour, minute }: Time): string =>
+  `${`${hour}`.padStart(2, '0')}:${`${minute}`.padStart(2, '0')}`
 
 export class Reservation {
   public readonly dateTime: DateTime
   public readonly opponent: Opponent
   public readonly possibleTimes: Time[]
-  public booked: boolean = false
+  public booked = false
 
-  constructor (dateTime: DateTime, opponent: Opponent) {
+  constructor(dateTime: DateTime, opponent: Opponent) {
     this.dateTime = dateTime
     this.opponent = opponent
     this.possibleTimes = this.createPossibleTimes()
@@ -36,9 +37,9 @@ export class Reservation {
     const possibleTimes: Time[] = []
 
     const { start, end } = this.dateTime.timeRange
-    
+
     let { hour, minute } = start
-    let { hour: endHour, minute: endMinute } = end
+    const { hour: endHour, minute: endMinute } = end
 
     while (hour <= endHour && minute <= endMinute) {
       possibleTimes.push({ hour, minute })

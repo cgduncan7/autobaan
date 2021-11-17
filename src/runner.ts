@@ -1,5 +1,12 @@
-import puppeteer, { Browser, BrowserConnectOptions, BrowserLaunchArgumentOptions, ElementHandle, LaunchOptions, Page } from "puppeteer"
-import { DateTime, Opponent, Reservation, timeToString } from "./reservation";
+import puppeteer, {
+  Browser,
+  BrowserConnectOptions,
+  BrowserLaunchArgumentOptions,
+  ElementHandle,
+  LaunchOptions,
+  Page,
+} from 'puppeteer'
+import { DateTime, Opponent, Reservation, timeToString } from './reservation'
 
 export class Runner {
   private readonly username: string
@@ -9,13 +16,21 @@ export class Runner {
   private browser: Browser | undefined
   private page: Page | undefined
 
-  public constructor(username: string, password: string, reservations: Reservation[], options?: LaunchOptions) {
+  public constructor(
+    username: string,
+    password: string,
+    reservations: Reservation[]
+  ) {
     this.username = username
     this.password = password
     this.reservations = reservations
   }
 
-  public async run(options?: LaunchOptions & BrowserLaunchArgumentOptions & BrowserConnectOptions): Promise<Reservation[]> {
+  public async run(
+    options?: LaunchOptions &
+      BrowserLaunchArgumentOptions &
+      BrowserConnectOptions
+  ): Promise<Reservation[]> {
     this.browser = await puppeteer.launch(options)
     this.page = await this.browser.newPage()
     await this.login()
@@ -23,10 +38,14 @@ export class Runner {
   }
 
   private async login() {
-    await this.page!.goto('https://squashcity.baanreserveren.nl/')
-    await this.page!.waitForSelector('input[name=username]').then(i => i!.type(this.username))
-    await this.page!.$('input[name=password]').then(i => i!.type(this.password))
-    await this.page!.$('button').then((b) => b!.click())
+    await this.page?.goto('https://squashcity.baanreserveren.nl/')
+    await this.page
+      ?.waitForSelector('input[name=username]')
+      .then((i) => i?.type(this.username))
+    await this.page
+      ?.$('input[name=password]')
+      .then((i) => i?.type(this.password))
+    await this.page?.$('button').then((b) => b?.click())
   }
 
   private async makeReservations(): Promise<Reservation[]> {
@@ -50,37 +69,48 @@ export class Runner {
   }
 
   private async navigateToDay(dt: DateTime): Promise<void> {
-    await this.page!.waitForSelector(`td#cal_${dt.year}_${dt.month}_${dt.day}`).then((d) => d!.click())
-    await this.page!.waitForSelector(`td#cal_${dt.year}_${dt.month}_${dt.day}.selected`)
+    await this.page
+      ?.waitForSelector(`td#cal_${dt.year}_${dt.month}_${dt.day}`)
+      .then((d) => d?.click())
+    await this.page?.waitForSelector(
+      `td#cal_${dt.year}_${dt.month}_${dt.day}.selected`
+    )
   }
 
   private async selectAvailableTime(res: Reservation): Promise<void> {
-    let freeCourt: ElementHandle | null = null
+    let freeCourt: ElementHandle | null | undefined
     let i = 0
-    while (i < res.possibleTimes.length && freeCourt !== null) {
+    while (i < res.possibleTimes.length && !freeCourt) {
       const possibleTime = res.possibleTimes[i]
       const timeString = timeToString(possibleTime)
-      const selector = `tr[data-time='${timeString}']` + 
-        `> td.free[rowspan='3'][type='free']`
-      freeCourt = await this.page!.$(selector)
+      const selector =
+        `tr[data-time='${timeString}']` + `> td.free[rowspan='3'][type='free']`
+      freeCourt = await this.page?.$(selector)
+      i++
     }
 
-    if (freeCourt === null) {
-      throw new Error("No free court available")
+    if (!freeCourt) {
+      throw new Error('No free court available')
     }
 
     await freeCourt.click()
   }
 
   private async selectOpponent(opponent: Opponent): Promise<void> {
-    const player2Search = await this.page!.waitForSelector('tr.res-make-player-2 > td > input')
-    await player2Search!.type(opponent.name)
-    await this.page!.waitForNetworkIdle()
-    await this.page!.$('select.br-user-select[name="players[2]"]').then(d => d!.select(opponent.id))
+    const player2Search = await this.page?.waitForSelector(
+      'tr.res-make-player-2 > td > input'
+    )
+    await player2Search?.type(opponent.name)
+    await this.page?.waitForNetworkIdle()
+    await this.page
+      ?.$('select.br-user-select[name="players[2]"]')
+      .then((d) => d?.select(opponent.id))
   }
 
   private async confirmReservation(): Promise<void> {
-    await this.page!.$('input#__make_submit').then(b => b!.click())
-    await this.page!.waitForSelector("input#__make_submit2").then(b => b!.click())
+    await this.page?.$('input#__make_submit').then((b) => b?.click())
+    await this.page
+      ?.waitForSelector('input#__make_submit2')
+      .then((b) => b?.click())
   }
 }

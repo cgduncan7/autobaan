@@ -1,5 +1,5 @@
-import { SQSEvent, SQSHandler } from "aws-lambda"
-import { validateRequestEvent } from "./request"
+import { SQSEvent, SQSHandler } from 'aws-lambda'
+import { validateRequestEvent } from './request'
 
 import { Reservation } from './reservation'
 import { Runner } from './runner'
