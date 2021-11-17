@@ -1,9 +1,5 @@
-import {
-  APIGatewayProxyEventV2, SQSEvent,
-} from "aws-lambda";
-import {
-  DateTime, Opponent
-} from "./reservation";
+import { SQSEvent } from 'aws-lambda'
+import { DateTime, Opponent } from './reservation'
 
 export interface IncomingRequest {
   username: string
@@ -17,14 +13,16 @@ export interface ValidationError {
   code: number
 }
 
-export const validateRequestEvent = (event: SQSEvent): { request?: IncomingRequest, error ?: ValidationError } => {
+export const validateRequestEvent = (
+  event: SQSEvent
+): { request?: IncomingRequest; error?: ValidationError } => {
   try {
     const request = validateRequestBody(event.Records[0].body)
     validateRequestDateTimes(request.dateTimes)
     validateRequestOpponent(request.opponent)
     return { request }
-  } catch (err: any) {
-    return { error: { message: 'Invalid request', code: err.code ?? 0 } }
+  } catch (err: unknown) {
+    return { error: { message: 'Invalid request', code: (err as ValidationError).code ?? 0 } }
   }
 }
 
@@ -32,7 +30,7 @@ const validateRequestBody = (body?: string): IncomingRequest => {
   if (body === undefined) {
     throw {
       message: 'Invalid request',
-      code: 1
+      code: 1,
     }
   }
 
@@ -46,12 +44,14 @@ const validateRequestBody = (body?: string): IncomingRequest => {
     }
   }
 
-  const {
-    username,
-    password,
-    dateTimes,
-  } = jsonBody
-  if (!username || username.length < 1 || !password || password.length < 1 || !dateTimes) {
+  const { username, password, dateTimes } = jsonBody
+  if (
+    !username ||
+    username.length < 1 ||
+    !password ||
+    password.length < 1 ||
+    !dateTimes
+  ) {
     throw {
       message: 'Invalid request',
       code: 3,
@@ -65,23 +65,17 @@ const validateRequestDateTimes = (dateTimes: DateTime[]): void => {
   const now = new Date()
   for (let i = 0; i < dateTimes.length; i++) {
     const dateTime = dateTimes[i]
-    const {
-      year,
-      month,
-      day,
-      timeRange
-    } = dateTime
-    const {
-      start,
-      end
-    } = timeRange
+    const { year, month, day, timeRange } = dateTime
+    const { start, end } = timeRange
 
     if (
       typeof year !== 'number' ||
       typeof month !== 'number' ||
       typeof day !== 'number' ||
-      typeof start.hour !== 'number' || typeof start.minute !== 'number' ||
-      typeof end.hour !== 'number' || typeof end.minute !== 'number'
+      typeof start.hour !== 'number' ||
+      typeof start.minute !== 'number' ||
+      typeof end.hour !== 'number' ||
+      typeof end.minute !== 'number'
     ) {
       throw {
         message: 'Invalid request',
