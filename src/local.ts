@@ -1,6 +1,6 @@
-import { IncomingRequest } from './request'
-import { Reservation } from './reservation'
-import { Runner } from './runner'
+import { IncomingRequest } from './common/request'
+import { Reservation } from './common/reservation'
+import { Runner } from './common/runner'
 
 const run = async (request: IncomingRequest) => {
   const { username, password, dateTimes, opponent } = request
