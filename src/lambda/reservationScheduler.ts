@@ -1,8 +1,8 @@
 import { SQSEvent, SQSHandler } from 'aws-lambda'
-import { validateRequestEvent } from './request'
+import { validateRequestEvent } from '../common/request'
 
-import { Reservation } from './reservation'
-import { Runner } from './runner'
+import { Reservation } from '../common/reservation'
+import { Runner } from '../common/runner'
 
 export const run: SQSHandler = async (event: SQSEvent): Promise<void> => {
   const { request, error } = validateRequestEvent(event)

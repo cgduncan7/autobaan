@@ -1,3 +1,4 @@
+import { Dayjs } from 'dayjs'
 import puppeteer, {
   Browser,
   BrowserConnectOptions,
@@ -6,7 +7,8 @@ import puppeteer, {
   LaunchOptions,
   Page,
 } from 'puppeteer'
-import { DateTime, Opponent, Reservation, timeToString } from './reservation'
+
+import { Opponent, Reservation } from './reservation'
 
 export class Runner {
   private readonly username: string
@@ -58,7 +60,7 @@ export class Runner {
 
   private async makeReservation(reservation: Reservation): Promise<void> {
     try {
-      await this.navigateToDay(reservation.dateTime)
+      await this.navigateToDay(reservation.dateRange.start)
       await this.selectAvailableTime(reservation)
       await this.selectOpponent(reservation.opponent)
       await this.confirmReservation()
@@ -68,21 +70,25 @@ export class Runner {
     }
   }
 
-  private async navigateToDay(dt: DateTime): Promise<void> {
+  private async navigateToDay(date: Dayjs): Promise<void> {
     await this.page
-      ?.waitForSelector(`td#cal_${dt.year}_${dt.month}_${dt.day}`)
+      ?.waitForSelector(
+        `td#cal_${date.get('year')}_${date.get('month') + 1}_${date.get('day')}`
+      )
       .then((d) => d?.click())
     await this.page?.waitForSelector(
-      `td#cal_${dt.year}_${dt.month}_${dt.day}.selected`
+      `td#cal_${date.get('year')}_${date.get('month') + 1}_${date.get(
+        'day'
+      )}.selected`
     )
   }
 
   private async selectAvailableTime(res: Reservation): Promise<void> {
     let freeCourt: ElementHandle | null | undefined
     let i = 0
-    while (i < res.possibleTimes.length && !freeCourt) {
-      const possibleTime = res.possibleTimes[i]
-      const timeString = timeToString(possibleTime)
+    while (i < res.possibleDates.length && !freeCourt) {
+      const possibleDate = res.possibleDates[i]
+      const timeString = possibleDate.format('HH:mm')
       const selector =
         `tr[data-time='${timeString}']` + `> td.free[rowspan='3'][type='free']`
       freeCourt = await this.page?.$(selector)
