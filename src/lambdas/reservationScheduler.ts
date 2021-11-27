@@ -1,22 +1,24 @@
 import { Handler } from 'aws-lambda'
-import dayjs from 'dayjs'
+import { Dayjs } from 'dayjs'
 
 import { InputEvent } from '../stepFunctions/event'
 import { Reservation } from '../common/reservation'
-import { validateRequest } from '../common/request'
-import { Runner } from '../common/runner'
+import { validateRequest, ReservationRequest } from '../common/request'
+import { scheduleDateToRequestReservation } from '../common/schedule'
+
+export interface ScheduledReservationRequest {
+  reservationRequest: ReservationRequest
+  availableAt: Dayjs
+}
 
 export const run: Handler<InputEvent, void> = async (input: InputEvent): Promise<void> => {
   console.log(`Handling event: ${input}`)
-  const { username, password, dateRange, opponent } = validateRequest(JSON.stringify(input.reservationRequest))
+  const reservationRequest = validateRequest(JSON.stringify(input.reservationRequest))
   console.log('Successfully validated request')
 
-  console.log('Creating reservation')
-  const reservation = new Reservation(dateRange, opponent)
-  console.log('Created reservation')
-
-  console.log('Runner starting')
-  const runner = new Runner(username, password, [reservation])
-  await runner.run()
-  console.log('Runner finished')
+  const res = new Reservation(reservationRequest.dateRange, reservationRequest.opponent)
+  if (!res.isAvailableForReservation()) {
+    console.log('Reservation date is more than 7 days away; scheduling for later')
+    scheduleDateToRequestReservation(reservationRequest.dateRange.start)
+  }
 }
