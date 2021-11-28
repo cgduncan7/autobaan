@@ -8,3 +8,6 @@ dist/
 # terraform
 .terraform/
 deploy/
+
+# vscode
+.vscode/settings.json
