@@ -2,19 +2,19 @@
   "$schema": "https://json.schemastore.org/tsconfig",
 
   "compilerOptions": {
-    "lib": ["es2021"],
-    "module": "commonjs",
-    "target": "es2021",
+    "lib": ["esnext"],
+    "module": "esnext",
+    "moduleResolution": "node",
+    "target": "es6",
+    "sourceMap": true,
 
     "strict": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "dist/"
+    "outDir": "./dist/"
   },
 
   "include": [
-    "src/**/*.ts"
+    "./src/**/*.ts"
   ]
 }

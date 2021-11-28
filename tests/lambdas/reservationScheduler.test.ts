@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { ValidationError, ValidationErrorCode } from '../../src/common/request'
-import handler, { ReservationSchedulerResult } from '../../src/lambdas/reservationScheduler'
+import { handler, ReservationSchedulerInput, ReservationSchedulerResult } from '../../src/lambdas/reservationScheduler'
 
 jest.mock('../../src/common/logger')
 
@@ -9,12 +9,12 @@ describe('reservationScheduler', () => {
     const start = dayjs().add(15, 'minutes')
     const end = start.add(15, 'minutes')
 
-    const payload = '{' + 
-      '"username": "collin",' + 
-      '"password": "password",' + 
-      `"dateRange": { "start": "${start.toISOString()}", "end": "${end.toISOString()}" },` +
-      '"opponent": { "id": "123", "name": "collin" }' + 
-    '}'
+    const payload: ReservationSchedulerInput = {
+      username: "collin",
+      password: "password",
+      dateRange: { start: start.toISOString(), end: end.toISOString() },
+      opponent: { id: "123", name: "collin" }
+    }
 
     // @ts-expect-error - Stubbing AWS context
     await expect(handler(payload, { awsRequestId: '1234' }, undefined)).resolves
@@ -32,12 +32,12 @@ describe('reservationScheduler', () => {
   test('should handle valid requests outside of reservation window', async () => {
     const start = dayjs().add(15, 'days')
     const end = start.add(15, 'minutes')
-    const payload = '{' + 
-      '"username": "collin",' + 
-      '"password": "password",' + 
-      `"dateRange": { "start": "${start.toISOString()}", "end": "${end.toISOString()}" },` +
-      '"opponent": { "id": "123", "name": "collin" }' + 
-    '}'
+    const payload: ReservationSchedulerInput = {
+      username: "collin",
+      password: "password",
+      dateRange: { start: start.toISOString(), end: end.toISOString() },
+      opponent: { id: "123", name: "collin" }
+    }
 
     // @ts-expect-error - Stubbing AWS context
     await expect(handler(payload, { awsRequestId: '1234' }, undefined)).resolves.toMatchObject<ReservationSchedulerResult>({
@@ -56,16 +56,16 @@ describe('reservationScheduler', () => {
   test('should throw error for invalid requests', async () => {
     const start = dayjs().add(15, 'days')
     const end = start.add(15, 'minutes')
-    const payload = '{invalidJson' + 
-      '"username": "collin",' + 
-      '"password": "password",' + 
-      `"dateRange": { "start": "${start.format()}", "end": "${end.format()}" },` +
-      '"opponent": { "id": "123", "name": "collin" }' + 
-    '}'
+
+    const payload: ReservationSchedulerInput = {
+      password: "password",
+      dateRange: { start: start.toISOString(), end: end.toISOString() },
+      opponent: { id: "123", name: "collin" }
+    }
 
     // @ts-expect-error - Stubbing AWS context
     await expect(handler(payload, { awsRequestId: '1234' }, undefined))
       .rejects
-      .toThrowError(new ValidationError('Invalid request', ValidationErrorCode.INVALID_JSON))
+      .toThrowError(new ValidationError('Invalid request', ValidationErrorCode.INVALID_REQUEST_BODY))
   })
 })

@@ -5,10 +5,38 @@ export enum LogLevel {
 }
 
 export class Logger {
+  private static instance: LoggerInstance
+
+  public static instantiate(
+    correlationId: string,
+    level = LogLevel.ERROR
+  ): LoggerInstance {
+    Logger.instance = new LoggerInstance(correlationId, level)
+    return Logger.instance
+  }
+
+  public static getInstance(): LoggerInstance {
+    return Logger.instance
+  }
+
+  public static debug(message: string, details?: unknown): void {
+    Logger.getInstance().debug(message, details)
+  }
+
+  public static info(message: string, details?: unknown): void {
+    Logger.getInstance().info(message, details)
+  }
+
+  public static error(message: string, details?: unknown): void {
+    Logger.getInstance().error(message, details)
+  }
+}
+
+export class LoggerInstance {
   private readonly correlationId: string
   private readonly level: LogLevel
 
-  constructor(correlationId: string, level = LogLevel.ERROR) {
+  public constructor(correlationId: string, level = LogLevel.ERROR) {
     this.correlationId = correlationId
     this.level = level
   }
