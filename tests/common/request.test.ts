@@ -1,13 +1,14 @@
 import dayjs from 'dayjs'
 
 import {
-  validateRequest,
+  validateJSONRequest,
+  validateStringRequest,
   ValidationError,
   ValidationErrorCode,
 } from '../../src/common/request'
 
 describe('request', () => {
-  describe('validateRequest', () => {
+  describe('validateStringRequest', () => {
     test('should return ReservationRequest', () => {
       const body = JSON.stringify({
         username: 'collin',
@@ -22,11 +23,11 @@ describe('request', () => {
         }
       })
 
-      expect(() => validateRequest(body)).not.toThrow()
+      expect(() => validateStringRequest(body)).not.toThrow()
     })
 
     test('should fail for undefined body', () => {
-      expect(() => validateRequest(undefined)).toThrowError(new ValidationError('Invalid request', ValidationErrorCode.UNDEFINED_REQUEST_BODY))
+      expect(() => validateStringRequest(undefined)).toThrowError(new ValidationError('Invalid request', ValidationErrorCode.UNDEFINED_REQUEST_BODY))
     })
 
     test('should fail for invalid json', () => {
@@ -43,7 +44,7 @@ describe('request', () => {
         }
       }`
 
-      expect(() => validateRequest(body)).toThrowError(new ValidationError('Invalid request', ValidationErrorCode.INVALID_JSON))
+      expect(() => validateStringRequest(body)).toThrowError(new ValidationError('Invalid request', ValidationErrorCode.INVALID_JSON))
     })
 
     test.each([
@@ -60,7 +61,7 @@ describe('request', () => {
       { username: 'collin', password: '1qaz2wsx', dateRange: { start: '1', end: '1' }, opponent: { id: '123', name: '' } },
       { username: 'collin', password: '1qaz2wsx', dateRange: { start: '1', end: '1' }, opponent: { id: '123' } },
     ])('should fail for body missing required values', (body) => {
-      expect(() => validateRequest(JSON.stringify(body))).toThrowError(new ValidationError('Invalid request', ValidationErrorCode.INVALID_REQUEST_BODY))
+      expect(() => validateStringRequest(JSON.stringify(body))).toThrowError(new ValidationError('Invalid request', ValidationErrorCode.INVALID_REQUEST_BODY))
     })
 
     test('should fail for invalid date range', () => {
@@ -77,7 +78,7 @@ describe('request', () => {
         }
       })
 
-      expect(() => validateRequest(body)).toThrowError(new ValidationError('Invalid request', ValidationErrorCode.INVALID_DATE_RANGE))
+      expect(() => validateStringRequest(body)).toThrowError(new ValidationError('Invalid request', ValidationErrorCode.INVALID_DATE_RANGE))
     })
 
     test.each([
@@ -97,7 +98,7 @@ describe('request', () => {
         }
       })
 
-      expect(() => validateRequest(body)).toThrowError(new ValidationError('Invalid request', ValidationErrorCode.INVALID_START_OR_END_DATE))
+      expect(() => validateStringRequest(body)).toThrowError(new ValidationError('Invalid request', ValidationErrorCode.INVALID_START_OR_END_DATE))
     })
 
     test('should not fail if no opponent is provided', () => {
@@ -110,7 +111,7 @@ describe('request', () => {
         },
       })
 
-      expect(() => validateRequest(body)).not.toThrow()
+      expect(() => validateStringRequest(body)).not.toThrow()
     })
 
     test.each([
@@ -129,7 +130,26 @@ describe('request', () => {
         opponent,
       })
 
-      expect(() => validateRequest(body)).toThrowError(new ValidationError('Invalid request', ValidationErrorCode.INVALID_OPPONENT))
+      expect(() => validateStringRequest(body)).toThrowError(new ValidationError('Invalid request', ValidationErrorCode.INVALID_OPPONENT))
+    })
+  })
+
+  describe('validateJSONRequest', () => {
+    test('should return ReservationRequest', () => {
+      const body = {
+        username: 'collin',
+        password: '123abc',
+        dateRange: {
+          start: '2021-12-25T12:34:56Z',
+          end: '2021-12-25T12:45:56Z'
+        },
+        opponent: {
+          id: '123',
+          name: 'collin',
+        }
+      }
+
+      expect(() => validateJSONRequest(body)).not.toThrow()
     })
   })
 })

@@ -34,7 +34,7 @@ export class Runner {
       BrowserConnectOptions
   ): Promise<Reservation[]> {
     this.browser = await puppeteer.launch(options)
-    this.page = await this.browser.newPage()
+    this.page = await this.browser?.newPage()
     await this.login()
     return await this.makeReservations()
   }

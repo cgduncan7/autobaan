@@ -1,12 +1,13 @@
-import { IncomingRequest } from './common/request'
+import dayjs from 'dayjs'
+import { ReservationRequest } from './common/request'
 import { Reservation } from './common/reservation'
 import { Runner } from './common/runner'
 
-const run = async (request: IncomingRequest) => {
-  const { username, password, dateTimes, opponent } = request
-  const reservations = dateTimes.map((dt) => new Reservation(dt, opponent))
+const run = async (request: ReservationRequest) => {
+  const { username, password, dateRange, opponent } = request
+  const reservation = new Reservation(dateRange, opponent)
 
-  const runner = new Runner(username, password, reservations)
+  const runner = new Runner(username, password, [reservation])
   await runner.run({ headless: false })
 }
 
@@ -38,26 +39,13 @@ const [endHour, endMinute] = endTime.split(':').map((t) => Number.parseInt(t))
 run({
   username: username,
   password: password,
-  dateTimes: [
-    {
-      year: Number.parseInt(year),
-      month: Number.parseInt(month),
-      day: Number.parseInt(day),
-      timeRange: {
-        start: {
-          hour: startHour,
-          minute: startMinute,
-        },
-        end: {
-          hour: endHour,
-          minute: endMinute,
-        },
-      },
-    },
-  ],
+  dateRange: {
+    start: dayjs(`${year}-${month}-${day}T${startHour}:${startMinute}`),
+    end: dayjs(`${year}-${month}-${day}T${endHour}:${endMinute}`),
+  },
   opponent: {
-    id: opponentId,
     name: opponentName,
+    id: opponentId,
   },
 })
   .then(() => console.log('Success'))
