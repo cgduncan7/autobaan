@@ -31,7 +31,7 @@ export class Reservation {
 
     const { start, end } = this.dateRange
 
-    let possibleDate = dayjs(start)
+    let possibleDate = dayjs(start).second(0).millisecond(0)
     while (possibleDate.isSameOrBefore(end)) {
       possibleDates.push(possibleDate)
       possibleDate = possibleDate.add(15, 'minute')
@@ -45,6 +45,9 @@ export class Reservation {
    * @returns is reservation date within 7 days
    */
   public isAvailableForReservation(): boolean {
-    return Math.ceil(this.dateRange.start.diff(dayjs(), 'days', true)) <= RESERVATION_AVAILABLE_WITHIN_DAYS
+    return (
+      Math.ceil(this.dateRange.start.diff(dayjs(), 'days', true)) <=
+      RESERVATION_AVAILABLE_WITHIN_DAYS
+    )
   }
 }

@@ -3,8 +3,8 @@ import { DateRange, Reservation } from '../../src/common/reservation'
 
 describe('Reservation', () => {
   test('will create correct possible dates', () => {
-    const startDate = dayjs().set('hour', 12).set('minute', 0)
-    const endDate = dayjs().set('hour', 13).set('minute', 0)
+    const startDate = dayjs().hour(12).minute(0).second(0).millisecond(0)
+    const endDate = startDate.add(1, 'hour')
     const dateRange: DateRange = {
       start: startDate,
       end: endDate,

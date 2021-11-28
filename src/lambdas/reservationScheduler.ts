@@ -1,24 +1,64 @@
-import { Handler } from 'aws-lambda'
+import { Context, Handler } from 'aws-lambda'
 import { Dayjs } from 'dayjs'
 
-import { InputEvent } from '../stepFunctions/event'
+import { Logger, LogLevel } from '../common/logger'
 import { Reservation } from '../common/reservation'
-import { validateRequest, ReservationRequest } from '../common/request'
+import {
+  validateRequest,
+  ReservationRequest,
+} from '../common/request'
 import { scheduleDateToRequestReservation } from '../common/schedule'
 
 export interface ScheduledReservationRequest {
   reservationRequest: ReservationRequest
-  availableAt: Dayjs
+  scheduledFor?: Dayjs
 }
 
-export const run: Handler<InputEvent, void> = async (input: InputEvent): Promise<void> => {
-  console.log(`Handling event: ${input}`)
-  const reservationRequest = validateRequest(JSON.stringify(input.reservationRequest))
-  console.log('Successfully validated request')
+export interface ReservationSchedulerResult {
+  scheduledReservationRequest?: ScheduledReservationRequest
+}
 
-  const res = new Reservation(reservationRequest.dateRange, reservationRequest.opponent)
+const handler: Handler<string, ReservationSchedulerResult> = async (
+  payload: string,
+  context: Context,
+): Promise<ReservationSchedulerResult> => {
+  const logger = new Logger(context.awsRequestId, LogLevel.DEBUG)
+  logger.debug('Handling event', { payload })
+  let reservationRequest: ReservationRequest
+  try {
+    reservationRequest = validateRequest(payload)
+  } catch (err) {
+    logger.error('Failed to validate request', { err })
+    throw err
+  }
+
+  logger.debug('Successfully validated request', { reservationRequest })
+
+  const res = new Reservation(
+    reservationRequest.dateRange,
+    reservationRequest.opponent
+  )
+
   if (!res.isAvailableForReservation()) {
-    console.log('Reservation date is more than 7 days away; scheduling for later')
-    scheduleDateToRequestReservation(reservationRequest.dateRange.start)
+    logger.debug('Reservation date is more than 7 days away')
+    const scheduledDay = scheduleDateToRequestReservation(
+      reservationRequest.dateRange.start
+    )
+    logger.info(
+      `Scheduling reservation request for ${scheduledDay.format('YYYY-MM-DD')}`
+    )
+    return {
+      scheduledReservationRequest: {
+        reservationRequest,
+        scheduledFor: scheduledDay,
+      },
+    }
+  }
+
+  logger.info('Reservation request can be performed now')
+  return {
+    scheduledReservationRequest: { reservationRequest },
   }
 }
+
+export default handler

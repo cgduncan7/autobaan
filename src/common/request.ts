@@ -1,4 +1,4 @@
-import dayjs, { Dayjs } from 'dayjs'
+import dayjs from 'dayjs'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 dayjs.extend(isSameOrBefore)
 
@@ -7,10 +7,7 @@ import { DateRange, Opponent } from './reservation'
 export interface ReservationRequest {
   username: string
   password: string
-  dateRange: {
-    start: Dayjs
-    end: Dayjs
-  }
+  dateRange: DateRange
   opponent: Opponent
 }
 
@@ -37,9 +34,7 @@ export class ValidationError extends Error {
  * @param body String of request body
  * @returns ReservationRequest
  */
-export const validateRequest = (
-  body: string
-): ReservationRequest => {
+export const validateRequest = (body: string): ReservationRequest => {
   const request = validateRequestBody(body)
   validateRequestDateRange(request.dateRange)
   validateRequestOpponent(request.opponent)
@@ -48,7 +43,10 @@ export const validateRequest = (
 
 const validateRequestBody = (body?: string): ReservationRequest => {
   if (body === undefined) {
-    throw new ValidationError('Invalid request', ValidationErrorCode.UNDEFINED_REQUEST_BODY)
+    throw new ValidationError(
+      'Invalid request',
+      ValidationErrorCode.UNDEFINED_REQUEST_BODY
+    )
   }
 
   const jsonBody = transformRequestBody(body)
@@ -65,7 +63,10 @@ const validateRequestBody = (body?: string): ReservationRequest => {
     (opponent && opponent.id && opponent.id.length < 1) ||
     (opponent && opponent.name && opponent.name.length < 1)
   ) {
-    throw new ValidationError('Invalid request', ValidationErrorCode.INVALID_REQUEST_BODY)
+    throw new ValidationError(
+      'Invalid request',
+      ValidationErrorCode.INVALID_REQUEST_BODY
+    )
   }
 
   return jsonBody
@@ -76,7 +77,10 @@ const transformRequestBody = (body: string): ReservationRequest => {
   try {
     json = JSON.parse(body)
   } catch (err) {
-    throw new ValidationError('Invalid request', ValidationErrorCode.INVALID_JSON)
+    throw new ValidationError(
+      'Invalid request',
+      ValidationErrorCode.INVALID_JSON
+    )
   }
   const startTime = json.dateRange?.start ?? 'invalid'
   const endTime = json.dateRange?.end ?? 'invalid'
@@ -84,8 +88,8 @@ const transformRequestBody = (body: string): ReservationRequest => {
   return {
     username: json.username,
     password: json.password,
-    opponent: json.opponent,
     dateRange,
+    opponent: json.opponent,
   }
 }
 
@@ -93,7 +97,10 @@ const validateRequestDateRange = (dateRange: DateRange): void => {
   // checking that both dates are valid
   const { start, end } = dateRange
   if (!start.isValid() || !end.isValid()) {
-    throw new ValidationError('Invalid request', ValidationErrorCode.INVALID_DATE_RANGE)
+    throw new ValidationError(
+      'Invalid request',
+      ValidationErrorCode.INVALID_DATE_RANGE
+    )
   }
 
   // checking that:
@@ -105,7 +112,10 @@ const validateRequestDateRange = (dateRange: DateRange): void => {
     !start.isSameOrBefore(end) ||
     start.format('YYYY MM DD') !== end.format('YYYY MM DD')
   ) {
-    throw new ValidationError('Invalid request', ValidationErrorCode.INVALID_START_OR_END_DATE)
+    throw new ValidationError(
+      'Invalid request',
+      ValidationErrorCode.INVALID_START_OR_END_DATE
+    )
   }
 }
 
@@ -119,6 +129,9 @@ const validateRequestOpponent = (opponent?: Opponent): void => {
     id.length < 1 ||
     name.length < 1
   ) {
-    throw new ValidationError('Invalid request', ValidationErrorCode.INVALID_OPPONENT)
+    throw new ValidationError(
+      'Invalid request',
+      ValidationErrorCode.INVALID_OPPONENT
+    )
   }
 }
