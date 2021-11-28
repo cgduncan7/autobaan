@@ -12,6 +12,8 @@ export interface DateRange {
   end: dayjs.Dayjs
 }
 
+const RESERVATION_AVAILABLE_WITHIN_DAYS = 7
+
 export class Reservation {
   public readonly dateRange: DateRange
   public readonly opponent: Opponent
@@ -29,12 +31,23 @@ export class Reservation {
 
     const { start, end } = this.dateRange
 
-    let possibleDate = dayjs(start)
+    let possibleDate = dayjs(start).second(0).millisecond(0)
     while (possibleDate.isSameOrBefore(end)) {
       possibleDates.push(possibleDate)
       possibleDate = possibleDate.add(15, 'minute')
     }
 
     return possibleDates
+  }
+
+  /**
+   * Method to check if a reservation is available for reservation in the system
+   * @returns is reservation date within 7 days
+   */
+  public isAvailableForReservation(): boolean {
+    return (
+      Math.ceil(this.dateRange.start.diff(dayjs(), 'days', true)) <=
+      RESERVATION_AVAILABLE_WITHIN_DAYS
+    )
   }
 }
