@@ -1,16 +1,16 @@
-resource "aws_lambda_function" "reservation_lambda" {
-  filename      = "reservation-lambda.zip"
-  function_name = "process-reservation-request"
-  role          = aws_iam_role.reservation_lambda_iam_role.arn
+resource "aws_lambda_function" "reservation_scheduler_lambda" {
+  filename      = "../deploy/reservationScheduler.zip"
+  runtime       = "nodejs14.x"
+  function_name = "reservation-scheduler"
   handler       = "index.handler"
 
-  source_code_hash = filebase64sha256("reservation-lambda.zip")
+  source_code_hash = filebase64sha256("../deploy/reservationScheduler.zip")
 
-  runtime = "nodejs14.x"
+  role = aws_iam_role.reservation_scheduler_lambda_iam_role.arn
 }
 
-resource "aws_iam_role" "reservation_lambda_iam_role" {
-  name = "reservation_lambda_iam_role"
+resource "aws_iam_role" "reservation_scheduler_lambda_iam_role" {
+  name = "reservation_scheduler_lambda_iam_role"
 
   assume_role_policy = <<EOF
 {
