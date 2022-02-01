@@ -13,7 +13,7 @@ const run = async (request: ReservationRequest) => {
 
 // get supplied args
 const args = process.argv.filter((_, index) => index >= 2)
-if (args.length !== 7) {
+if (args.length !== 9) {
   console.error(
     'Usage: npm run local <username> <password> <year> <month> <day> <startTime> <endTime> <opponentName> <opponentId>'
   )
