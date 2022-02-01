@@ -13,7 +13,7 @@ export default {
     sourcemap: true,
   },
   plugins: [
-    typescript(),
+    typescript({ module: "esnext" }),
     nodeResolve(),
     commonjs(),
   ]
