@@ -8,7 +8,7 @@ import commonjs from '@rollup/plugin-commonjs'
 export default {
   input: path.join(__dirname, 'index.ts'),
   output: {
-    file: './dist/reservationHandler/index.js',
+    file: './dist/reservationRequestor/index.js',
     format: 'cjs',
     sourcemap: true,
   },

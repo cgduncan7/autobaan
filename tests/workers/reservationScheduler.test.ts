@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { ValidationError, ValidationErrorCode } from '../../src/common/request'
-import { handler, ReservationSchedulerInput, ReservationSchedulerResult } from '../../src/lambdas/reservationScheduler'
+import { run, ReservationSchedulerInput, ReservationSchedulerResult } from '../../src/workers/reservationScheduler'
 
 jest.mock('../../src/common/logger')
 
@@ -16,8 +16,7 @@ describe('reservationScheduler', () => {
       opponent: { id: "123", name: "collin" }
     }
 
-    // @ts-expect-error - Stubbing AWS context
-    await expect(handler(payload, { awsRequestId: '1234' }, undefined)).resolves
+    await expect(run(payload)).resolves
       .toMatchObject<ReservationSchedulerResult>({
         scheduledReservationRequest: {
           reservationRequest: {
@@ -39,8 +38,7 @@ describe('reservationScheduler', () => {
       opponent: { id: "123", name: "collin" }
     }
 
-    // @ts-expect-error - Stubbing AWS context
-    await expect(handler(payload, { awsRequestId: '1234' }, undefined)).resolves.toMatchObject<ReservationSchedulerResult>({
+    await expect(run(payload)).resolves.toMatchObject<ReservationSchedulerResult>({
       scheduledReservationRequest: {
         reservationRequest: {
           username: 'collin',
@@ -63,8 +61,7 @@ describe('reservationScheduler', () => {
       opponent: { id: "123", name: "collin" }
     }
 
-    // @ts-expect-error - Stubbing AWS context
-    await expect(handler(payload, { awsRequestId: '1234' }, undefined))
+    await expect(run(payload))
       .rejects
       .toThrowError(new ValidationError('Invalid request', ValidationErrorCode.INVALID_REQUEST_BODY))
   })

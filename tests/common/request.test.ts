@@ -8,14 +8,17 @@ import {
 } from '../../src/common/request'
 
 describe('request', () => {
+
+  const testDate = dayjs().add(1, 'day')
+
   describe('validateStringRequest', () => {
     test('should return ReservationRequest', () => {
       const body = JSON.stringify({
         username: 'collin',
         password: '123abc',
         dateRange: {
-          start: '2021-12-25T12:34:56Z',
-          end: '2021-12-25T12:45:56Z'
+          start: testDate.clone().toISOString(),
+          end: testDate.add(15, 'minutes').toISOString(),
         },
         opponent: {
           id: '123',
@@ -70,7 +73,7 @@ describe('request', () => {
         password: '123abc',
         dateRange: {
           start: 'monkey',
-          end: '2021-12-25T12:45:56Z'
+          end: testDate.add(15, 'minutes').toISOString(),
         },
         opponent: {
           id: '123',
@@ -106,8 +109,8 @@ describe('request', () => {
         username: 'collin',
         password: '123abc',
         dateRange: {
-          start: '2021-12-25T12:34:56Z',
-          end: '2021-12-25T12:45:56Z'
+          start: testDate.clone().toISOString(),
+          end: testDate.add(15, 'minutes').toISOString()
         },
       })
 
@@ -115,17 +118,17 @@ describe('request', () => {
     })
 
     test.each([
-      { id: 123, name: 'collin' },
-      { id: '', name: 'collin' },
-      { id: '123', name: true },
-      { id: '123', name: '' },
-    ])('should fail for invalid opponent id', (opponent) => {
+      { id: '-50', name: 'collin' },
+      { id: 'abc', name: 'collin' },
+      { id: '-1', name: '*!@#' },
+      { id: '123', name: '!@#' },
+    ])('should fail for invalid opponent $id, $name', (opponent) => {
       const body = JSON.stringify({
         username: 'collin',
         password: '123abc',
         dateRange: {
-          start: '2021-12-25T12:34:56Z',
-          end: '2021-12-25T12:45:56Z'
+          start: testDate.clone().toISOString(),
+          end: testDate.add(15, 'minutes').toISOString(),
         },
         opponent,
       })
@@ -140,8 +143,8 @@ describe('request', () => {
         username: 'collin',
         password: '123abc',
         dateRange: {
-          start: '2021-12-25T12:34:56Z',
-          end: '2021-12-25T12:45:56Z'
+          start: testDate.clone().toISOString(),
+          end: testDate.add(15, 'minutes').toISOString()
         },
         opponent: {
           id: '123',

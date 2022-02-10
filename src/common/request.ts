@@ -101,7 +101,6 @@ const transformRequestBody = (body: string): ReservationRequest => {
   try {
     json = JSON.parse(body)
   } catch (err) {
-    console.error(err)
     throw new ValidationError(
       'Invalid request',
       ValidationErrorCode.INVALID_JSON
@@ -155,12 +154,12 @@ const validateRequestDateRange = (dateRange: DateRange): void => {
 const validateRequestOpponent = (opponent?: Opponent): void => {
   if (!opponent) return
 
+  const idRegex = /^-1$|^[^-]\d+$/
+  const nameRegex = /^[A-Za-z0-9 -.'()]+$/
   const { id, name } = opponent
   if (
-    typeof id !== 'string' ||
-    typeof name !== 'string' ||
-    id.length < 1 ||
-    name.length < 1
+    !idRegex.test(id) ||
+    !nameRegex.test(name)
   ) {
     throw new ValidationError(
       'Invalid request',
