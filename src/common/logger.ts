@@ -8,10 +8,11 @@ export class Logger {
   private static instance: LoggerInstance
 
   public static instantiate(
+    tag: string,
     correlationId: string,
     level = LogLevel.ERROR
   ): LoggerInstance {
-    Logger.instance = new LoggerInstance(correlationId, level)
+    Logger.instance = new LoggerInstance(tag, correlationId, level)
     return Logger.instance
   }
 
@@ -33,10 +34,12 @@ export class Logger {
 }
 
 export class LoggerInstance {
+  private readonly tag: string
   private readonly correlationId: string
   private readonly level: LogLevel
 
-  public constructor(correlationId: string, level = LogLevel.ERROR) {
+  public constructor(tag: string, correlationId: string, level = LogLevel.ERROR) {
+    this.tag = tag
     this.correlationId = correlationId
     this.level = level
   }
@@ -60,8 +63,8 @@ export class LoggerInstance {
         break
     }
 
-    let fmtString = '[%s] %s: %s'
-    const params: Array<unknown> = [this.correlationId, levelString, message]
+    let fmtString = '<%s> [%s] %s: %s'
+    const params: Array<unknown> = [this.tag, this.correlationId, levelString, message]
     if (details) {
       params.push(details)
       fmtString += ' - %O'

@@ -1,10 +1,11 @@
-import { Context, Handler } from 'aws-lambda'
 import { Dayjs } from 'dayjs'
+import { v4 } from 'uuid'
 
 import { Logger, LogLevel } from '../../common/logger'
 import { Reservation } from '../../common/reservation'
 import { ReservationRequest, validateJSONRequest } from '../../common/request'
 import { scheduleDateToRequestReservation } from '../../common/schedule'
+import { Worker } from '../types'
 
 export interface ScheduledReservationRequest {
   reservationRequest: ReservationRequest
@@ -20,14 +21,10 @@ export interface ReservationSchedulerInput
   dateRange: { start: string; end: string }
 }
 
-export const handler: Handler<
-  ReservationSchedulerInput,
-  ReservationSchedulerResult
-> = async (
+export const run: Worker<ReservationSchedulerInput, ReservationSchedulerResult> = async (
   payload: ReservationSchedulerInput,
-  context: Context
 ): Promise<ReservationSchedulerResult> => {
-  Logger.instantiate(context.awsRequestId, LogLevel.DEBUG)
+  Logger.instantiate('reservationScheduler', v4(), LogLevel.DEBUG)
   Logger.debug('Handling event', { payload })
   let reservationRequest: ReservationRequest
   try {
