@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { ValidationError, ValidationErrorCode } from '../../src/common/request'
-import { run, ReservationSchedulerInput, ReservationSchedulerResult } from '../../src/workers/reservationScheduler'
+import { work, ReservationSchedulerInput, ReservationSchedulerResult } from '../../src/workers/scheduler'
 
 jest.mock('../../src/common/logger')
 
@@ -16,7 +16,7 @@ describe('reservationScheduler', () => {
       opponent: { id: "123", name: "collin" }
     }
 
-    await expect(run(payload)).resolves
+    await expect(work(payload)).resolves
       .toMatchObject<ReservationSchedulerResult>({
         scheduledReservationRequest: {
           reservationRequest: {
@@ -38,7 +38,7 @@ describe('reservationScheduler', () => {
       opponent: { id: "123", name: "collin" }
     }
 
-    await expect(run(payload)).resolves.toMatchObject<ReservationSchedulerResult>({
+    await expect(work(payload)).resolves.toMatchObject<ReservationSchedulerResult>({
       scheduledReservationRequest: {
         reservationRequest: {
           username: 'collin',
@@ -61,7 +61,7 @@ describe('reservationScheduler', () => {
       opponent: { id: "123", name: "collin" }
     }
 
-    await expect(run(payload))
+    await expect(work(payload))
       .rejects
       .toThrowError(new ValidationError('Invalid request', ValidationErrorCode.INVALID_REQUEST_BODY))
   })

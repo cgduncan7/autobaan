@@ -21,11 +21,11 @@ export interface ReservationSchedulerInput
   dateRange: { start: string; end: string }
 }
 
-export const run: Worker<ReservationSchedulerInput, ReservationSchedulerResult> = async (
+export const work: Worker<ReservationSchedulerInput, ReservationSchedulerResult> = async (
   payload: ReservationSchedulerInput,
 ): Promise<ReservationSchedulerResult> => {
   Logger.instantiate('reservationScheduler', v4(), LogLevel.DEBUG)
-  Logger.debug('Handling event', { payload })
+  Logger.debug('Handling reservation', { payload })
   let reservationRequest: ReservationRequest
   try {
     reservationRequest = validateJSONRequest(payload)
