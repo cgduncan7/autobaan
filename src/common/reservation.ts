@@ -50,4 +50,16 @@ export class Reservation {
       RESERVATION_AVAILABLE_WITHIN_DAYS
     )
   }
+
+  public format(): unknown {
+    return {
+      opponent: this.opponent,
+      booked: this.booked,
+      possibleDates: this.possibleDates.map((date) => date.format()),
+      dateRange: {
+        start: this.dateRange.start.format(),
+        end: this.dateRange.end.format(),
+      }
+    }
+  }
 }

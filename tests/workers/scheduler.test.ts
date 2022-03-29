@@ -1,15 +1,15 @@
 import dayjs from 'dayjs'
 import { ValidationError, ValidationErrorCode } from '../../src/common/request'
-import { work, ReservationSchedulerInput, ReservationSchedulerResult } from '../../src/workers/scheduler'
+import { work, SchedulerInput, SchedulerResult } from '../../src/workers/scheduler'
 
 jest.mock('../../src/common/logger')
 
-describe('reservationScheduler', () => {
+describe('scheduler', () => {
   test('should handle valid requests within reservation window', async () => {
     const start = dayjs().add(15, 'minutes')
     const end = start.add(15, 'minutes')
 
-    const payload: ReservationSchedulerInput = {
+    const payload: SchedulerInput = {
       username: "collin",
       password: "password",
       dateRange: { start: start.toISOString(), end: end.toISOString() },
@@ -17,7 +17,7 @@ describe('reservationScheduler', () => {
     }
 
     await expect(work(payload)).resolves
-      .toMatchObject<ReservationSchedulerResult>({
+      .toMatchObject<SchedulerResult>({
         scheduledReservationRequest: {
           reservationRequest: {
             username: 'collin',
@@ -31,14 +31,14 @@ describe('reservationScheduler', () => {
   test('should handle valid requests outside of reservation window', async () => {
     const start = dayjs().add(15, 'days')
     const end = start.add(15, 'minutes')
-    const payload: ReservationSchedulerInput = {
+    const payload: SchedulerInput = {
       username: "collin",
       password: "password",
       dateRange: { start: start.toISOString(), end: end.toISOString() },
       opponent: { id: "123", name: "collin" }
     }
 
-    await expect(work(payload)).resolves.toMatchObject<ReservationSchedulerResult>({
+    await expect(work(payload)).resolves.toMatchObject<SchedulerResult>({
       scheduledReservationRequest: {
         reservationRequest: {
           username: 'collin',
@@ -55,7 +55,7 @@ describe('reservationScheduler', () => {
     const start = dayjs().add(15, 'days')
     const end = start.add(15, 'minutes')
 
-    const payload: ReservationSchedulerInput = {
+    const payload: SchedulerInput = {
       password: "password",
       dateRange: { start: start.toISOString(), end: end.toISOString() },
       opponent: { id: "123", name: "collin" }

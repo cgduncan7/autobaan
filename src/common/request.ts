@@ -157,10 +157,7 @@ const validateRequestOpponent = (opponent?: Opponent): void => {
   const idRegex = /^-1$|^[^-]\d+$/
   const nameRegex = /^[A-Za-z0-9 -.'()]+$/
   const { id, name } = opponent
-  if (
-    !idRegex.test(id) ||
-    !nameRegex.test(name)
-  ) {
+  if (!idRegex.test(id) || !nameRegex.test(name)) {
     throw new ValidationError(
       'Invalid request',
       ValidationErrorCode.INVALID_OPPONENT

@@ -12,9 +12,5 @@ export default {
     format: 'cjs',
     sourcemap: true,
   },
-  plugins: [
-    typescript({ module: "esnext" }),
-    nodeResolve(),
-    commonjs(),
-  ]
+  plugins: [typescript({ module: 'esnext' }), nodeResolve(), commonjs()],
 }

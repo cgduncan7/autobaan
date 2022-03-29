@@ -38,7 +38,11 @@ export class LoggerInstance {
   private readonly correlationId: string
   private readonly level: LogLevel
 
-  public constructor(tag: string, correlationId: string, level = LogLevel.ERROR) {
+  public constructor(
+    tag: string,
+    correlationId: string,
+    level = LogLevel.ERROR
+  ) {
     this.tag = tag
     this.correlationId = correlationId
     this.level = level
@@ -64,7 +68,12 @@ export class LoggerInstance {
     }
 
     let fmtString = '<%s> [%s] %s: %s'
-    const params: Array<unknown> = [this.tag, this.correlationId, levelString, message]
+    const params: Array<unknown> = [
+      this.tag,
+      this.correlationId,
+      levelString,
+      message,
+    ]
     if (details) {
       params.push(details)
       fmtString += ' - %O'
