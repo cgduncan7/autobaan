@@ -7,16 +7,15 @@
     "node": "14.x"
   },
   "scripts": {
-    "build": "rm -r ./dist/* && rollup -c",
-    "build:reservationScheduler": "rm -r ./dist/reservationScheduler/ || : && rollup -c ./src/lambdas/reservationScheduler/rollup.config.js",
-    "package:reservationScheduler": "rm ./deploy/reservationScheduler.zip || : && mkdir ./deploy || : && zip deploy/reservationScheduler.zip -j dist/reservationScheduler/*",
+    "clean": "rm -r ./dist || true",
+    "build:requester": "rollup -c src/workers/requester/rollup.config.js",
+    "build:scheduler": "rollup -c src/workers/scheduler/rollup.config.js",
     "test": "jest",
     "test:clear-cache": "jest --clearCache",
     "test:clean": "npm run test:clear-cache && npm run test",
     "lint": "eslint src/ --ext ts",
     "prettier": "prettier src -w",
-    "local": "npx ts-node src/local.ts",
-    "zip": "mkdir deploy && zip deploy/reservation-lambda.zip -r dist"
+    "local": "npx ts-node src/local.ts"
   },
   "author": "Collin Duncan <cgduncan7@gmail.com>",
   "license": "ISC",

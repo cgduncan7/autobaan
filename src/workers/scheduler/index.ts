@@ -12,18 +12,17 @@ export interface ScheduledReservationRequest {
   scheduledFor?: Dayjs
 }
 
-export interface ReservationSchedulerResult {
+export interface SchedulerResult {
   scheduledReservationRequest?: ScheduledReservationRequest
 }
 
-export interface ReservationSchedulerInput
-  extends Omit<ReservationRequest, 'dateRange'> {
+export interface SchedulerInput extends Omit<ReservationRequest, 'dateRange'> {
   dateRange: { start: string; end: string }
 }
 
-export const work: Worker<ReservationSchedulerInput, ReservationSchedulerResult> = async (
-  payload: ReservationSchedulerInput,
-): Promise<ReservationSchedulerResult> => {
+export const work: Worker<SchedulerInput, SchedulerResult> = async (
+  payload: SchedulerInput
+): Promise<SchedulerResult> => {
   Logger.instantiate('reservationScheduler', v4(), LogLevel.DEBUG)
   Logger.debug('Handling reservation', { payload })
   let reservationRequest: ReservationRequest
