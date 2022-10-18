@@ -21,7 +21,7 @@
   "license": "ISC",
   "dependencies": {
     "dayjs": "^1.10.7",
-    "puppeteer": "^11.0.0",
+    "puppeteer": "^19.0.0",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
