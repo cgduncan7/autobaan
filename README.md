@@ -22,3 +22,27 @@ Automatic court reservation!
 npm install
 npm run local <username> <password> <year> <month> <day> <startTime> <endTime> <opponentName> <opponentId>
 ```
+
+## Architecture
+
+```
+|======|
+| User |
+|======|
+    |
+[requests reservation]
+    |
+    |
+    V
+|===========|                             /---\                           |==========|
+| Scheduler | ---[checks possibility]--->/ ok? \--[y/ forward request]--> | Reserver |
+|===========|                            \     /                          |==========|
+                                          \---/                                 |
+                                            |                                   |
+                                          [n/ save request]      [find possible, saved reservations]
+                                            |                                   |
+                                            V                                   |
+                                        |==========|                            |
+                                        | Database |<---------------------------|
+                                        |==========|
+```
