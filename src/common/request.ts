@@ -1,15 +1,9 @@
 import dayjs from 'dayjs'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
+import { hashPassword } from './password'
 dayjs.extend(isSameOrBefore)
 
-import { DateRange, Opponent } from './reservation'
-
-export interface ReservationRequest extends Record<string, unknown> {
-  username: string
-  password: string
-  dateRange: DateRange
-  opponent: Opponent
-}
+import { DateRange, Opponent, Reservation } from './reservation'
 
 export enum ValidationErrorCode {
   UNDEFINED_REQUEST_BODY,
@@ -28,30 +22,19 @@ export class ValidationError extends Error {
     this.code = code
   }
 }
-/**
- * Validates an incoming request body and converts to ReservationRequest
- * @param body String of request body
- * @returns ReservationRequest
- */
-export const validateStringRequest = (body: string): ReservationRequest => {
-  const request = validateRequestBody(body)
-  validateRequestDateRange(request.dateRange)
-  validateRequestOpponent(request.opponent)
-  return request
-}
 
-export const validateJSONRequest = (
+export const validateJSONRequest = async (
   body: Record<string, unknown>
-): ReservationRequest => {
-  const request = validateRequestBody(body)
+): Promise<Reservation> => {
+  const request = await validateRequestBody(body)
   validateRequestDateRange(request.dateRange)
   validateRequestOpponent(request.opponent)
   return request
 }
 
-const validateRequestBody = (
-  body?: string | Record<string, unknown>
-): ReservationRequest => {
+const validateRequestBody = async (
+  body?: Record<string, unknown>
+): Promise<Reservation> => {
   if (body === undefined) {
     throw new ValidationError(
       'Invalid request',
@@ -59,22 +42,7 @@ const validateRequestBody = (
     )
   }
 
-  let jsonBody: ReservationRequest
-  if (typeof body === 'string') {
-    jsonBody = transformRequestBody(body)
-  } else {
-    const { username, password, dateRange, opponent } = body
-    jsonBody = {
-      username: username as string,
-      password: password as string,
-      dateRange: convertDateRangeStringToObject(
-        dateRange as { start: string; end: string }
-      ),
-      opponent: opponent as Opponent,
-    }
-  }
-
-  const { username, password, opponent, dateRange } = jsonBody
+  const { username, password, dateRange, opponent }: Record<string, any> = body
 
   if (
     !username ||
@@ -93,28 +61,14 @@ const validateRequestBody = (
     )
   }
 
-  return jsonBody
-}
+  const hashedPassword = await hashPassword(password)
+  const reservation = new Reservation(
+    { username, password: hashedPassword },
+    convertDateRangeStringToObject(dateRange),
+    opponent
+  )
 
-const transformRequestBody = (body: string): ReservationRequest => {
-  let json
-  try {
-    json = JSON.parse(body)
-  } catch (err) {
-    throw new ValidationError(
-      'Invalid request',
-      ValidationErrorCode.INVALID_JSON
-    )
-  }
-  const start = json.dateRange?.start ?? 'invalid'
-  const end = json.dateRange?.end ?? 'invalid'
-  const dateRange: DateRange = convertDateRangeStringToObject({ start, end })
-  return {
-    username: json.username,
-    password: json.password,
-    dateRange,
-    opponent: json.opponent,
-  }
+  return reservation
 }
 
 const convertDateRangeStringToObject = ({

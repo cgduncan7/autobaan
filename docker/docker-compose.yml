@@ -1,0 +1,7 @@
+services:
+  database:
+    image: mysql:latest
+    restart: always
+    env_file: ./database/.env
+    ports:
+      - 3306:3306

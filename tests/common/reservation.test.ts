@@ -1,4 +1,4 @@
-import dayjs from 'dayjs'
+import dayjs, { Dayjs } from 'dayjs'
 import { DateRange, Reservation } from '../../src/common/reservation'
 
 describe('Reservation', () => {
@@ -9,8 +9,15 @@ describe('Reservation', () => {
       start: startDate,
       end: endDate,
     }
-    const res = new Reservation(dateRange, { id: 'collin', name: 'collin' })
-    
+    const res = new Reservation(
+      { username: 'collin', password: 'password' },
+      dateRange,
+      {
+        id: 'collin',
+        name: 'collin',
+      }
+    )
+
     expect(res.possibleDates).toHaveLength(5)
 
     expect(res.possibleDates[0]).toEqual(startDate)
@@ -24,8 +31,38 @@ describe('Reservation', () => {
     { reservationDate: dayjs().add(7, 'days'), expected: true },
     { reservationDate: dayjs().add(1, 'days'), expected: true },
     { reservationDate: dayjs().add(8, 'days'), expected: false },
-  ])('will properly mark reservation availability according to date', ({ reservationDate, expected }) => {
-    const res = new Reservation({ start: reservationDate, end: reservationDate }, { id: 'collin', name: 'collin' })
-    expect(res.isAvailableForReservation()).toBe(expected)
-  })
+  ])(
+    'will properly mark reservation availability according to date',
+    ({ reservationDate, expected }) => {
+      const res = new Reservation(
+        { username: 'collin', password: 'collin' },
+        { start: reservationDate, end: reservationDate },
+        { id: 'collin', name: 'collin' }
+      )
+      expect(res.isAvailableForReservation()).toBe(expected)
+    }
+  )
+
+  const zeroTime = (date: Dayjs): Dayjs =>
+    date.hour(0).minute(0).second(0).millisecond(0)
+  test.each([
+    {
+      date: dayjs().add(8, 'days'),
+      expected: zeroTime(dayjs().add(1, 'days')),
+    },
+    {
+      date: dayjs().add(31, 'days'),
+      expected: zeroTime(dayjs().add(24, 'days')),
+    },
+  ])(
+    'should return value indicating if reservation is possible now',
+    ({ date, expected }) => {
+      const res = new Reservation(
+        { username: 'collin', password: 'collin' },
+        { start: date, end: date },
+        { id: 'collin', name: 'collin' }
+      )
+      expect(res.getAllowedReservationDate()).toStrictEqual(expected)
+    }
+  )
 })

@@ -1,0 +1,138 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`scheduler should handle valid requests outside of reservation window 1`] = `
+Object {
+  "scheduledReservation": Object {
+    "reservation": Object {
+      "booked": false,
+      "dateRange": Object {
+        "end": Object {
+          "$D": 16,
+          "$H": 1,
+          "$L": "en",
+          "$M": 0,
+          "$W": 0,
+          "$d": Object {},
+          "$m": 15,
+          "$ms": 0,
+          "$s": 0,
+          "$x": Object {},
+          "$y": 2022,
+        },
+        "start": Object {
+          "$D": 16,
+          "$H": 1,
+          "$L": "en",
+          "$M": 0,
+          "$W": 0,
+          "$d": Object {},
+          "$m": 0,
+          "$ms": 0,
+          "$s": 0,
+          "$x": Object {},
+          "$y": 2022,
+        },
+      },
+      "opponent": Object {
+        "id": "123",
+        "name": "collin",
+      },
+      "possibleDates": Array [
+        Object {
+          "$D": 16,
+          "$H": 1,
+          "$L": "en",
+          "$M": 0,
+          "$W": 0,
+          "$d": Object {},
+          "$m": 0,
+          "$ms": 0,
+          "$s": 0,
+          "$x": Object {},
+          "$y": 2022,
+        },
+        Object {
+          "$D": 16,
+          "$H": 1,
+          "$L": "en",
+          "$M": 0,
+          "$W": 0,
+          "$d": Object {},
+          "$m": 15,
+          "$ms": 0,
+          "$s": 0,
+          "$x": Object {},
+          "$y": 2022,
+        },
+      ],
+      "user": Object {
+        "password": Any<String>,
+        "username": "collin",
+      },
+    },
+    "scheduledFor": Object {
+      "$D": 9,
+      "$H": 0,
+      "$L": "en",
+      "$M": 0,
+      "$W": 0,
+      "$d": Object {},
+      "$m": 0,
+      "$ms": 0,
+      "$s": 0,
+      "$x": Object {},
+      "$y": 2022,
+    },
+  },
+}
+`;
+
+exports[`scheduler should handle valid requests within reservation window 1`] = `
+Object {
+  "scheduledReservation": Object {
+    "reservation": Object {
+      "booked": false,
+      "dateRange": Object {
+        "end": Object {
+          "$D": 1,
+          "$H": 1,
+          "$L": "en",
+          "$M": 0,
+          "$W": 6,
+          "$d": Object {},
+          "$m": 30,
+          "$ms": 0,
+          "$s": 0,
+          "$x": Object {},
+          "$y": 2022,
+        },
+        "start": Object {
+          "$D": 1,
+          "$H": 1,
+          "$L": "en",
+          "$M": 0,
+          "$W": 6,
+          "$d": Object {},
+          "$m": 15,
+          "$ms": 0,
+          "$s": 0,
+          "$x": Object {},
+          "$y": 2022,
+        },
+      },
+      "opponent": Object {
+        "id": "123",
+        "name": "collin",
+      },
+      "possibleDates": Array [
+        "2022-01-01T00:15:00.000Z",
+        "2022-01-01T00:30:00.000Z",
+      ],
+      "user": Object {
+        "password": Any<String>,
+        "username": "collin",
+      },
+    },
+  },
+}
+`;
