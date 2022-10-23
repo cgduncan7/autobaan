@@ -6,9 +6,9 @@ import { Reservation } from './common/reservation'
 import { Runner } from './common/runner'
 
 const run = async (request: ReservationRequest) => {
-  Logger.instantiate('local', v4(), LogLevel.DEBUG);
+  Logger.instantiate('local', v4(), LogLevel.DEBUG)
   const { username, password, dateRange, opponent } = request
-  const reservation = new Reservation(dateRange, opponent)
+  const reservation = new Reservation({ username, password }, dateRange, opponent)
 
   const runner = new Runner(username, password, [reservation])
   await runner.run({ headless: false })
@@ -51,5 +51,11 @@ run({
     id: opponentId,
   },
 })
-  .then(() => console.log('Success'))
-  .catch((e) => console.error(e))
+  .then(() => {
+    console.log('Success')
+    process.exit(0)
+  })
+  .catch((e) => {
+    console.error(e)
+    process.exit(1)
+  })

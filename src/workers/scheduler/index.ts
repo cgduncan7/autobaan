@@ -3,61 +3,53 @@ import { v4 } from 'uuid'
 
 import { Logger, LogLevel } from '../../common/logger'
 import { Reservation } from '../../common/reservation'
-import { ReservationRequest, validateJSONRequest } from '../../common/request'
-import { scheduleDateToRequestReservation } from '../../common/schedule'
+import { validateJSONRequest } from '../../common/request'
 import { Worker } from '../types'
 
-export interface ScheduledReservationRequest {
-  reservationRequest: ReservationRequest
+export interface ScheduledReservation {
+  reservation: Reservation
   scheduledFor?: Dayjs
 }
 
 export interface SchedulerResult {
-  scheduledReservationRequest?: ScheduledReservationRequest
+  scheduledReservation?: ScheduledReservation
 }
 
-export interface SchedulerInput extends Omit<ReservationRequest, 'dateRange'> {
-  dateRange: { start: string; end: string }
-}
+export type SchedulerInput = Record<string, unknown>
 
 export const work: Worker<SchedulerInput, SchedulerResult> = async (
   payload: SchedulerInput
 ): Promise<SchedulerResult> => {
-  Logger.instantiate('reservationScheduler', v4(), LogLevel.DEBUG)
+  Logger.instantiate('scheduler', v4(), LogLevel.DEBUG)
+
+  // TODO: obfuscate payload
   Logger.debug('Handling reservation', { payload })
-  let reservationRequest: ReservationRequest
+  let reservation: Reservation
   try {
-    reservationRequest = validateJSONRequest(payload)
+    reservation = await validateJSONRequest(payload)
   } catch (err) {
     Logger.error('Failed to validate request', { err })
     throw err
   }
 
-  Logger.debug('Successfully validated request', { reservationRequest })
+  Logger.debug('Successfully validated request', {
+    reservation: reservation.format(),
+  })
 
-  const res = new Reservation(
-    reservationRequest.dateRange,
-    reservationRequest.opponent
-  )
-
-  if (!res.isAvailableForReservation()) {
-    Logger.debug('Reservation date is more than 7 days away')
-    const scheduledDay = scheduleDateToRequestReservation(
-      reservationRequest.dateRange.start
-    )
-    Logger.info(
-      `Scheduling reservation request for ${scheduledDay.format('YYYY-MM-DD')}`
+  if (!reservation.isAvailableForReservation()) {
+    Logger.debug(
+      'Reservation date is more than 7 days away; saving for later reservation'
     )
     return {
-      scheduledReservationRequest: {
-        reservationRequest,
-        scheduledFor: scheduledDay,
+      scheduledReservation: {
+        reservation,
+        scheduledFor: reservation.getAllowedReservationDate(),
       },
     }
   }
 
   Logger.info('Reservation request can be performed now')
   return {
-    scheduledReservationRequest: { reservationRequest },
+    scheduledReservation: { reservation },
   }
 }

@@ -33,7 +33,7 @@ export class Runner {
       BrowserLaunchArgumentOptions &
       BrowserConnectOptions
   ): Promise<Reservation[]> {
-    Logger.debug('Launching browser');
+    Logger.debug('Launching browser')
     this.browser = await puppeteer.launch(options)
     this.page = await this.browser?.newPage()
     await this.login()
@@ -41,7 +41,7 @@ export class Runner {
   }
 
   private async login() {
-    Logger.debug('Logging in');
+    Logger.debug('Logging in')
     await this.page?.goto('https://squashcity.baanreserveren.nl/')
     await this.page
       ?.waitForSelector('input[name=username]')
@@ -54,7 +54,7 @@ export class Runner {
 
   private async makeReservations(): Promise<Reservation[]> {
     for (let i = 0; i < this.reservations.length; i++) {
-      Logger.debug('Making reservation', this.reservations[i].format());
+      Logger.debug('Making reservation', this.reservations[i].format())
       await this.makeReservation(this.reservations[i])
     }
 
@@ -69,31 +69,37 @@ export class Runner {
       await this.confirmReservation()
       reservation.booked = true
     } catch (err) {
-      Logger.error('Error making reservation', reservation.format());
+      Logger.error('Error making reservation', reservation.format())
     }
   }
 
   private getLastVisibleDay(): Dayjs {
-    const lastDayOfMonth = dayjs().add(1, 'month').set('date', 0);
-    let daysToAdd = 0;
+    const lastDayOfMonth = dayjs().add(1, 'month').set('date', 0)
+    let daysToAdd = 0
     switch (lastDayOfMonth.day()) {
-      case 0: daysToAdd = 0; break;
-      default: daysToAdd = 7 - lastDayOfMonth.day(); break;
+      case 0:
+        daysToAdd = 0
+        break
+      default:
+        daysToAdd = 7 - lastDayOfMonth.day()
+        break
     }
-    return lastDayOfMonth.add(daysToAdd, 'day');
+    return lastDayOfMonth.add(daysToAdd, 'day')
   }
 
   private async navigateToDay(date: Dayjs): Promise<void> {
-    Logger.debug(`Navigating to ${date.format()}`);
+    Logger.debug(`Navigating to ${date.format()}`)
 
     if (this.getLastVisibleDay().isBefore(date)) {
-      Logger.debug('Date is on different page, increase month');
-      await this.page?.waitForSelector('td.month.next').then((d) => d?.click());
+      Logger.debug('Date is on different page, increase month')
+      await this.page?.waitForSelector('td.month.next').then((d) => d?.click())
     }
 
     await this.page
       ?.waitForSelector(
-        `td#cal_${date.get('year')}_${date.get('month') + 1}_${date.get('date')}`
+        `td#cal_${date.get('year')}_${date.get('month') + 1}_${date.get(
+          'date'
+        )}`
       )
       .then((d) => d?.click())
     await this.page?.waitForSelector(
@@ -104,7 +110,7 @@ export class Runner {
   }
 
   private async selectAvailableTime(res: Reservation): Promise<void> {
-    Logger.debug('Selecting available time', res.format());
+    Logger.debug('Selecting available time', res.format())
     let freeCourt: ElementHandle | null | undefined
     let i = 0
     while (i < res.possibleDates.length && !freeCourt) {
@@ -124,7 +130,7 @@ export class Runner {
   }
 
   private async selectOpponent(opponent: Opponent): Promise<void> {
-    Logger.debug('Selecting opponent', opponent);
+    Logger.debug('Selecting opponent', opponent)
     const player2Search = await this.page?.waitForSelector(
       'tr.res-make-player-2 > td > input'
     )
