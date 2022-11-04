@@ -28,10 +28,10 @@ describe('scheduler', () => {
         reservation: {
           user: {
             username: 'collin',
-            password: expect.any(String)
+            password: expect.any(String),
           },
           dateRange: { start, end },
-          opponent: { id: '123', name: 'collin' }
+          opponent: { id: '123', name: 'collin' },
         },
       },
     })
