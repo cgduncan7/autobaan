@@ -1,86 +1,86 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`scheduler should handle valid requests outside of reservation window 1`] = `
-Object {
-  "scheduledReservation": Object {
-    "reservation": Object {
+{
+  "scheduledReservation": {
+    "reservation": {
       "booked": false,
-      "dateRange": Object {
-        "end": Object {
+      "dateRange": {
+        "end": {
           "$D": 16,
           "$H": 1,
           "$L": "en",
           "$M": 0,
           "$W": 0,
-          "$d": Object {},
+          "$d": {},
           "$m": 15,
           "$ms": 0,
           "$s": 0,
-          "$x": Object {},
+          "$x": {},
           "$y": 2022,
         },
-        "start": Object {
+        "start": {
           "$D": 16,
           "$H": 1,
           "$L": "en",
           "$M": 0,
           "$W": 0,
-          "$d": Object {},
+          "$d": {},
           "$m": 0,
           "$ms": 0,
           "$s": 0,
-          "$x": Object {},
+          "$x": {},
           "$y": 2022,
         },
       },
-      "opponent": Object {
+      "opponent": {
         "id": "123",
         "name": "collin",
       },
-      "possibleDates": Array [
-        Object {
+      "possibleDates": [
+        {
           "$D": 16,
           "$H": 1,
           "$L": "en",
           "$M": 0,
           "$W": 0,
-          "$d": Object {},
+          "$d": {},
           "$m": 0,
           "$ms": 0,
           "$s": 0,
-          "$x": Object {},
+          "$x": {},
           "$y": 2022,
         },
-        Object {
+        {
           "$D": 16,
           "$H": 1,
           "$L": "en",
           "$M": 0,
           "$W": 0,
-          "$d": Object {},
+          "$d": {},
           "$m": 15,
           "$ms": 0,
           "$s": 0,
-          "$x": Object {},
+          "$x": {},
           "$y": 2022,
         },
       ],
-      "user": Object {
+      "user": {
         "password": Any<String>,
         "username": "collin",
       },
     },
-    "scheduledFor": Object {
+    "scheduledFor": {
       "$D": 9,
       "$H": 0,
       "$L": "en",
       "$M": 0,
       "$W": 0,
-      "$d": Object {},
+      "$d": {},
       "$m": 0,
       "$ms": 0,
       "$s": 0,
-      "$x": Object {},
+      "$x": {},
       "$y": 2022,
     },
   },
@@ -88,47 +88,47 @@ Object {
 `;
 
 exports[`scheduler should handle valid requests within reservation window 1`] = `
-Object {
-  "scheduledReservation": Object {
-    "reservation": Object {
+{
+  "scheduledReservation": {
+    "reservation": {
       "booked": false,
-      "dateRange": Object {
-        "end": Object {
+      "dateRange": {
+        "end": {
           "$D": 1,
           "$H": 1,
           "$L": "en",
           "$M": 0,
           "$W": 6,
-          "$d": Object {},
+          "$d": {},
           "$m": 30,
           "$ms": 0,
           "$s": 0,
-          "$x": Object {},
+          "$x": {},
           "$y": 2022,
         },
-        "start": Object {
+        "start": {
           "$D": 1,
           "$H": 1,
           "$L": "en",
           "$M": 0,
           "$W": 6,
-          "$d": Object {},
+          "$d": {},
           "$m": 15,
           "$ms": 0,
           "$s": 0,
-          "$x": Object {},
+          "$x": {},
           "$y": 2022,
         },
       },
-      "opponent": Object {
+      "opponent": {
         "id": "123",
         "name": "collin",
       },
-      "possibleDates": Array [
+      "possibleDates": [
         "2022-01-01T00:15:00.000Z",
         "2022-01-01T00:30:00.000Z",
       ],
-      "user": Object {
+      "user": {
         "password": Any<String>,
         "username": "collin",
       },
