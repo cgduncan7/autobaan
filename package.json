@@ -5,11 +5,12 @@
   "description": "",
   "private": true,
   "engines": {
-    "node": "14.x"
+    "node": "18"
   },
   "scripts": {
+    "preinstall": "export CXX=g++-12",
     "clean": "rm -r ./dist || true",
-    "build:server": "rollup -c src/server/rollup.config.js",
+    "build": "rollup -c src/server/rollup.config.js",
     "test": "jest",
     "test:clear-cache": "jest --clearCache",
     "test:clean": "npm run test:clear-cache && npm run test",
@@ -39,6 +40,7 @@
     "babel-jest": "^29.2.1",
     "eslint": "^8.26.0",
     "jest": "^29.2.1",
+    "node-gyp": "^9.3.0",
     "prettier": "^2.7.1",
     "rollup": "^3.2.5",
     "rollup-plugin-natives": "^0.7.6",
