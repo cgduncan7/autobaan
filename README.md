@@ -6,8 +6,9 @@ Automatic court reservation!
 
 ### Requirements
 
-- Node.js (14.x)
+- Node.js (18.x)
 - npm (8.x)
+- gcc (g++-12)
 - nvm (optional)
 
 #### Using nvm

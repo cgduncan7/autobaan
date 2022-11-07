@@ -20,7 +20,6 @@ export default {
       destDir: '../libs',
       dlopen: false,
       sourcemap: true,
-      targetEsm: true,
     }),
     nodeResolve(),
     commonjs(),
