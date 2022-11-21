@@ -21,7 +21,7 @@ export default {
       dlopen: false,
       sourcemap: true,
     }),
-    nodeResolve(),
     commonjs(),
+    nodeResolve(),
   ],
 }
