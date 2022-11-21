@@ -5,3 +5,10 @@ services:
     env_file: ./database/.env
     ports:
       - 3306:3306
+
+  http:
+    build:
+      context: ..
+      dockerfile: ./docker/server/Dockerfile
+    restart: always
+    env_file: ./server/.env

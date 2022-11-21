@@ -1,15 +1,19 @@
 import mysql, { Connection, ConnectionConfig, FieldInfo } from 'mysql'
-import { readFile } from 'fs/promises'
-import { resolve } from 'path'
 import { TABLE_reservations } from './sql'
 
 const createConnectionConfig = async (): Promise<ConnectionConfig> => {
-  const user = await readFile(resolve('.', './secrets/dbUser'))
-  const password = await readFile(resolve('.', './secrets/dbPassword'))
+  const user = process.env.MYSQL_USER
+  const password = process.env.MYSQL_PASSWORD
+  const database = process.env.MYSQL_DATABASE
+  if (!user || !password || !database) {
+    throw new DatabaseEnvironmentError(
+      'Required environment variables are missing'
+    )
+  }
   return {
-    user: user.toString(),
-    password: password.toString(),
-    database: 'autobaan',
+    user,
+    password,
+    database,
   }
 }
 
@@ -73,3 +77,6 @@ export const init = async () => {
     console.error(err)
   }
 }
+
+export class DatabaseError extends Error {}
+export class DatabaseEnvironmentError extends DatabaseError {}

@@ -1,6 +1,7 @@
 import http from 'http'
 import { Readable } from 'stream'
 import { v4 } from 'uuid'
+import { disconnect } from '../common/database'
 import { Logger, LogLevel } from '../common/logger'
 import { work as schedule } from '../workers/scheduler'
 
@@ -12,6 +13,10 @@ process.on('unhandledRejection', (reason) => {
 
 process.on('uncaughtException', (error, origin) => {
   Logger.error('uncaught exception', { error, origin })
+})
+
+process.on('beforeExit', async () => {
+  await disconnect()
 })
 
 const parseJson = async <T extends Record<string, unknown>>(

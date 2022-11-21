@@ -3,6 +3,8 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import { query } from './database'
 dayjs.extend(isSameOrBefore)
 
+const RESERVATION_AVAILABLE_WITHIN_DAYS = 7
+
 export interface User {
   username: string
   password: string
@@ -17,8 +19,6 @@ export interface DateRange {
   start: dayjs.Dayjs
   end: dayjs.Dayjs
 }
-
-const RESERVATION_AVAILABLE_WITHIN_DAYS = 7
 
 export class Reservation {
   public readonly user: User
