@@ -3,7 +3,7 @@ import { Readable } from 'stream'
 import { v4 } from 'uuid'
 import { disconnect } from '../common/database'
 import { Logger, LogLevel } from '../common/logger'
-import { work as schedule } from '../workers/scheduler'
+import { work as schedule } from '../common/scheduler'
 
 Logger.instantiate('requester', 'start-up', LogLevel.INFO)
 

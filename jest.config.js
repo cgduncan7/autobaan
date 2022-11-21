@@ -1,9 +1,6 @@
-/*
- * For a detailed explanation regarding each configuration property, visit:
- * https://jestjs.io/docs/configuration
- */
-
-module.exports = {
+export default {
+  preset: 'ts-jest',
+  testEnvironment: 'node',
   clearMocks: true,
   collectCoverage: true,
   coverageReporters: [

@@ -1,10 +1,9 @@
 import { Dayjs } from 'dayjs'
 import { v4 } from 'uuid'
 
-import { Logger, LogLevel } from '../../common/logger'
-import { Reservation } from '../../common/reservation'
-import { validateJSONRequest } from '../../common/request'
-import { Worker } from '../types'
+import { Logger, LogLevel } from './logger'
+import { Reservation } from './reservation'
+import { validateJSONRequest } from './request'
 
 export interface ScheduledReservation {
   reservation: Reservation
@@ -17,7 +16,7 @@ export interface SchedulerResult {
 
 export type SchedulerInput = Record<string, unknown>
 
-export const work: Worker<SchedulerInput, SchedulerResult> = async (
+export const work = async (
   payload: SchedulerInput
 ): Promise<SchedulerResult> => {
   Logger.instantiate('scheduler', v4(), LogLevel.DEBUG)

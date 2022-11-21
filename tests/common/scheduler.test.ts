@@ -5,7 +5,7 @@ import {
   work,
   SchedulerInput,
   SchedulerResult,
-} from '../../src/workers/scheduler'
+} from '../../src/common/scheduler'
 
 jest.mock('../../src/common/logger')
 jest.useFakeTimers().setSystemTime(new Date('2022-01-01'))
@@ -22,9 +22,8 @@ describe('scheduler', () => {
       opponent: { id: '123', name: 'collin' },
     }
 
-    await expect(work(payload)).resolves.toMatchSnapshot<SchedulerResult>({
+    expect(await work(payload)).toMatchSnapshot({
       scheduledReservation: {
-        // @ts-expect-error snapshot property matching
         reservation: {
           user: {
             username: 'collin',
@@ -47,7 +46,7 @@ describe('scheduler', () => {
       opponent: { id: '123', name: 'collin' },
     }
 
-    await expect(work(payload)).resolves.toMatchSnapshot<SchedulerResult>({
+    await expect(await work(payload)).toMatchSnapshot({
       scheduledReservation: {
         reservation: new Reservation(
           { username: 'collin', password: expect.any(String) },
