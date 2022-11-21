@@ -65,8 +65,8 @@ const server = http.createServer(async (req, res) => {
     !/^\/reservations$/.test(url) ||
     method.toLowerCase() !== 'post'
   ) {
-    Logger.info('Bad request')
-    res.writeHead(400, 'Bad request')
+    Logger.info('Not found')
+    res.writeHead(404, 'Not found')
     res.end()
     return
   }
