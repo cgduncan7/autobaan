@@ -24,7 +24,7 @@ describe('server', () => {
     jest.resetAllMocks()
   })
 
-  it('should accept POST to /reservations', async () => {
+  test('should accept POST to /reservations', async () => {
     jest
       .spyOn(scheduler, 'work')
       .mockImplementationOnce(() => Promise.resolve({}))
@@ -36,7 +36,7 @@ describe('server', () => {
     expect(response.status).toBe(200)
   })
 
-  it('should reject non-POST request', async () => {
+  test('should reject non-POST request', async () => {
     jest
       .spyOn(scheduler, 'work')
       .mockImplementationOnce(() => Promise.resolve({}))
@@ -45,7 +45,7 @@ describe('server', () => {
     )
   })
 
-  it('should reject request to other route', async () => {
+  test('should reject request to other route', async () => {
     jest
       .spyOn(scheduler, 'work')
       .mockImplementationOnce(() => Promise.resolve({}))
@@ -54,7 +54,7 @@ describe('server', () => {
     )
   })
 
-  it('should reject request without content-type of json', async () => {
+  test('should reject request without content-type of json', async () => {
     jest
       .spyOn(scheduler, 'work')
       .mockImplementationOnce(() => Promise.resolve({}))
@@ -65,7 +65,7 @@ describe('server', () => {
     ).rejects.toThrow(axios.AxiosError)
   })
 
-  it('should reject request if body cannot be parsed', async () => {
+  test('should reject request if body cannot be parsed', async () => {
     jest.spyOn(utils, 'parseJson').mockImplementationOnce(Promise.reject)
     await expect(() =>
       axios.post(
@@ -78,7 +78,7 @@ describe('server', () => {
     ).rejects.toThrow(axios.AxiosError)
   })
 
-  it('should reject request if schedule cannot be performed', async () => {
+  test('should reject request if schedule cannot be performed', async () => {
     jest.spyOn(scheduler, 'work').mockImplementationOnce(Promise.reject)
     await expect(() =>
       axios.post(
