@@ -3,7 +3,7 @@ import dayjs from 'dayjs'
 import {
   validateJSONRequest,
   ValidationError,
-} from '../../src/common/request'
+} from '../../../src/common/request'
 
 describe('request', () => {
   const testDate = dayjs().add(1, 'day')

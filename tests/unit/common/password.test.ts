@@ -1,4 +1,4 @@
-import * as password from '../../src/common/password'
+import * as password from '../../../src/common/password'
 
 describe('password', () => {
   describe('generateSalt', () => {

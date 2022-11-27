@@ -1,4 +1,4 @@
-import { Logger, LogLevel } from '../../src/common/logger'
+import { Logger, LogLevel } from '../../../src/common/logger'
 
 describe('Logger', () => {
   beforeEach(() => {
