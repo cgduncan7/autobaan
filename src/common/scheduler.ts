@@ -21,7 +21,6 @@ export const work = async (
 ): Promise<SchedulerResult> => {
   Logger.instantiate('scheduler', v4(), LogLevel.DEBUG)
 
-  // TODO: obfuscate payload
   Logger.debug('Handling reservation', { payload })
   let reservation: Reservation
   try {

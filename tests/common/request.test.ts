@@ -3,7 +3,6 @@ import dayjs from 'dayjs'
 import {
   validateJSONRequest,
   ValidationError,
-  ValidationErrorCode,
 } from '../../src/common/request'
 
 describe('request', () => {
