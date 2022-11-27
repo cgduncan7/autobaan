@@ -1,7 +1,7 @@
 import axios from 'axios'
-import server from '../../src/server/index'
-import * as scheduler from '../../src/common/scheduler'
-import * as utils from '../../src/server/utils'
+import server from '../../../src/server/index'
+import * as scheduler from '../../../src/common/scheduler'
+import * as utils from '../../../src/server/utils'
 
 const port = Math.round(Math.random() * 50000 + 10000)
 const baseUrl = `http://localhost:${port}`

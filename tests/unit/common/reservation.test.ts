@@ -1,5 +1,5 @@
 import dayjs, { Dayjs } from 'dayjs'
-import { DateRange, Reservation } from '../../src/common/reservation'
+import { DateRange, Reservation } from '../../../src/common/reservation'
 
 describe('Reservation', () => {
   test('will create correct possible dates', () => {
