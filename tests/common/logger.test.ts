@@ -1,6 +1,10 @@
 import { Logger, LogLevel } from '../../src/common/logger'
 
 describe('Logger', () => {
+  beforeEach(() => {
+    jest.resetAllMocks()
+  })
+
   test('should create a single instance of LoggerInstance', () => {
     const a = Logger.instantiate('tag', 'abc', LogLevel.DEBUG)
     const b = Logger.getInstance()
@@ -55,5 +59,26 @@ describe('Logger', () => {
     Logger.debug("should't appear")
 
     expect(consoleLogSpy).not.toHaveBeenCalled()
+  })
+
+  test('should obfuscate password from message', () => {
+    const consoleLogSpy = jest.fn()
+    const consoleErrorSpy = jest.fn()
+    jest.spyOn(console, 'log').mockImplementation(consoleLogSpy)
+    jest.spyOn(console, 'error').mockImplementation(consoleErrorSpy)
+
+    Logger.instantiate('tag', 'abc', LogLevel.DEBUG)
+    Logger.info('first', { password: 'test' })
+
+    expect(consoleLogSpy).toHaveBeenCalledTimes(1)
+    expect(consoleLogSpy).toHaveBeenNthCalledWith(
+      1,
+      '<%s> [%s] %s: %s - %O',
+      'tag',
+      'abc',
+      'INFO',
+      'first',
+      { password: '***'},
+    )
   })
 })

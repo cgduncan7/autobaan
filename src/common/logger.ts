@@ -75,6 +75,14 @@ export class LoggerInstance {
       message,
     ]
     if (details) {
+      if (typeof details === 'object') {
+        const toObfuscate = ['password']
+        toObfuscate.forEach((key) => {
+          if ((details as Record<string, unknown>)[key]) {
+            (details as Record<string, unknown>)[key] = '***'
+          }
+        })
+      }
       params.push(details)
       fmtString += ' - %O'
     }
