@@ -1,11 +1,7 @@
 import dayjs from 'dayjs'
 import { ValidationError, ValidationErrorCode } from '../../src/common/request'
 import { Reservation } from '../../src/common/reservation'
-import {
-  work,
-  SchedulerInput,
-  SchedulerResult,
-} from '../../src/common/scheduler'
+import { work, SchedulerInput } from '../../src/common/scheduler'
 
 jest.mock('../../src/common/logger')
 jest.useFakeTimers().setSystemTime(new Date('2022-01-01'))
