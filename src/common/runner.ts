@@ -11,65 +11,51 @@ import { Logger } from './logger'
 import { Opponent, Reservation } from './reservation'
 
 export class Runner {
-  private readonly username: string
-  private readonly password: string
-  private readonly reservations: Reservation[]
-
   private browser: Browser | undefined
   private page: Page | undefined
+  private options?: LaunchOptions &
+    BrowserLaunchArgumentOptions &
+    BrowserConnectOptions
 
-  public constructor(
-    username: string,
-    password: string,
-    reservations: Reservation[]
-  ) {
-    this.username = username
-    this.password = password
-    this.reservations = reservations
-  }
-
-  public async run(
+  constructor(
     options?: LaunchOptions &
       BrowserLaunchArgumentOptions &
       BrowserConnectOptions
-  ): Promise<Reservation[]> {
-    Logger.debug('Launching browser')
-    this.browser = await puppeteer.launch(options)
-    this.page = await this.browser?.newPage()
-    await this.login()
-    return await this.makeReservations()
+  ) {
+    this.options = options
   }
 
-  private async login() {
+  public async run(reservation: Reservation): Promise<boolean> {
+    Logger.debug('Launching browser')
+    if (!this.browser) {
+      this.browser = await puppeteer.launch(this.options)
+    }
+    this.page = await this.browser?.newPage()
+    await this.login(reservation.user.username, reservation.user.password)
+    return this.makeReservation(reservation)
+  }
+
+  private async login(username: string, password: string) {
     Logger.debug('Logging in')
     await this.page?.goto('https://squashcity.baanreserveren.nl/')
     await this.page
       ?.waitForSelector('input[name=username]')
-      .then((i) => i?.type(this.username))
-    await this.page
-      ?.$('input[name=password]')
-      .then((i) => i?.type(this.password))
+      .then((i) => i?.type(username))
+    await this.page?.$('input[name=password]').then((i) => i?.type(password))
     await this.page?.$('button').then((b) => b?.click())
   }
 
-  private async makeReservations(): Promise<Reservation[]> {
-    for (let i = 0; i < this.reservations.length; i++) {
-      Logger.debug('Making reservation', this.reservations[i].format())
-      await this.makeReservation(this.reservations[i])
-    }
-
-    return this.reservations
-  }
-
-  private async makeReservation(reservation: Reservation): Promise<void> {
+  private async makeReservation(reservation: Reservation): Promise<boolean> {
     try {
       await this.navigateToDay(reservation.dateRange.start)
       await this.selectAvailableTime(reservation)
       await this.selectOpponent(reservation.opponent)
       await this.confirmReservation()
       reservation.booked = true
+      return true
     } catch (err) {
       Logger.error('Error making reservation', reservation.format())
+      return false
     }
   }
 

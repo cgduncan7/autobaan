@@ -1,13 +1,18 @@
 import dayjs from 'dayjs'
-import { ValidationError, ValidationErrorCode } from '../../../src/common/request'
+import {
+  ValidationError,
+  ValidationErrorCode,
+} from '../../../src/common/request'
 import { Reservation } from '../../../src/common/reservation'
-import { work, SchedulerInput } from '../../../src/common/scheduler'
+import { schedule, SchedulerInput } from '../../../src/common/scheduler'
 
 jest.mock('../../../src/common/logger')
+jest.mock('../../../src/common/reserver')
 jest.useFakeTimers().setSystemTime(new Date('2022-01-01'))
 
 describe('scheduler', () => {
   test('should handle valid requests within reservation window', async () => {
+    jest.spyOn(Reservation, 'save').mockResolvedValueOnce()
     const start = dayjs().add(15, 'minutes')
     const end = start.add(15, 'minutes')
 
@@ -18,7 +23,7 @@ describe('scheduler', () => {
       opponent: { id: '123', name: 'collin' },
     }
 
-    expect(await work(payload)).toMatchSnapshot({
+    expect(await schedule(payload)).toMatchSnapshot({
       scheduledReservation: {
         reservation: {
           user: {
@@ -42,7 +47,7 @@ describe('scheduler', () => {
       opponent: { id: '123', name: 'collin' },
     }
 
-    await expect(await work(payload)).toMatchSnapshot({
+    await expect(await schedule(payload)).toMatchSnapshot({
       scheduledReservation: {
         reservation: new Reservation(
           { username: 'collin', password: expect.any(String) },
@@ -69,7 +74,7 @@ describe('scheduler', () => {
       opponent: { id: '123', name: 'collin' },
     }
 
-    await expect(work(payload)).rejects.toThrowError(
+    await expect(schedule(payload)).rejects.toThrowError(
       new ValidationError(
         'Invalid request',
         ValidationErrorCode.INVALID_REQUEST_BODY

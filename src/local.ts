@@ -9,8 +9,8 @@ const run = async (request: Record<string, any>) => {
   const { user, dateRange, opponent } = request
   const reservation = new Reservation(user, dateRange, opponent)
 
-  const runner = new Runner(username, password, [reservation])
-  await runner.run({ headless: false })
+  const runner = new Runner({ headless: false })
+  await runner.run(reservation)
 }
 
 // get supplied args

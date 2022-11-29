@@ -1,7 +1,7 @@
 import http from 'http'
 import { v4 } from 'uuid'
 import { Logger, LogLevel } from '../common/logger'
-import { work as schedule } from '../common/scheduler'
+import { schedule } from '../common/scheduler'
 import { parseJson } from './utils'
 
 // Handles POST requests to /reservations

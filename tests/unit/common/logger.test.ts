@@ -78,7 +78,7 @@ describe('Logger', () => {
       'abc',
       'INFO',
       'first',
-      { password: '***'},
+      { password: '***' }
     )
   })
 })
