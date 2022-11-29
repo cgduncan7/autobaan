@@ -11,6 +11,7 @@
     "preinstall": "export CXX=g++-12",
     "clean": "rm -r ./dist || true",
     "build": "rollup -c src/server/rollup.config.js",
+    "test": "jest",
     "test:unit": "jest tests/unit/*",
     "test:unit:clean": "npm run test:clear-cache && npm run test:unit",
     "test:integration": "jest tests/integration/*",
@@ -29,6 +30,7 @@
     "axios": "^1.2.0",
     "dayjs": "^1.11.6",
     "mysql": "^2.18.1",
+    "node-cron": "^3.0.2",
     "puppeteer": "^19.1.0",
     "uuid": "^9.0.0"
   },
@@ -39,6 +41,7 @@
     "@types/jest": "^29.2.3",
     "@types/mysql": "^2.15.21",
     "@types/node": "^18.11.9",
+    "@types/node-cron": "^3.0.6",
     "@types/puppeteer": "^5.4.7",
     "@types/uuid": "^8.3.4",
     "@typescript-eslint/eslint-plugin": "^5.42.0",

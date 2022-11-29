@@ -156,14 +156,43 @@ export class Reservation {
     )
   }
 
-  public static async fetch(id: number): Promise<Reservation | null> {
+  public static async fetchById(id: number): Promise<Reservation | null> {
     const response = await query<SqlReservation>(
       `
       SELECT *
       FROM reservations
-      WHERE id = ?
+      WHERE id = ?;
     `,
       [id]
+    )
+
+    if (response.results.length === 1) {
+      const sqlReservation = response.results[0]
+      const res = new Reservation(
+        {
+          username: sqlReservation.username,
+          password: sqlReservation.password,
+        },
+        {
+          start: dayjs(sqlReservation.date_range_start),
+          end: dayjs(sqlReservation.date_range_end),
+        },
+        { id: sqlReservation.opponent_id, name: sqlReservation.opponent_name }
+      )
+      return res
+    }
+
+    return null
+  }
+
+  public static async fetchFirst(): Promise<Reservation | null> {
+    const response = await query<SqlReservation>(
+      `
+      SELECT *
+      FROM reservations
+      ORDER BY date_range_start DESC
+      LIMIT 1;
+      `
     )
 
     if (response.results.length === 1) {

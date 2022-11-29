@@ -1,5 +1,5 @@
 import axios from 'axios'
-import server from '../../../src/server/index'
+import server from '../../../src/server/http'
 import * as scheduler from '../../../src/common/scheduler'
 import * as utils from '../../../src/server/utils'
 
@@ -26,7 +26,7 @@ describe('server', () => {
 
   test('should accept POST to /reservations', async () => {
     jest
-      .spyOn(scheduler, 'work')
+      .spyOn(scheduler, 'schedule')
       .mockImplementationOnce(() => Promise.resolve({}))
     const response = await axios.post(
       `${baseUrl}/reservations`,
@@ -38,7 +38,7 @@ describe('server', () => {
 
   test('should reject non-POST request', async () => {
     jest
-      .spyOn(scheduler, 'work')
+      .spyOn(scheduler, 'schedule')
       .mockImplementationOnce(() => Promise.resolve({}))
     await expect(() => axios.get(`${baseUrl}/reservations`)).rejects.toThrow(
       axios.AxiosError
@@ -47,7 +47,7 @@ describe('server', () => {
 
   test('should reject request to other route', async () => {
     jest
-      .spyOn(scheduler, 'work')
+      .spyOn(scheduler, 'schedule')
       .mockImplementationOnce(() => Promise.resolve({}))
     await expect(() => axios.post(`${baseUrl}/something-else`)).rejects.toThrow(
       axios.AxiosError
@@ -56,7 +56,7 @@ describe('server', () => {
 
   test('should reject request without content-type of json', async () => {
     jest
-      .spyOn(scheduler, 'work')
+      .spyOn(scheduler, 'schedule')
       .mockImplementationOnce(() => Promise.resolve({}))
     await expect(() =>
       axios.post(`${baseUrl}/reservations`, 'test,123', {
@@ -79,7 +79,7 @@ describe('server', () => {
   })
 
   test('should reject request if schedule cannot be performed', async () => {
-    jest.spyOn(scheduler, 'work').mockImplementationOnce(Promise.reject)
+    jest.spyOn(scheduler, 'schedule').mockImplementationOnce(Promise.reject)
     await expect(() =>
       axios.post(
         `${baseUrl}/reservations`,

@@ -4,6 +4,7 @@ import { v4 } from 'uuid'
 import { Logger, LogLevel } from './logger'
 import { Reservation } from './reservation'
 import { validateJSONRequest } from './request'
+import { reserve } from './reserver'
 
 export interface ScheduledReservation {
   reservation: Reservation
@@ -16,7 +17,7 @@ export interface SchedulerResult {
 
 export type SchedulerInput = Record<string, unknown>
 
-export const work = async (
+export const schedule = async (
   payload: SchedulerInput
 ): Promise<SchedulerResult> => {
   Logger.instantiate('scheduler', v4(), LogLevel.DEBUG)
@@ -38,6 +39,9 @@ export const work = async (
     Logger.debug(
       'Reservation date is more than 7 days away; saving for later reservation'
     )
+
+    await Reservation.save(reservation)
+
     return {
       scheduledReservation: {
         reservation,
@@ -47,6 +51,7 @@ export const work = async (
   }
 
   Logger.info('Reservation request can be performed now')
+  await reserve(reservation)
   return {
     scheduledReservation: { reservation },
   }
