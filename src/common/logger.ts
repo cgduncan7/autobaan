@@ -79,7 +79,7 @@ export class LoggerInstance {
         const toObfuscate = ['password']
         toObfuscate.forEach((key) => {
           if ((details as Record<string, unknown>)[key]) {
-            (details as Record<string, unknown>)[key] = '***'
+            ;(details as Record<string, unknown>)[key] = '***'
           }
         })
       }
