@@ -1,39 +1,14 @@
+import { AsyncLocalStorage } from 'async_hooks'
+
 export enum LogLevel {
   DEBUG,
   INFO,
   ERROR,
 }
 
+export const asyncLocalStorage = new AsyncLocalStorage<Logger>()
+
 export class Logger {
-  private static instance: LoggerInstance
-
-  public static instantiate(
-    tag: string,
-    correlationId: string,
-    level = LogLevel.ERROR
-  ): LoggerInstance {
-    Logger.instance = new LoggerInstance(tag, correlationId, level)
-    return Logger.instance
-  }
-
-  public static getInstance(): LoggerInstance {
-    return Logger.instance
-  }
-
-  public static debug(message: string, details?: unknown): void {
-    Logger.getInstance().debug(message, details)
-  }
-
-  public static info(message: string, details?: unknown): void {
-    Logger.getInstance().info(message, details)
-  }
-
-  public static error(message: string, details?: unknown): void {
-    Logger.getInstance().error(message, details)
-  }
-}
-
-export class LoggerInstance {
   private readonly tag: string
   private readonly correlationId: string
   private readonly level: LogLevel
