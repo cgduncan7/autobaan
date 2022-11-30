@@ -79,6 +79,8 @@ export class LoggerInstance {
         const toObfuscate = ['password']
         toObfuscate.forEach((key) => {
           if ((details as Record<string, unknown>)[key]) {
+            // Prettier and eslint are fighting
+            // eslint-disable-next-line @typescript-eslint/no-extra-semi
             ;(details as Record<string, unknown>)[key] = '***'
           }
         })
