@@ -1,6 +1,6 @@
 import argon2 from 'argon2'
 import crypto from 'crypto'
-import { Logger } from './logger'
+import { asyncLocalStorage } from './logger'
 
 const SALT_LENGTH = Number.parseInt(process.env.SALT_LENGTH || '32', 10)
 
@@ -42,7 +42,7 @@ export const hashPassword = async (password: string) => {
     const hash = await generateHash(password, saltBuffer)
     return hash
   } catch (err: any) {
-    Logger.error('Error hashing and salting password', { message: err.message })
+    asyncLocalStorage.getStore()?.error('Error hashing and salting password', { message: err.message })
     throw err
   }
 }

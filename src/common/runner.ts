@@ -7,7 +7,7 @@ import puppeteer, {
   LaunchOptions,
   Page,
 } from 'puppeteer'
-import { Logger } from './logger'
+import { asyncLocalStorage } from './logger'
 import { Opponent, Reservation } from './reservation'
 
 export class Runner {
@@ -26,7 +26,7 @@ export class Runner {
   }
 
   public async run(reservation: Reservation): Promise<boolean> {
-    Logger.debug('Launching browser')
+    asyncLocalStorage.getStore()?.debug('Launching browser')
     if (!this.browser) {
       this.browser = await puppeteer.launch(this.options)
     }
@@ -36,7 +36,7 @@ export class Runner {
   }
 
   private async login(username: string, password: string) {
-    Logger.debug('Logging in')
+    asyncLocalStorage.getStore()?.debug('Logging in')
     await this.page?.goto('https://squashcity.baanreserveren.nl/')
     await this.page
       ?.waitForSelector('input[name=username]')
@@ -54,7 +54,7 @@ export class Runner {
       reservation.booked = true
       return true
     } catch (err) {
-      Logger.error('Error making reservation', reservation.format())
+      asyncLocalStorage.getStore()?.error('Error making reservation', reservation.format())
       return false
     }
   }
@@ -74,10 +74,10 @@ export class Runner {
   }
 
   private async navigateToDay(date: Dayjs): Promise<void> {
-    Logger.debug(`Navigating to ${date.format()}`)
+    asyncLocalStorage.getStore()?.debug(`Navigating to ${date.format()}`)
 
     if (this.getLastVisibleDay().isBefore(date)) {
-      Logger.debug('Date is on different page, increase month')
+      asyncLocalStorage.getStore()?.debug('Date is on different page, increase month')
       await this.page?.waitForSelector('td.month.next').then((d) => d?.click())
     }
 
@@ -96,7 +96,7 @@ export class Runner {
   }
 
   private async selectAvailableTime(res: Reservation): Promise<void> {
-    Logger.debug('Selecting available time', res.format())
+    asyncLocalStorage.getStore()?.debug('Selecting available time', res.format())
     let freeCourt: ElementHandle | null | undefined
     let i = 0
     while (i < res.possibleDates.length && !freeCourt) {
@@ -116,7 +116,7 @@ export class Runner {
   }
 
   private async selectOpponent(opponent: Opponent): Promise<void> {
-    Logger.debug('Selecting opponent', opponent)
+    asyncLocalStorage.getStore()?.debug('Selecting opponent', opponent)
     const player2Search = await this.page?.waitForSelector(
       'tr.res-make-player-2 > td > input'
     )

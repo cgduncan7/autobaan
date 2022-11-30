@@ -5,23 +5,16 @@ describe('Logger', () => {
     jest.resetAllMocks()
   })
 
-  test('should create a single instance of LoggerInstance', () => {
-    const a = Logger.instantiate('tag', 'abc', LogLevel.DEBUG)
-    const b = Logger.getInstance()
-
-    expect(a).toStrictEqual(b)
-  })
-
   test('should log messages', () => {
     const consoleLogSpy = jest.fn()
     const consoleErrorSpy = jest.fn()
     jest.spyOn(console, 'log').mockImplementation(consoleLogSpy)
     jest.spyOn(console, 'error').mockImplementation(consoleErrorSpy)
 
-    Logger.instantiate('tag', 'abc', LogLevel.DEBUG)
-    Logger.debug('first')
-    Logger.info('second')
-    Logger.error('third', { errorMessage: 'test' })
+    const logger = new Logger('tag', 'abc', LogLevel.DEBUG)
+    logger.debug('first')
+    logger.info('second')
+    logger.error('third', { errorMessage: 'test' })
 
     expect(consoleLogSpy).toHaveBeenCalledTimes(2)
     expect(consoleLogSpy).toHaveBeenNthCalledWith(
@@ -55,8 +48,8 @@ describe('Logger', () => {
     const consoleLogSpy = jest.fn()
     jest.spyOn(console, 'log').mockImplementationOnce(consoleLogSpy)
 
-    Logger.instantiate('tag', 'abc', LogLevel.INFO)
-    Logger.debug("should't appear")
+    const logger = new Logger('tag', 'abc', LogLevel.INFO)
+    logger.debug("shouldn't appear")
 
     expect(consoleLogSpy).not.toHaveBeenCalled()
   })
@@ -67,8 +60,8 @@ describe('Logger', () => {
     jest.spyOn(console, 'log').mockImplementation(consoleLogSpy)
     jest.spyOn(console, 'error').mockImplementation(consoleErrorSpy)
 
-    Logger.instantiate('tag', 'abc', LogLevel.DEBUG)
-    Logger.info('first', { password: 'test' })
+    const logger = new Logger('tag', 'abc', LogLevel.DEBUG)
+    logger.info('first', { password: 'test' })
 
     expect(consoleLogSpy).toHaveBeenCalledTimes(1)
     expect(consoleLogSpy).toHaveBeenNthCalledWith(
