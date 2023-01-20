@@ -2,6 +2,7 @@ import mysql, { Connection, ConnectionConfig, FieldInfo } from 'mysql'
 import { TABLE_reservations } from './sql'
 
 const createConnectionConfig = async (): Promise<ConnectionConfig> => {
+  const host = process.env.MYSQL_HOST
   const user = process.env.MYSQL_USER
   const password = process.env.MYSQL_PASSWORD
   const database = process.env.MYSQL_DATABASE
@@ -11,6 +12,7 @@ const createConnectionConfig = async (): Promise<ConnectionConfig> => {
     )
   }
   return {
+    host,
     user,
     password,
     database,
