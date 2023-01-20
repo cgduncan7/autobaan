@@ -1,8 +1,4 @@
-import dayjs from 'dayjs'
-import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
-import { hashPassword } from './password'
-dayjs.extend(isSameOrBefore)
-
+import dayjs from './dayjs'
 import { DateRange, Opponent, Reservation } from './reservation'
 
 export enum ValidationErrorCode {
@@ -61,9 +57,8 @@ const validateRequestBody = async (
     )
   }
 
-  const hashedPassword = await hashPassword(password)
   const reservation = new Reservation(
-    { username, password: hashedPassword },
+    { username, password },
     convertDateRangeStringToObject(dateRange),
     opponent
   )

@@ -1,4 +1,5 @@
-import dayjs, { Dayjs } from 'dayjs'
+import { Dayjs } from 'dayjs'
+import dayjs from './dayjs'
 import puppeteer, {
   Browser,
   BrowserConnectOptions,
@@ -36,7 +37,7 @@ export class Runner {
   }
 
   private async login(username: string, password: string) {
-    asyncLocalStorage.getStore()?.debug('Logging in')
+    asyncLocalStorage.getStore()?.debug('Logging in', { username })
     await this.page?.goto('https://squashcity.baanreserveren.nl/')
     await this.page
       ?.waitForSelector('input[name=username]')
@@ -53,10 +54,11 @@ export class Runner {
       await this.confirmReservation()
       reservation.booked = true
       return true
-    } catch (err) {
-      asyncLocalStorage
-        .getStore()
-        ?.error('Error making reservation', reservation.format())
+    } catch (err: unknown) {
+      asyncLocalStorage.getStore()?.error('Error making reservation', {
+        reservation: reservation.format(),
+        error: err,
+      })
       return false
     }
   }
@@ -82,7 +84,12 @@ export class Runner {
       asyncLocalStorage
         .getStore()
         ?.debug('Date is on different page, increase month')
-      await this.page?.waitForSelector('td.month.next').then((d) => d?.click())
+      await this.page
+        ?.waitForSelector('td.month.next')
+        .then((d) => d?.click())
+        .catch(() => {
+          throw new Error('Could not click correct month')
+        })
     }
 
     await this.page
@@ -92,11 +99,18 @@ export class Runner {
         )}`
       )
       .then((d) => d?.click())
-    await this.page?.waitForSelector(
-      `td#cal_${date.get('year')}_${date.get('month') + 1}_${date.get(
-        'date'
-      )}.selected`
-    )
+      .catch(() => {
+        throw new Error('Could not click correct day')
+      })
+    await this.page
+      ?.waitForSelector(
+        `td#cal_${date.get('year')}_${date.get('month') + 1}_${date.get(
+          'date'
+        )}.selected`
+      )
+      .catch(() => {
+        throw new Error("Selected day didn't change")
+      })
   }
 
   private async selectAvailableTime(res: Reservation): Promise<void> {

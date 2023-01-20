@@ -1,7 +1,6 @@
-import dayjs, { Dayjs } from 'dayjs'
-import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
+import { Dayjs } from 'dayjs'
+import dayjs from './dayjs'
 import { query } from './database'
-dayjs.extend(isSameOrBefore)
 
 const RESERVATION_AVAILABLE_WITHIN_DAYS = 7
 
@@ -16,8 +15,8 @@ export interface Opponent {
 }
 
 export interface DateRange {
-  start: dayjs.Dayjs
-  end: dayjs.Dayjs
+  start: Dayjs
+  end: Dayjs
 }
 
 export class Reservation {
@@ -81,7 +80,7 @@ export class Reservation {
     return {
       user: {
         username: this.user.username,
-        password: this.user.password ? '?' : null,
+        password: this.user.password,
       },
       opponent: this.opponent,
       booked: this.booked,
