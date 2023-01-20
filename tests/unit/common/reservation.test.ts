@@ -1,4 +1,5 @@
-import dayjs, { Dayjs } from 'dayjs'
+import { Dayjs } from 'dayjs'
+import dayjs from '../../../src/common/dayjs'
 import { DateRange, Reservation } from '../../../src/common/reservation'
 
 describe('Reservation', () => {
@@ -20,6 +21,7 @@ describe('Reservation', () => {
 
     expect(res.possibleDates).toHaveLength(5)
 
+    console.log(res.possibleDates[0].format())
     expect(res.possibleDates[0]).toEqual(startDate)
     expect(res.possibleDates[1]).toEqual(startDate.add(15, 'minute'))
     expect(res.possibleDates[2]).toEqual(startDate.add(30, 'minute'))
@@ -45,6 +47,7 @@ describe('Reservation', () => {
 
   const zeroTime = (date: Dayjs): Dayjs =>
     date.hour(0).minute(0).second(0).millisecond(0)
+
   test.each([
     {
       date: dayjs().add(8, 'days'),

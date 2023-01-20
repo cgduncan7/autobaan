@@ -1,4 +1,4 @@
-import dayjs from 'dayjs'
+import dayjs from '../../../src/common/dayjs'
 
 import {
   validateJSONRequest,
@@ -9,7 +9,7 @@ describe('request', () => {
   const testDate = dayjs().add(1, 'day')
 
   describe('validateJSONRequest', () => {
-    test('should return ReservationRequest', () => {
+    test('should return ReservationRequest', async () => {
       const body = {
         username: 'collin',
         password: '123abc',
@@ -23,7 +23,9 @@ describe('request', () => {
         },
       }
 
-      expect(() => validateJSONRequest(body)).not.toThrow()
+      const res = await validateJSONRequest(body)
+      expect(res).toBeDefined()
+      expect(res.dateRange.start.format()).toEqual(testDate.format())
     })
 
     test('should throw error for undefined body', async () => {

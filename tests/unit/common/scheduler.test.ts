@@ -1,4 +1,4 @@
-import dayjs from 'dayjs'
+import dayjs from '../../../src/common/dayjs'
 import {
   ValidationError,
   ValidationErrorCode,

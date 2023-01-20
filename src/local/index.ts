@@ -1,4 +1,4 @@
-import dayjs from 'dayjs'
+import dayjs from '../common/dayjs'
 import { Reservation } from '../common/reservation'
 import { Runner } from '../common/runner'
 
