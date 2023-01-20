@@ -16,7 +16,7 @@ const logger = new Logger('cron', 'default', LogLevel.DEBUG)
 export const startTasks = () => {
   try {
     const task = schedule(
-      '0 * * * * *',
+      '* * * * *',
       async (timestamp) => {
         asyncLocalStorage.run(
           new Logger('cron', v4(), LogLevel.DEBUG),
