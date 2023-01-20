@@ -18,16 +18,21 @@ export const startTasks = () => {
     const task = schedule(
       '0 * * * * *',
       async (timestamp) => {
-        asyncLocalStorage.run(new Logger('cron', v4(), LogLevel.DEBUG), async () => {
-          const childLogger = asyncLocalStorage.getStore()
-          childLogger?.info('Running cron job', { timestamp })
-          try {
-            await reserve()
-            childLogger?.info('Completed running cron job')
-          } catch (error: any) {
-            childLogger?.error('Error running cron job', { error: error.message })
+        asyncLocalStorage.run(
+          new Logger('cron', v4(), LogLevel.DEBUG),
+          async () => {
+            const childLogger = asyncLocalStorage.getStore()
+            childLogger?.info('Running cron job', { timestamp })
+            try {
+              await reserve()
+              childLogger?.info('Completed running cron job')
+            } catch (error: any) {
+              childLogger?.error('Error running cron job', {
+                error: error.message,
+              })
+            }
           }
-        })
+        )
       },
       getTaskConfig('reserver cron')
     )

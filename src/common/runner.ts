@@ -54,7 +54,9 @@ export class Runner {
       reservation.booked = true
       return true
     } catch (err) {
-      asyncLocalStorage.getStore()?.error('Error making reservation', reservation.format())
+      asyncLocalStorage
+        .getStore()
+        ?.error('Error making reservation', reservation.format())
       return false
     }
   }
@@ -77,7 +79,9 @@ export class Runner {
     asyncLocalStorage.getStore()?.debug(`Navigating to ${date.format()}`)
 
     if (this.getLastVisibleDay().isBefore(date)) {
-      asyncLocalStorage.getStore()?.debug('Date is on different page, increase month')
+      asyncLocalStorage
+        .getStore()
+        ?.debug('Date is on different page, increase month')
       await this.page?.waitForSelector('td.month.next').then((d) => d?.click())
     }
 
@@ -96,7 +100,9 @@ export class Runner {
   }
 
   private async selectAvailableTime(res: Reservation): Promise<void> {
-    asyncLocalStorage.getStore()?.debug('Selecting available time', res.format())
+    asyncLocalStorage
+      .getStore()
+      ?.debug('Selecting available time', res.format())
     let freeCourt: ElementHandle | null | undefined
     let i = 0
     while (i < res.possibleDates.length && !freeCourt) {
