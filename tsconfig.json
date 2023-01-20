@@ -2,10 +2,11 @@
   "$schema": "https://json.schemastore.org/tsconfig",
 
   "compilerOptions": {
-    "lib": ["esnext"],
-    "module": "esnext",
+    "lib": ["esnext", "dom"],
+    "module": "commonjs",
     "moduleResolution": "node",
     "target": "es6",
+    "allowJs": true,
     "sourceMap": true,
 
     "strict": true,
