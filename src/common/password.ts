@@ -42,7 +42,9 @@ export const hashPassword = async (password: string) => {
     const hash = await generateHash(password, saltBuffer)
     return hash
   } catch (err: any) {
-    asyncLocalStorage.getStore()?.error('Error hashing and salting password', { message: err.message })
+    asyncLocalStorage
+      .getStore()
+      ?.error('Error hashing and salting password', { message: err.message })
     throw err
   }
 }
