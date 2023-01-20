@@ -1,11 +1,8 @@
 import dayjs from 'dayjs'
-import { v4 } from 'uuid'
-import { Logger, LogLevel } from './common/logger'
-import { Reservation } from './common/reservation'
-import { Runner } from './common/runner'
+import { Reservation } from '../common/reservation'
+import { Runner } from '../common/runner'
 
 const run = async (request: Record<string, any>) => {
-  Logger.instantiate('local', v4(), LogLevel.DEBUG)
   const { user, dateRange, opponent } = request
   const reservation = new Reservation(user, dateRange, opponent)
 

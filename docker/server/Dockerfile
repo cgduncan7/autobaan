@@ -1,8 +1,9 @@
-FROM node:18-alpine as builder
+FROM node:18
 
 WORKDIR /app
 
-RUN apk add chromium gcc
+RUN apt update
+RUN apt install -y chromium gcc
 RUN npm i -g node-gyp
 
 COPY package.json package.json
@@ -15,12 +16,4 @@ COPY src src
 COPY tsconfig.json tsconfig.json
 
 RUN npm run build
-
-#------------------------------------------------------------------------------
-
-FROM node:18-alpine as app
-
-WORKDIR /app
-COPY --from=builder /app/dist dist
-
-ENTRYPOINT node dist/server/index.cjs
+ENTRYPOINT node dist/server/index.js
