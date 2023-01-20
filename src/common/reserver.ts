@@ -4,7 +4,7 @@ import { Runner } from './runner'
 let runner: Runner | undefined
 const getRunner = () => {
   if (!runner) {
-    runner = new Runner({ headless: true })
+    runner = new Runner({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] })
   }
   return runner
 }

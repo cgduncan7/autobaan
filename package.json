@@ -31,7 +31,7 @@
     "dayjs": "^1.11.6",
     "mysql": "^2.18.1",
     "node-cron": "^3.0.2",
-    "puppeteer": "^19.1.0",
+    "puppeteer": "^19.5.2",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
@@ -39,7 +39,7 @@
     "@types/mysql": "^2.15.21",
     "@types/node": "^18.11.9",
     "@types/node-cron": "^3.0.6",
-    "@types/puppeteer": "^5.4.7",
+    "@types/puppeteer": "^7.0.4",
     "@types/uuid": "^8.3.4",
     "@typescript-eslint/eslint-plugin": "^5.42.0",
     "@typescript-eslint/parser": "^5.42.0",
