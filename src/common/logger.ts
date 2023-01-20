@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from 'async_hooks'
+import dayjs from './dayjs'
 
 export enum LogLevel {
   DEBUG,
@@ -42,8 +43,9 @@ export class Logger {
         break
     }
 
-    let fmtString = '<%s> [%s] %s: %s'
+    let fmtString = '(%s) <%s> [%s] %s: %s'
     const params: Array<unknown> = [
+      dayjs().format(),
       this.tag,
       this.correlationId,
       levelString,

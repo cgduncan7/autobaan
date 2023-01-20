@@ -1,4 +1,7 @@
+import dayjs from '../../../src/common/dayjs'
 import { Logger, LogLevel } from '../../../src/common/logger'
+
+jest.useFakeTimers().setSystemTime(new Date('2023-01-01'))
 
 describe('Logger', () => {
   beforeEach(() => {
@@ -19,7 +22,8 @@ describe('Logger', () => {
     expect(consoleLogSpy).toHaveBeenCalledTimes(2)
     expect(consoleLogSpy).toHaveBeenNthCalledWith(
       1,
-      '<%s> [%s] %s: %s',
+      '(%s) <%s> [%s] %s: %s',
+      dayjs().format(),
       'tag',
       'abc',
       'DEBUG',
@@ -27,7 +31,8 @@ describe('Logger', () => {
     )
     expect(consoleLogSpy).toHaveBeenNthCalledWith(
       2,
-      '<%s> [%s] %s: %s',
+      '(%s) <%s> [%s] %s: %s',
+      dayjs().format(),
       'tag',
       'abc',
       'INFO',
@@ -35,7 +40,8 @@ describe('Logger', () => {
     )
     expect(consoleErrorSpy).toHaveBeenCalledTimes(1)
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      '<%s> [%s] %s: %s - %O',
+      '(%s) <%s> [%s] %s: %s - %O',
+      dayjs().format(),
       'tag',
       'abc',
       'ERROR',
@@ -66,7 +72,8 @@ describe('Logger', () => {
     expect(consoleLogSpy).toHaveBeenCalledTimes(1)
     expect(consoleLogSpy).toHaveBeenNthCalledWith(
       1,
-      '<%s> [%s] %s: %s - %O',
+      '(%s) <%s> [%s] %s: %s - %O',
+      dayjs().format(),
       'tag',
       'abc',
       'INFO',
