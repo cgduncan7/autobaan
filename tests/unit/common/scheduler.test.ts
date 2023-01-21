@@ -8,6 +8,7 @@ import { schedule, SchedulerInput } from '../../../src/common/scheduler'
 
 jest.mock('../../../src/common/logger')
 jest.mock('../../../src/common/reserver')
+jest.mock('uuid', () => ({ v4: () => '1234' }))
 jest.useFakeTimers().setSystemTime(new Date('2022-01-01'))
 
 describe('scheduler', () => {
@@ -26,6 +27,7 @@ describe('scheduler', () => {
     expect(await schedule(payload)).toMatchSnapshot({
       scheduledReservation: {
         reservation: {
+          id: expect.any(String),
           user: {
             username: 'collin',
             password: expect.any(String),
@@ -52,7 +54,9 @@ describe('scheduler', () => {
         reservation: new Reservation(
           { username: 'collin', password: expect.any(String) },
           { start, end },
-          { id: '123', name: 'collin' }
+          { id: '123', name: 'collin' },
+          undefined,
+          '1234',
         ),
         scheduledFor: start
           .subtract(7, 'days')

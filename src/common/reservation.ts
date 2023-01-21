@@ -1,4 +1,5 @@
 import { Dayjs } from 'dayjs'
+import { v4 } from 'uuid'
 import dayjs from './dayjs'
 import { query } from './database'
 
@@ -20,6 +21,7 @@ export interface DateRange {
 }
 
 export class Reservation {
+  public readonly id: string
   public readonly user: User
   public readonly dateRange: DateRange
   public readonly opponent: Opponent
@@ -30,8 +32,10 @@ export class Reservation {
     user: User,
     dateRange: DateRange,
     opponent: Opponent,
-    possibleDates?: Dayjs[]
+    possibleDates?: Dayjs[],
+    id = v4()
   ) {
+    this.id = id
     this.user = user
     this.dateRange = dateRange
     this.opponent = opponent
@@ -127,6 +131,7 @@ export class Reservation {
       `
       INSERT INTO reservations
       (
+        id
         username,
         password,
         date_range_start,
@@ -141,10 +146,12 @@ export class Reservation {
         ?,
         ?,
         ?,
+        ?,
         ?
       )
     `,
       [
+        res.id,
         res.user.username,
         res.user.password,
         res.dateRange.start,
@@ -155,7 +162,19 @@ export class Reservation {
     )
   }
 
-  public static async fetchById(id: number): Promise<Reservation | null> {
+  public static async delete(res: Reservation) {
+    await query(
+      `
+      DELETE FROM reservations
+      WHERE id = $
+    `,
+      [
+        res.id,
+      ]
+    )
+  }
+
+  public static async fetchById(id: string): Promise<Reservation | null> {
     const response = await query<SqlReservation>(
       `
       SELECT *
@@ -176,7 +195,9 @@ export class Reservation {
           start: dayjs(sqlReservation.date_range_start),
           end: dayjs(sqlReservation.date_range_end),
         },
-        { id: sqlReservation.opponent_id, name: sqlReservation.opponent_name }
+        { id: sqlReservation.opponent_id, name: sqlReservation.opponent_name },
+        undefined,
+        sqlReservation.id,
       )
       return res
     }
@@ -205,12 +226,48 @@ export class Reservation {
           start: dayjs(sqlReservation.date_range_start),
           end: dayjs(sqlReservation.date_range_end),
         },
-        { id: sqlReservation.opponent_id, name: sqlReservation.opponent_name }
+        { id: sqlReservation.opponent_id, name: sqlReservation.opponent_name },
+        undefined,
+        sqlReservation.id,
       )
       return res
     }
 
     return null
+  }
+
+  public static async fetchByDate(date: Dayjs, limit = 20): Promise<Reservation[]> {
+    const response = await query<SqlReservation>(
+      `
+      SELECT *
+      FROM reservations
+      WHERE DATE_FORMAT(DATE_SUB(date_range_start, INTERVAL 7 DAY), '%Y-%m-%d) = ?
+      ORDER BY date_range_start DESC
+      LIMIT ?;
+      `,
+      [
+        date.format('YYYY-MM-DD'),
+        limit,
+      ]
+    )
+
+    if (response.results.length > 0) {
+      return response.results.map((sqlReservation) => new Reservation(
+        {
+          username: sqlReservation.username,
+          password: sqlReservation.password,
+        },
+        {
+          start: dayjs(sqlReservation.date_range_start),
+          end: dayjs(sqlReservation.date_range_end),
+        },
+        { id: sqlReservation.opponent_id, name: sqlReservation.opponent_name },
+        undefined,
+        sqlReservation.id,
+      ))
+    }
+
+    return []
   }
 }
 
@@ -228,6 +285,7 @@ export interface SerializedReservation {
 }
 
 export interface SqlReservation {
+  id: string
   username: string
   password: string
   date_range_start: string

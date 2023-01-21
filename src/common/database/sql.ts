@@ -1,6 +1,6 @@
 export const TABLE_reservations = `
 CREATE TABLE IF NOT EXISTS reservations (
-  id                INT unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  id                VARCHAR(36) NOT NULL PRIMARY KEY,
   username          VARCHAR(64) NOT NULL UNIQUE,
   password          VARCHAR(255) NOT NULL,
   date_range_start  DATETIME NOT NULL,
