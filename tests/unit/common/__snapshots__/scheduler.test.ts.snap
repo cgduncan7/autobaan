@@ -41,6 +41,7 @@ exports[`scheduler should handle valid requests outside of reservation window 1`
           "$y": 2022,
         },
       },
+      "id": "1234",
       "opponent": {
         "id": "123",
         "name": "collin",
@@ -145,6 +146,7 @@ exports[`scheduler should handle valid requests within reservation window 1`] = 
           "$y": 2022,
         },
       },
+      "id": Any<String>,
       "opponent": {
         "id": "123",
         "name": "collin",
