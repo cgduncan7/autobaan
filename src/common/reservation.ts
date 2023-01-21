@@ -131,7 +131,7 @@ export class Reservation {
       `
       INSERT INTO reservations
       (
-        id
+        id,
         username,
         password,
         date_range_start,
@@ -154,8 +154,8 @@ export class Reservation {
         res.id,
         res.user.username,
         res.user.password,
-        res.dateRange.start,
-        res.dateRange.end,
+        res.dateRange.start.format('YYYY-MM-DD HH:mm:ss'),
+        res.dateRange.end.format('YYYY-MM-DD HH:mm:ss'),
         res.opponent.id,
         res.opponent.name,
       ]
