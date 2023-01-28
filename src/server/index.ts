@@ -1,4 +1,4 @@
-import { disconnect, init } from '../common/database'
+import { init } from '../common/database'
 import { Logger, LogLevel } from '../common/logger'
 import server from './http'
 import { startTasks, stopTasks } from './cron'
@@ -14,7 +14,6 @@ process.on('uncaughtException', (error, origin) => {
 })
 
 process.on('beforeExit', async () => {
-  await disconnect()
   stopTasks()
 })
 
