@@ -1,7 +1,7 @@
 import { Dayjs } from 'dayjs'
 import { v4 } from 'uuid'
 import dayjs from './dayjs'
-import { query } from './database'
+import { all, run } from './database'
 
 const RESERVATION_AVAILABLE_WITHIN_DAYS = 7
 
@@ -127,7 +127,7 @@ export class Reservation {
   }
 
   public static async save(res: Reservation) {
-    await query(
+    await run(
       `
       INSERT INTO reservations
       (
@@ -163,19 +163,17 @@ export class Reservation {
   }
 
   public static async delete(res: Reservation) {
-    await query(
+    await run(
       `
       DELETE FROM reservations
       WHERE id = $
     `,
-      [
-        res.id,
-      ]
+      [res.id]
     )
   }
 
   public static async fetchById(id: string): Promise<Reservation | null> {
-    const response = await query<SqlReservation>(
+    const response = await all<SqlReservation>(
       `
       SELECT *
       FROM reservations
@@ -184,8 +182,8 @@ export class Reservation {
       [id]
     )
 
-    if (response.results.length === 1) {
-      const sqlReservation = response.results[0]
+    if (response.length === 1) {
+      const sqlReservation = response[0]
       const res = new Reservation(
         {
           username: sqlReservation.username,
@@ -197,7 +195,7 @@ export class Reservation {
         },
         { id: sqlReservation.opponent_id, name: sqlReservation.opponent_name },
         undefined,
-        sqlReservation.id,
+        sqlReservation.id
       )
       return res
     }
@@ -206,7 +204,7 @@ export class Reservation {
   }
 
   public static async fetchFirst(): Promise<Reservation | null> {
-    const response = await query<SqlReservation>(
+    const response = await all<SqlReservation>(
       `
       SELECT *
       FROM reservations
@@ -215,8 +213,8 @@ export class Reservation {
       `
     )
 
-    if (response.results.length === 1) {
-      const sqlReservation = response.results[0]
+    if (response.length === 1) {
+      const sqlReservation = response[0]
       const res = new Reservation(
         {
           username: sqlReservation.username,
@@ -228,7 +226,7 @@ export class Reservation {
         },
         { id: sqlReservation.opponent_id, name: sqlReservation.opponent_name },
         undefined,
-        sqlReservation.id,
+        sqlReservation.id
       )
       return res
     }
@@ -236,8 +234,11 @@ export class Reservation {
     return null
   }
 
-  public static async fetchByDate(date: Dayjs, limit = 20): Promise<Reservation[]> {
-    const response = await query<SqlReservation>(
+  public static async fetchByDate(
+    date: Dayjs,
+    limit = 20
+  ): Promise<Reservation[]> {
+    const response = await all<SqlReservation>(
       `
       SELECT *
       FROM reservations
@@ -245,26 +246,29 @@ export class Reservation {
       ORDER BY date_range_start DESC
       LIMIT ?;
       `,
-      [
-        date.format('YYYY-MM-DD'),
-        limit,
-      ]
+      [date.format('YYYY-MM-DD'), limit]
     )
 
-    if (response.results.length > 0) {
-      return response.results.map((sqlReservation) => new Reservation(
-        {
-          username: sqlReservation.username,
-          password: sqlReservation.password,
-        },
-        {
-          start: dayjs(sqlReservation.date_range_start),
-          end: dayjs(sqlReservation.date_range_end),
-        },
-        { id: sqlReservation.opponent_id, name: sqlReservation.opponent_name },
-        undefined,
-        sqlReservation.id,
-      ))
+    if (response.length > 0) {
+      return response.map(
+        (sqlReservation) =>
+          new Reservation(
+            {
+              username: sqlReservation.username,
+              password: sqlReservation.password,
+            },
+            {
+              start: dayjs(sqlReservation.date_range_start),
+              end: dayjs(sqlReservation.date_range_end),
+            },
+            {
+              id: sqlReservation.opponent_id,
+              name: sqlReservation.opponent_name,
+            },
+            undefined,
+            sqlReservation.id
+          )
+      )
     }
 
     return []

@@ -1,4 +1,4 @@
-export const TABLE_reservations = `
+export const CREATE_TABLE_reservations = `
 CREATE TABLE IF NOT EXISTS reservations (
   id                VARCHAR(36) NOT NULL PRIMARY KEY,
   username          VARCHAR(64) NOT NULL UNIQUE,

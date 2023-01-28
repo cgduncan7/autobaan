@@ -56,7 +56,7 @@ describe('scheduler', () => {
           { start, end },
           { id: '123', name: 'collin' },
           undefined,
-          '1234',
+          '1234'
         ),
         scheduledFor: start
           .subtract(7, 'days')
