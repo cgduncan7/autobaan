@@ -1,0 +1,20 @@
+name: Push to main
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build-server:
+    runs-on: ubuntu-latest
+    env:
+      GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+      GHCR_PASSWORD: ${{ secrets.GHCR_PASSWORD }}
+      GHCR_IMAGE: ghcr.io/cgduncan7/autobaan
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build docker image
+        run: docker build . -t $GHCR_IMAGE
+      - name: Login to GHCR Docker repo
+        run: docker login ghcr.io -u $GHCR_USERNAME --password $GHCR_PASSWORD
+      - name: Push docker image
+        run: docker push $GHCR_IMAGE
