@@ -4,7 +4,7 @@ on:
     branches:
       - main
 jobs:
-  build-server:
+  build-image:
     runs-on: ubuntu-latest
     env:
       GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build docker image
-        run: docker build . -t $GHCR_IMAGE
+        run: docker build . -f docker/server/Dockerfile -t $GHCR_IMAGE
       - name: Login to GHCR Docker repo
         run: docker login ghcr.io -u $GHCR_USERNAME --password $GHCR_PASSWORD
       - name: Push docker image

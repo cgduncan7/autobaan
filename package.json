@@ -20,6 +20,7 @@
     "lint": "eslint src/ --ext ts",
     "prettier": "prettier src tests -w",
     "local": "npx ts-node src/local/index.ts",
+    "docker:build": "docker build . -f docker/server/Dockerfile",
     "docker:start": "docker compose -f docker/docker-compose.yml up",
     "docker:stop": "docker compose -f docker/docker-compose.yml down"
   },
