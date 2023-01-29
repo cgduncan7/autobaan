@@ -17,7 +17,7 @@ let shouldContinue = true
 export const startTasks = () => {
   try {
     const task = schedule(
-      '* 7 * * *',
+      '*/10 7 * * *',
       async (timestamp) => {
         asyncLocalStorage.run(
           new Logger('cron', v4(), LogLevel.DEBUG),
