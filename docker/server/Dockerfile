@@ -1,4 +1,5 @@
 FROM node:18
+LABEL org.opencontainers.image.source https://github.com/cgduncan7/autobaan
 
 RUN apt-get update \
     && apt-get install -y gcc chromium fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 --no-install-recommends
