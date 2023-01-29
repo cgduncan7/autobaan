@@ -29,6 +29,7 @@ export const reserve = async (reservation?: Reservation): Promise<boolean> => {
   const runner = getRunner()
   try {
     await runner.run(reservationToPerform)
+    await Reservation.delete(reservationToPerform)
     return true
   } catch (error) {
     l.getStore()?.error('Failed to perform reservation', { error: (error as LoggableError).toString() })
