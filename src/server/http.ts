@@ -10,8 +10,8 @@ const server = http.createServer(async (req, res) => {
     new Logger('request', v4(), LogLevel.DEBUG),
     async () => {
       const logger = asyncLocalStorage.getStore()
-      logger?.debug('Incoming request')
       const { url, method } = req
+      logger?.debug('Incoming request', { url, method })
 
       if (
         !url ||
@@ -19,7 +19,7 @@ const server = http.createServer(async (req, res) => {
         !/^\/reservations$/.test(url) ||
         method.toLowerCase() !== 'post'
       ) {
-        logger?.info('Not found')
+        logger?.info('Not found', { url, method })
         res.writeHead(404, 'Not found')
         res.end()
         return
