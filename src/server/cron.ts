@@ -12,6 +12,7 @@ const getTaskConfig = (name: string): ScheduleOptions => ({
 })
 
 const logger = new Logger('cron', 'default', LogLevel.DEBUG)
+let shouldContinue = true
 
 export const startTasks = () => {
   try {
@@ -21,15 +22,18 @@ export const startTasks = () => {
         asyncLocalStorage.run(
           new Logger('cron', v4(), LogLevel.DEBUG),
           async () => {
-            const childLogger = asyncLocalStorage.getStore()
-            childLogger?.info('Running cron job', { timestamp })
-            try {
-              await reserve()
-              childLogger?.info('Completed running cron job')
-            } catch (error: any) {
-              childLogger?.error('Error running cron job', {
-                error: error.message,
-              })
+            if (shouldContinue) {
+              const childLogger = asyncLocalStorage.getStore()
+              childLogger?.info('Running cron job', { timestamp })
+              try {
+                shouldContinue = await reserve()
+                childLogger?.info('Completed running cron job')
+              } catch (error) {
+                shouldContinue = false
+                childLogger?.error('Error running cron job', {
+                  error: (error as Error).message,
+                })
+              }
             }
           }
         )

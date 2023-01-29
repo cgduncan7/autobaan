@@ -1,5 +1,6 @@
+import { asyncLocalStorage as l } from './logger'
 import { Reservation } from './reservation'
-import { Runner } from './runner'
+import { LoggableError, Runner } from './runner'
 
 let runner: Runner | undefined
 const getRunner = () => {
@@ -12,16 +13,25 @@ const getRunner = () => {
   return runner
 }
 
-export const reserve = async (reservation?: Reservation) => {
+export const reserve = async (reservation?: Reservation): Promise<boolean> => {
   let reservationToPerform = reservation
   if (!reservationToPerform) {
+    l.getStore()?.debug('No reservation provided, fetching first in database')
     reservationToPerform = (await Reservation.fetchFirst()) || undefined
   }
 
   if (!reservationToPerform) {
-    return
+    l.getStore()?.info('No reservation to perform')
+    return true
   }
-
+  
+  l.getStore()?.debug('Trying to perform reservation', { reservationToPerform })
   const runner = getRunner()
-  await runner.run(reservationToPerform)
+  try {
+    await runner.run(reservationToPerform)
+    return true
+  } catch (error) {
+    l.getStore()?.error('Failed to perform reservation', { error: (error as LoggableError).toString() })
+    return false
+  }
 }
