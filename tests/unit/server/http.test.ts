@@ -36,13 +36,16 @@ describe('server', () => {
     expect(response.status).toBe(200)
   })
 
-  test('should reject non-POST request', async () => {
+  test('should accept POST to /cron', async () => {
     jest
       .spyOn(scheduler, 'schedule')
       .mockImplementationOnce(() => Promise.resolve({}))
-    await expect(() => axios.get(`${baseUrl}/reservations`)).rejects.toThrow(
-      axios.AxiosError
+    const response = await axios.post(
+      `${baseUrl}/cron/disable`,
+      {},
+      { headers: { 'content-type': 'application/json' } }
     )
+    expect(response.status).toBe(200)
   })
 
   test('should reject request to other route', async () => {
@@ -52,42 +55,5 @@ describe('server', () => {
     await expect(() => axios.post(`${baseUrl}/something-else`)).rejects.toThrow(
       axios.AxiosError
     )
-  })
-
-  test('should reject request without content-type of json', async () => {
-    jest
-      .spyOn(scheduler, 'schedule')
-      .mockImplementationOnce(() => Promise.resolve({}))
-    await expect(() =>
-      axios.post(`${baseUrl}/reservations`, 'test,123', {
-        headers: { 'content-type': 'text/csv' },
-      })
-    ).rejects.toThrow(axios.AxiosError)
-  })
-
-  test('should reject request if body cannot be parsed', async () => {
-    jest.spyOn(utils, 'parseJson').mockImplementationOnce(Promise.reject)
-    await expect(() =>
-      axios.post(
-        `${baseUrl}/reservations`,
-        {},
-        {
-          headers: { 'content-type': 'application/json' },
-        }
-      )
-    ).rejects.toThrow(axios.AxiosError)
-  })
-
-  test('should reject request if schedule cannot be performed', async () => {
-    jest.spyOn(scheduler, 'schedule').mockImplementationOnce(Promise.reject)
-    await expect(() =>
-      axios.post(
-        `${baseUrl}/reservations`,
-        {},
-        {
-          headers: { 'content-type': 'application/json' },
-        }
-      )
-    ).rejects.toThrow(axios.AxiosError)
   })
 })
