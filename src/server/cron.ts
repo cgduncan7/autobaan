@@ -12,46 +12,50 @@ const getTaskConfig = (name: string): ScheduleOptions => ({
 })
 
 const logger = new Logger('cron', 'default', LogLevel.DEBUG)
-let shouldContinue = true
 
 export const startTasks = () => {
   try {
-    const task = schedule(
-      '*/10 7 * * *',
-      async (timestamp) => {
-        asyncLocalStorage.run(
-          new Logger('cron', v4(), LogLevel.DEBUG),
-          async () => {
-            if (shouldContinue) {
+    if (tasks.length === 0) {
+      const task = schedule(
+        '* 7 * * *',
+        async (timestamp) => {
+          asyncLocalStorage.run(
+            new Logger('cron', v4(), LogLevel.DEBUG),
+            async () => {
               const childLogger = asyncLocalStorage.getStore()
               childLogger?.info('Running cron job', { timestamp })
               try {
-                shouldContinue = await reserve()
+                const result = await reserve()
+                if (!result) {
+                  throw new Error('Failed to complete reservation')
+                }
                 childLogger?.info('Completed running cron job')
               } catch (error) {
-                shouldContinue = false
                 childLogger?.error('Error running cron job', {
                   error: (error as Error).message,
                 })
+                stopTasks()
               }
             }
-          }
-        )
-      },
-      getTaskConfig('reserver cron')
-    )
-    logger.debug('Started cron task')
-    tasks.push(task)
-  } catch (error: any) {
-    logger.error('Failed to start tasks', { error: error.message })
+          )
+        },
+        getTaskConfig('reserver cron')
+      )
+      logger.debug('Started cron task')
+      tasks.push(task)
+    }
+  } catch (error) {
+    logger.error('Failed to start tasks', { error: (error as Error).message })
   }
 }
 
 export const stopTasks = () => {
   try {
-    tasks.map((task) => task.stop())
-    logger.debug('Stopped cron tasks')
-  } catch (error: any) {
-    logger.error('Failed to stop tasks', { error: error.message })
+    if (tasks.length > 0) {
+      tasks.map((task) => task.stop())
+      logger.debug('Stopped cron tasks')
+    }
+  } catch (error) {
+    logger.error('Failed to stop tasks', { error: (error as Error).message })
   }
 }

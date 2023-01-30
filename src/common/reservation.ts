@@ -76,15 +76,16 @@ export class Reservation {
       .subtract(RESERVATION_AVAILABLE_WITHIN_DAYS, 'days')
   }
 
-  public toString() {
-    return JSON.stringify(this.format())
+  public toString(obfuscate = false) {
+    return JSON.stringify(this.format(obfuscate))
   }
 
-  public format() {
+  public format(obfuscate = false) {
     return {
+      id: this.id,
       user: {
         username: this.user.username,
-        password: this.user.password,
+        password: obfuscate ? '???' : this.user.password,
       },
       opponent: this.opponent,
       booked: this.booked,
@@ -98,6 +99,7 @@ export class Reservation {
 
   public serializeToJson(): SerializedReservation {
     return {
+      id: this.id,
       user: this.user,
       opponent: this.opponent,
       booked: this.booked,
@@ -126,7 +128,7 @@ export class Reservation {
     return dates.map((date) => dayjs(date))
   }
 
-  public static async save(res: Reservation) {
+  public async save() {
     await run(
       `
       INSERT INTO reservations
@@ -151,24 +153,34 @@ export class Reservation {
       )
     `,
       [
-        res.id,
-        res.user.username,
-        res.user.password,
-        res.dateRange.start.format('YYYY-MM-DD HH:mm:ss'),
-        res.dateRange.end.format('YYYY-MM-DD HH:mm:ss'),
-        res.opponent.id,
-        res.opponent.name,
+        this.id,
+        this.user.username,
+        this.user.password,
+        this.dateRange.start.format('YYYY-MM-DD HH:mm:ss'),
+        this.dateRange.end.format('YYYY-MM-DD HH:mm:ss'),
+        this.opponent.id,
+        this.opponent.name,
       ]
     )
   }
 
-  public static async delete(res: Reservation) {
+  public async delete() {
     await run(
       `
       DELETE FROM reservations
       WHERE id = ?
     `,
-      [res.id]
+      [this.id]
+    )
+  }
+
+  public static async deleteById(id: string) {
+    await run(
+      `
+      DELETE FROM reservations
+      WHERE id = ?
+    `,
+      [id]
     )
   }
 
@@ -273,6 +285,43 @@ export class Reservation {
 
     return []
   }
+
+  public static async fetchByPage(pageNumber: number, pageSize = 50): Promise<Reservation[]> {
+    const response = await all<SqlReservation>(
+      `
+      SELECT *
+      FROM reservations
+      ORDER BY date_range_start ASC
+      LIMIT ?
+      OFFSET ?;
+      `,
+      [pageSize, pageSize * pageNumber]
+    )
+
+    if (response.length > 0) {
+      return response.map(
+        (sqlReservation) =>
+          new Reservation(
+            {
+              username: sqlReservation.username,
+              password: sqlReservation.password,
+            },
+            {
+              start: dayjs(sqlReservation.date_range_start),
+              end: dayjs(sqlReservation.date_range_end),
+            },
+            {
+              id: sqlReservation.opponent_id,
+              name: sqlReservation.opponent_name,
+            },
+            undefined,
+            sqlReservation.id
+          )
+      )
+    }
+
+    return []
+  }
 }
 
 export interface SerializedDateRange {
@@ -281,6 +330,7 @@ export interface SerializedDateRange {
 }
 
 export interface SerializedReservation {
+  id: string
   user: User
   opponent: Opponent
   booked: boolean

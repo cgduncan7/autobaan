@@ -85,3 +85,9 @@ export class Logger {
     this.log(LogLevel.ERROR, message, details)
   }
 }
+
+export class LoggableError extends Error {
+  toString() {
+    return `${this.name} - ${this.message}\n${this.stack}`
+  }
+}
