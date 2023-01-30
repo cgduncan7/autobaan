@@ -166,7 +166,7 @@ export class Reservation {
     await run(
       `
       DELETE FROM reservations
-      WHERE id = $
+      WHERE id = ?
     `,
       [res.id]
     )
