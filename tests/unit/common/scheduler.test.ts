@@ -5,6 +5,7 @@ import {
 } from '../../../src/common/request'
 import { Reservation } from '../../../src/common/reservation'
 import { schedule, SchedulerInput } from '../../../src/common/scheduler'
+import * as database from '../../../src/common/database'
 
 jest.mock('../../../src/common/logger')
 jest.mock('../../../src/common/reserver')
@@ -13,7 +14,7 @@ jest.useFakeTimers().setSystemTime(new Date('2022-01-01'))
 
 describe('scheduler', () => {
   test('should handle valid requests within reservation window', async () => {
-    jest.spyOn(Reservation, 'save').mockResolvedValueOnce()
+    jest.spyOn(database, 'run').mockResolvedValueOnce()
     const start = dayjs().add(15, 'minutes')
     const end = start.add(15, 'minutes')
 

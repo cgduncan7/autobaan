@@ -8,7 +8,7 @@ import puppeteer, {
   LaunchOptions,
   Page,
 } from 'puppeteer'
-import { asyncLocalStorage as l } from './logger'
+import { asyncLocalStorage as l, LoggableError } from './logger'
 import { Opponent, Reservation } from './reservation'
 
 export class Runner {
@@ -130,7 +130,7 @@ export class Runner {
   }
 
   private async selectAvailableTime(res: Reservation): Promise<void> {
-    l.getStore()?.debug('Selecting available time', res.format())
+    l.getStore()?.debug('Selecting available time', { reservation: res.toString(true) })
     let freeCourt: ElementHandle | null | undefined
     let i = 0
     while (i < res.possibleDates.length && !freeCourt) {
@@ -152,7 +152,7 @@ export class Runner {
   }
 
   private async selectOpponent(opponent: Opponent): Promise<void> {
-    l.getStore()?.debug('Selecting opponent', opponent)
+    l.getStore()?.debug('Selecting opponent', { opponent })
     const player2Search = await this.page
       ?.waitForSelector('tr.res-make-player-2 > td > input')
       .catch((e: Error) => {
@@ -173,20 +173,21 @@ export class Runner {
   }
 
   private async confirmReservation(): Promise<void> {
-    await this.page?.$('input#__make_submit').then((b) => b?.click())
-    .catch((e: Error) => { throw new RunnerReservationConfirmButtonError(e) })
+    await this.page
+      ?.$('input#__make_submit')
+      .then((b) => b?.click())
+      .catch((e: Error) => {
+        throw new RunnerReservationConfirmButtonError(e)
+      })
     await this.page
       ?.waitForSelector('input#__make_submit2')
       .then((b) => b?.click())
-      .catch((e: Error) => { throw new RunnerReservationConfirmSubmitError(e) })
-    }
-}
-
-export class LoggableError extends Error {
-  toString() {
-    return `${this.name} - ${this.message}\n${this.stack}`
+      .catch((e: Error) => {
+        throw new RunnerReservationConfirmSubmitError(e)
+      })
   }
 }
+
 export class RunnerError extends LoggableError {
   constructor(error: Error) {
     super(error.message)

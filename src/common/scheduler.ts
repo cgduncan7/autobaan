@@ -31,7 +31,7 @@ export const schedule = async (
   }
 
   logger?.debug('Successfully validated request', {
-    reservation: reservation.format(),
+    reservation: reservation.toString(true),
   })
 
   if (!reservation.isAvailableForReservation()) {
@@ -39,7 +39,7 @@ export const schedule = async (
       'Reservation date is more than 7 days away; saving for later reservation'
     )
 
-    await Reservation.save(reservation)
+    await reservation.save()
 
     return {
       scheduledReservation: {
