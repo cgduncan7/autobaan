@@ -11,7 +11,7 @@ export class CronRouter extends Router {
     const { url = '', method } = req
     const [route] = url.split('?')
     switch (true) {
-      case /^\/cron\/$/.test(route) && method === 'GET': {
+      case /^\/cron\/?$/.test(route) && method === 'GET': {
         await this.GET_cron(req, res)
         break
       }
