@@ -1,4 +1,4 @@
-import { schedule, ScheduledTask, ScheduleOptions } from 'node-cron'
+import { schedule, ScheduledTask, ScheduleOptions, getTasks as getCronTasks } from 'node-cron'
 import { v4 } from 'uuid'
 import { asyncLocalStorage, Logger, LogLevel } from '../common/logger'
 import { reserve } from '../common/reserver'
@@ -12,6 +12,15 @@ const getTaskConfig = (name: string): ScheduleOptions => ({
 })
 
 const logger = new Logger('cron', 'default', LogLevel.DEBUG)
+
+export const getStatus = () => {
+  const tasks = getCronTasks()
+  if (tasks.get('reserver cron')) {
+    return true
+  }
+
+  return false
+}
 
 export const startTasks = () => {
   try {

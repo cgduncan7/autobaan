@@ -1,7 +1,7 @@
 import { IncomingMessage, ServerResponse } from 'http'
 import { asyncLocalStorage as l } from '../../../common/logger'
 import { Router } from './index'
-import { startTasks, stopTasks } from '../../cron'
+import { getStatus, startTasks, stopTasks } from '../../cron'
 
 export class CronRouter extends Router {
   public async handleRequest(
@@ -11,6 +11,10 @@ export class CronRouter extends Router {
     const { url = '', method } = req
     const [route] = url.split('?')
     switch (true) {
+      case /^\/cron\/$/.test(route) && method === 'GET': {
+        await this.GET_cron(req, res)
+        break
+      }
       case /^\/cron\/enable$/.test(route) && method === 'POST': {
         await this.POST_cron_enable(req, res)
         break
@@ -23,6 +27,18 @@ export class CronRouter extends Router {
         this.handle404(req, res)
       }
     }
+  }
+
+  private async GET_cron(
+    _req: IncomingMessage,
+    res: ServerResponse<IncomingMessage>,
+  ) {
+    l.getStore()?.debug('Checking cron status')
+    const status = getStatus()
+    res.writeHead(200, undefined, {
+      'content-type': 'text/plain',
+    })
+    res.write(status ? 'Enabled' : 'Disabled')
   }
 
   private async POST_cron_enable(
