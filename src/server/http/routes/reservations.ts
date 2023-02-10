@@ -4,11 +4,13 @@ import { asyncLocalStorage as l } from '../../../common/logger'
 import { Router } from './index'
 import { Reservation } from '../../../common/reservation'
 import { parse } from 'querystring'
+import dayjs from '../../../common/dayjs'
+import { Dayjs } from 'dayjs'
 
 export class ReservationsRouter extends Router {
   public async handleRequest(
     req: IncomingMessage,
-    res: ServerResponse<IncomingMessage>,
+    res: ServerResponse<IncomingMessage>
   ) {
     const { url = '', method } = req
     const [route] = url.split('?')
@@ -31,12 +33,20 @@ export class ReservationsRouter extends Router {
     }
   }
 
-  private async GET_reservations(req: IncomingMessage, res: ServerResponse<IncomingMessage>) {
+  private async GET_reservations(
+    req: IncomingMessage,
+    res: ServerResponse<IncomingMessage>
+  ) {
     const { url = '' } = req
     const [, queryParams] = url.split('?')
     let pageNumber = 0
     let pageSize = 0
-    const { pageNumber: rawPageNumber = '0', pageSize: rawPageSize = '50' } = parse(queryParams)
+    let date: Dayjs | undefined = undefined
+    const {
+      pageNumber: rawPageNumber = '0',
+      pageSize: rawPageSize = '50',
+      date: rawDate,
+    } = parse(queryParams)
     if (typeof rawPageNumber === 'string') {
       pageNumber = Number.parseInt(rawPageNumber)
     } else {
@@ -48,20 +58,34 @@ export class ReservationsRouter extends Router {
     } else {
       pageSize = 50
     }
-    
+
+    if (typeof rawDate === 'string') {
+      date = dayjs(rawDate)
+    }
+
     l.getStore()?.debug('Fetching reservations', { pageNumber, pageSize })
 
     try {
-      const reservations = await Reservation.fetchByPage(pageNumber, pageSize)
+      let reservations: Reservation[]
+      if (date) {
+        reservations = await Reservation.fetchByDate(date, 50)
+      } else {
+        reservations = await Reservation.fetchByPage(pageNumber, pageSize)
+      }
       res.setHeader('content-type', 'application/json')
-      l.getStore()?.debug('Found reservations', { reservations: reservations.map((r) => r.toString(true)) })
+      l.getStore()?.debug('Found reservations', {
+        reservations: reservations.map((r) => r.toString(true)),
+      })
       return new Promise<void>((resolve, reject) => {
-        res.write(`[${reservations.map((r) => r.toString(true)).join(',')}]`, (err) => {
-          if (err) {
-            reject(err)
+        res.write(
+          `[${reservations.map((r) => r.toString(true)).join(',')}]`,
+          (err) => {
+            if (err) {
+              reject(err)
+            }
+            resolve()
           }
-          resolve()
-        })
+        )
       })
     } catch (error) {
       l.getStore()?.error('Failed to get reservations', {
@@ -72,7 +96,10 @@ export class ReservationsRouter extends Router {
     }
   }
 
-  private async POST_reservations(req: IncomingMessage, res: ServerResponse<IncomingMessage>) {
+  private async POST_reservations(
+    req: IncomingMessage,
+    res: ServerResponse<IncomingMessage>
+  ) {
     const jsonBody = await this.parseJsonContent(req)
     try {
       await schedule(jsonBody)
@@ -85,9 +112,12 @@ export class ReservationsRouter extends Router {
     }
   }
 
-  private async DELETE_reservation(req: IncomingMessage, res: ServerResponse<IncomingMessage>) {
+  private async DELETE_reservation(
+    req: IncomingMessage,
+    res: ServerResponse<IncomingMessage>
+  ) {
     const { url = '' } = req
-    const [,,id] = url.split('/')
+    const [, , id] = url.split('/')
     l.getStore()?.debug('Deleting reservation', { id })
     try {
       await Reservation.deleteById(id)

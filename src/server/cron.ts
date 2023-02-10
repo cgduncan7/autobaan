@@ -1,4 +1,9 @@
-import { schedule, ScheduledTask, ScheduleOptions, getTasks as getCronTasks } from 'node-cron'
+import {
+  schedule,
+  ScheduledTask,
+  ScheduleOptions,
+  getTasks as getCronTasks,
+} from 'node-cron'
 import { v4 } from 'uuid'
 import { asyncLocalStorage, Logger, LogLevel } from '../common/logger'
 import { reserve } from '../common/reserver'
@@ -26,7 +31,7 @@ export const startTasks = () => {
   try {
     if (tasks.length === 0) {
       const task = schedule(
-        '* 7 * * *',
+        '0 7 * * *',
         async (timestamp) => {
           asyncLocalStorage.run(
             new Logger('cron', v4(), LogLevel.DEBUG),
