@@ -220,7 +220,7 @@ export class Reservation {
       `
       SELECT *
       FROM reservations
-      ORDER BY date_range_start DESC
+      ORDER BY date_range_start ASC
       LIMIT 1;
       `
     )
@@ -255,7 +255,7 @@ export class Reservation {
       SELECT *
       FROM reservations
       WHERE DATE(date_range_start, '-7 day') = ?
-      ORDER BY date_range_start DESC
+      ORDER BY date_range_start ASC
       LIMIT ?;
       `,
       [date.format('YYYY-MM-DD'), limit]
