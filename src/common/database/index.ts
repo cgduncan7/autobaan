@@ -4,7 +4,7 @@ import { asyncLocalStorage } from '../logger'
 import { CREATE_TABLE_reservations } from './sql'
 
 export const run = async (sql: string, params?: unknown) => {
-  const db = new sqlite.Database(resolve('autobaan_db'))
+  const db = new sqlite.Database(resolve('./db/autobaan_db'))
   await new Promise<void>((res, rej) => {
     asyncLocalStorage.getStore()?.debug(`<database> run ${sql} (${params})`)
     db.run(sql, params, (err) => {
