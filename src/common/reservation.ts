@@ -286,7 +286,10 @@ export class Reservation {
     return []
   }
 
-  public static async fetchByPage(pageNumber: number, pageSize = 50): Promise<Reservation[]> {
+  public static async fetchByPage(
+    pageNumber: number,
+    pageSize = 50
+  ): Promise<Reservation[]> {
     const response = await all<SqlReservation>(
       `
       SELECT *
