@@ -156,8 +156,8 @@ export class Reservation {
         this.id,
         this.user.username,
         this.user.password,
-        this.dateRange.start.format('YYYY-MM-DD HH:mm:ss'),
-        this.dateRange.end.format('YYYY-MM-DD HH:mm:ss'),
+        this.dateRange.start.utc().format('YYYY-MM-DD HH:mm:ss'),
+        this.dateRange.end.utc().format('YYYY-MM-DD HH:mm:ss'),
         this.opponent.id,
         this.opponent.name,
       ]
