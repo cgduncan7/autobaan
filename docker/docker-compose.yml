@@ -7,5 +7,5 @@ services:
     env_file: ./server/.env
     ports:
       - 3000:3000
-    # volumes:
-      # - ./autobaan_db:/app/autobaan_db
+    volumes:
+      - ./autobaan_db:/app/db
