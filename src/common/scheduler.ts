@@ -50,7 +50,7 @@ export const schedule = async (
   }
 
   logger?.info('Reservation request can be performed now')
-  await reserve(reservation)
+  await reserve([reservation])
   return {
     scheduledReservation: { reservation },
   }
