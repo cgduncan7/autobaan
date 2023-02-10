@@ -6,7 +6,7 @@ import { getStatus, startTasks, stopTasks } from '../../cron'
 export class CronRouter extends Router {
   public async handleRequest(
     req: IncomingMessage,
-    res: ServerResponse<IncomingMessage>,
+    res: ServerResponse<IncomingMessage>
   ) {
     const { url = '', method } = req
     const [route] = url.split('?')
@@ -31,7 +31,7 @@ export class CronRouter extends Router {
 
   private async GET_cron(
     _req: IncomingMessage,
-    res: ServerResponse<IncomingMessage>,
+    res: ServerResponse<IncomingMessage>
   ) {
     l.getStore()?.debug('Checking cron status')
     const status = getStatus()
@@ -43,7 +43,7 @@ export class CronRouter extends Router {
 
   private async POST_cron_enable(
     _req: IncomingMessage,
-    res: ServerResponse<IncomingMessage>,
+    res: ServerResponse<IncomingMessage>
   ) {
     l.getStore()?.debug('Enabling cron')
     startTasks()
@@ -52,7 +52,7 @@ export class CronRouter extends Router {
 
   private async POST_cron_disable(
     _req: IncomingMessage,
-    res: ServerResponse<IncomingMessage>,
+    res: ServerResponse<IncomingMessage>
   ) {
     l.getStore()?.debug('Disabling cron')
     stopTasks()
