@@ -3,8 +3,10 @@ import sqlite from 'sqlite3'
 import { asyncLocalStorage } from '../logger'
 import { CREATE_TABLE_reservations } from './sql'
 
+const getDatabase = () => new sqlite.Database(resolve('./db/autobaan_db'))
+
 export const run = async (sql: string, params?: unknown) => {
-  const db = new sqlite.Database(resolve('./db/autobaan_db'))
+  const db = getDatabase()
   await new Promise<void>((res, rej) => {
     asyncLocalStorage.getStore()?.debug(`<database> run ${sql} (${params})`)
     db.run(sql, params, (err) => {
@@ -16,7 +18,7 @@ export const run = async (sql: string, params?: unknown) => {
 }
 
 export const all = async <T>(sql: string, params?: unknown) => {
-  const db = new sqlite.Database(resolve('autobaan_db'))
+  const db = getDatabase()
   const rows = await new Promise<T[]>((res, rej) => {
     asyncLocalStorage.getStore()?.debug(`<database> all ${sql} (${params})`)
     db.all(sql, params, (err, rows) => {
