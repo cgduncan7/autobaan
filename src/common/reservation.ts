@@ -254,7 +254,7 @@ export class Reservation {
       `
       SELECT *
       FROM reservations
-      WHERE DATE_FORMAT(DATE_SUB(date_range_start, INTERVAL 7 DAY), '%Y-%m-%d) = ?
+      WHERE DATE(?, '-7 day') = ?
       ORDER BY date_range_start DESC
       LIMIT ?;
       `,
