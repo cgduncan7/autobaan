@@ -11,12 +11,24 @@ import puppeteer, {
 import { asyncLocalStorage as l, LoggableError } from './logger'
 import { Opponent, Reservation } from './reservation'
 
+enum SessionAction {
+  NoAction,
+  Logout,
+  Login,
+}
+
+interface RunnerSession {
+  username: string
+  loggedInAt: Dayjs
+}
+
 export class Runner {
-  private browser: Browser | undefined
-  private page: Page | undefined
+  private browser?: Browser
+  private page?: Page
   private options?: LaunchOptions &
     BrowserLaunchArgumentOptions &
     BrowserConnectOptions
+  private session?: RunnerSession
 
   constructor(
     options?: LaunchOptions &
@@ -42,8 +54,32 @@ export class Runner {
       throw new PuppeteerNewPageError(error as Error)
     }
 
-    await this.login(reservation.user.username, reservation.user.password)
+    const sessionAction = await this.checkSession(reservation.user.username)
+    switch (sessionAction) {
+      case SessionAction.Login: {
+        await this.login(reservation.user.username, reservation.user.password)
+        break
+      }
+      case SessionAction.Logout: {
+        await this.logout()
+        await this.login(reservation.user.username, reservation.user.password)
+        break
+      }
+      case SessionAction.NoAction:
+      default:
+        break
+    }
     await this.makeReservation(reservation)
+  }
+
+  private async checkSession(username: string): Promise<SessionAction> {
+    if (this.page?.url().startsWith('https://squashcity.baanreserveren.nl/')) {
+      l.getStore()?.info('Already logged in', { username })
+      return this.session?.username !== username
+        ? SessionAction.Logout
+        : SessionAction.NoAction
+    }
+    return SessionAction.Login
   }
 
   private async login(username: string, password: string) {
@@ -70,6 +106,15 @@ export class Runner {
       .then((b) => b?.click())
       .catch((e: Error) => {
         throw new RunnerLoginSubmitError(e)
+      })
+  }
+
+  private async logout() {
+    l.getStore()?.debug('Logging out', { username: this.session?.username })
+    await this.page
+      ?.goto('https://squashcity.baanreserveren.nl/auth/logout')
+      .catch((e: Error) => {
+        throw new RunnerLoginPasswordInputError(e)
       })
   }
 
@@ -130,7 +175,9 @@ export class Runner {
   }
 
   private async selectAvailableTime(res: Reservation): Promise<void> {
-    l.getStore()?.debug('Selecting available time', { reservation: res.toString(true) })
+    l.getStore()?.debug('Selecting available time', {
+      reservation: res.toString(true),
+    })
     let freeCourt: ElementHandle | null | undefined
     let i = 0
     while (i < res.possibleDates.length && !freeCourt) {
@@ -197,6 +244,8 @@ export class RunnerError extends LoggableError {
 export class PuppeteerError extends RunnerError {}
 export class PuppeteerBrowserLaunchError extends PuppeteerError {}
 export class PuppeteerNewPageError extends PuppeteerError {}
+
+export class RunnerLogoutError extends RunnerError {}
 
 export class RunnerLoginNavigationError extends RunnerError {}
 export class RunnerLoginUsernameInputError extends RunnerError {}
