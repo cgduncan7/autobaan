@@ -63,7 +63,7 @@ export class ReservationsRouter extends Router {
       date = dayjs(rawDate)
     }
 
-    l.getStore()?.debug('Fetching reservations', { pageNumber, pageSize })
+    l.getStore()?.debug('Fetching reservations', { pageNumber, pageSize, date })
 
     try {
       let reservations: Reservation[]
