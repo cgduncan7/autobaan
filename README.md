@@ -26,7 +26,7 @@ npm run local <username> <password> <year> <month> <day> <startTime> <endTime> <
 
 ## Architecture
 
-```
+```ascii
 |======|
 | User |
 |======|
@@ -47,3 +47,13 @@ npm run local <username> <password> <year> <month> <day> <startTime> <endTime> <
                                         | Database |<---------------------------|
                                         |==========|
 ```
+
+## Deployment
+
+- Create a volume which will store the SQLite database file using docker-like
+- Build image via provided dockerfile
+- Run container with built image exposing port 3000 and mapping the aforementioned volume to /app/db
+
+### CD
+
+So I don't forget... I am using GHA to create a container image which I pull on my server using podman. This then restarts the container on my server with the latest image. The container is backed by a systemd service to restart and start on boot.
