@@ -8,7 +8,6 @@ const getRunner = () => {
   if (!runner) {
     runner = new Runner({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     })
   }
   return runner
