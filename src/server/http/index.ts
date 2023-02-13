@@ -3,9 +3,11 @@ import { v4 } from 'uuid'
 import { asyncLocalStorage, Logger, LogLevel } from '../../common/logger'
 import { CronRouter } from './routes/cron'
 import { ReservationsRouter } from './routes/reservations'
+import { RunnerRouter } from './routes/runner'
 
 const cronRouter = new CronRouter()
 const reservationsRouter = new ReservationsRouter()
+const runnerRouter = new RunnerRouter()
 
 // Handles POST requests to /reservations
 const server = http.createServer(async (req, res) => {
@@ -30,6 +32,10 @@ const server = http.createServer(async (req, res) => {
         }
         case /^\/reservations/.test(url): {
           await reservationsRouter.handleRequest(req, res)
+          break
+        }
+        case /^\/runner/.test(url): {
+          await runnerRouter.handleRequest(req, res)
           break
         }
         default: {

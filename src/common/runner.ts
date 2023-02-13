@@ -35,7 +35,32 @@ export class Runner {
       BrowserLaunchArgumentOptions &
       BrowserConnectOptions
   ) {
-    this.options = options
+    const defaultArgs = [
+      '--disable-gpu',
+      '--disable-dev-shm-usage',
+      '--disable-setuid-sandbox',
+      '--no-sandbox',
+    ]
+    this.options = { args: defaultArgs, ...options }
+  }
+
+  public async test() {
+    l.getStore()?.debug('Runner test')
+    try {
+      if (!this.browser) {
+        this.browser = await puppeteer.launch(this.options)
+      }
+    } catch (error: unknown) {
+      l.getStore()?.error('Browser error', { error: (error as Error).message })
+      throw new PuppeteerBrowserLaunchError(error as Error)
+    }
+
+    try {
+      this.page = await this.browser?.newPage()
+    } catch (error) {
+      l.getStore()?.error('Page error', { error: (error as Error).message })
+      throw new PuppeteerNewPageError(error as Error)
+    }
   }
 
   public async run(reservation: Reservation) {

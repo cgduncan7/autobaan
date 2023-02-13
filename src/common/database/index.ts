@@ -8,7 +8,9 @@ const getDatabase = () => new sqlite.Database(resolve('./db/autobaan_db'))
 export const run = async (sql: string, params?: unknown) => {
   const db = getDatabase()
   await new Promise<void>((res, rej) => {
-    asyncLocalStorage.getStore()?.debug(`<database> run ~> ${sql.replace(/\s*\n\s*/g, ' ')} (${params})`)
+    asyncLocalStorage
+      .getStore()
+      ?.debug(`<database> run ~> ${sql.replace(/\s*\n\s*/g, ' ')} (${params})`)
     db.run(sql, params, (err) => {
       if (err) rej(err)
       res()
@@ -20,13 +22,14 @@ export const run = async (sql: string, params?: unknown) => {
 export const all = async <T>(sql: string, params?: unknown) => {
   const db = getDatabase()
   const rows = await new Promise<T[]>((res, rej) => {
-    asyncLocalStorage.getStore()?.debug(`<database> all ~> ${sql.replace(/\s*\n\s*/g, ' ')} (${params})`)
+    asyncLocalStorage
+      .getStore()
+      ?.debug(`<database> all ~> ${sql.replace(/\s*\n\s*/g, ' ')} (${params})`)
     db.all(sql, params, (err, rows) => {
       if (err) rej(err)
       res(rows)
     })
-  }
-  )
+  })
   db.close()
   return rows
 }
