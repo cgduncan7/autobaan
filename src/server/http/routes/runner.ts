@@ -27,7 +27,8 @@ export class RunnerRouter extends Router {
     res: ServerResponse<IncomingMessage>
   ) {
     try {
-      await new Runner({ headless: false }).test()
+      const runner = new Runner({ headless: true })
+      await runner.test()
       res.writeHead(200, 'OK')
     } catch (e) {
       res.writeHead(500, 'Internal server error')
