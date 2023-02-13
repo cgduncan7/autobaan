@@ -36,8 +36,6 @@ export class Runner {
       BrowserConnectOptions
   ) {
     const defaultArgs = [
-      '--disable-gpu',
-      '--disable-dev-shm-usage',
       '--disable-setuid-sandbox',
       '--no-sandbox',
     ]
