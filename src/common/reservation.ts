@@ -62,7 +62,7 @@ export class Reservation {
    */
   public isAvailableForReservation(): boolean {
     return (
-      Math.ceil(this.dateRange.start.diff(dayjs(), 'days', true)) <=
+      Math.floor(this.dateRange.start.diff(dayjs(), 'days', true)) <=
       RESERVATION_AVAILABLE_WITHIN_DAYS
     )
   }

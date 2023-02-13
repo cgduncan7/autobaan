@@ -32,7 +32,7 @@ describe('Reservation', () => {
   test.each([
     { reservationDate: dayjs().add(7, 'days'), expected: true },
     { reservationDate: dayjs().add(1, 'days'), expected: true },
-    { reservationDate: dayjs().add(8, 'days'), expected: false },
+    { reservationDate: dayjs().add(8, 'days').add(5, 'minutes'), expected: false },
   ])(
     'will properly mark reservation availability according to date',
     ({ reservationDate, expected }) => {
