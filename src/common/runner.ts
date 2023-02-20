@@ -35,10 +35,7 @@ export class Runner {
       BrowserLaunchArgumentOptions &
       BrowserConnectOptions
   ) {
-    const defaultArgs = [
-      '--disable-setuid-sandbox',
-      '--no-sandbox',
-    ]
+    const defaultArgs = ['--disable-setuid-sandbox', '--no-sandbox']
     this.options = { args: defaultArgs, ...options }
   }
 
@@ -62,20 +59,46 @@ export class Runner {
   }
 
   public async run(reservation: Reservation) {
-    l.getStore()?.debug('Launching browser')
     try {
       if (!this.browser) {
+        l.getStore()?.debug('Launching browser')
         this.browser = await puppeteer.launch(this.options)
       }
     } catch (error) {
       throw new PuppeteerBrowserLaunchError(error as Error)
     }
+    await this.startSession(reservation)
+    await this.makeReservation(reservation)
+  }
 
-    try {
-      this.page = await this.browser?.newPage()
-    } catch (error) {
-      throw new PuppeteerNewPageError(error as Error)
+  private async checkSession(username: string): Promise<SessionAction> {
+    if (
+      this.page
+        ?.url()
+        .startsWith('https://squashcity.baanreserveren.nl/reservations')
+    ) {
+      l.getStore()?.info('Already logged in', { username })
+      return this.session?.username !== username
+        ? SessionAction.Logout
+        : SessionAction.NoAction
     }
+    return SessionAction.Login
+  }
+
+  private async startSession(reservation: Reservation) {
+    if (!this.page) {
+      try {
+        this.page = await this.browser?.newPage()
+      } catch (error) {
+        throw new PuppeteerNewPageError(error as Error)
+      }
+    }
+
+    this.page
+      ?.goto('https://squashcity.baanreserveren.nl/reservations')
+      .catch((e: Error) => {
+        throw new RunnerNewSessionError(e)
+      })
 
     const sessionAction = await this.checkSession(reservation.user.username)
     switch (sessionAction) {
@@ -92,26 +115,10 @@ export class Runner {
       default:
         break
     }
-    await this.makeReservation(reservation)
-  }
-
-  private async checkSession(username: string): Promise<SessionAction> {
-    if (this.page?.url().startsWith('https://squashcity.baanreserveren.nl/')) {
-      l.getStore()?.info('Already logged in', { username })
-      return this.session?.username !== username
-        ? SessionAction.Logout
-        : SessionAction.NoAction
-    }
-    return SessionAction.Login
   }
 
   private async login(username: string, password: string) {
     l.getStore()?.debug('Logging in', { username })
-    await this.page
-      ?.goto('https://squashcity.baanreserveren.nl/')
-      .catch((e: Error) => {
-        throw new RunnerLoginNavigationError(e)
-      })
     await this.page
       ?.waitForSelector('input[name=username]')
       .then((i) => i?.type(username))
@@ -137,7 +144,7 @@ export class Runner {
     await this.page
       ?.goto('https://squashcity.baanreserveren.nl/auth/logout')
       .catch((e: Error) => {
-        throw new RunnerLoginPasswordInputError(e)
+        throw new RunnerLogoutError(e)
       })
   }
 
@@ -267,6 +274,8 @@ export class RunnerError extends LoggableError {
 export class PuppeteerError extends RunnerError {}
 export class PuppeteerBrowserLaunchError extends PuppeteerError {}
 export class PuppeteerNewPageError extends PuppeteerError {}
+
+export class RunnerNewSessionError extends RunnerError {}
 
 export class RunnerLogoutError extends RunnerError {}
 
