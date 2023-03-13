@@ -32,7 +32,7 @@
     "dayjs": "^1.11.6",
     "node-cron": "^3.0.2",
     "puppeteer": "^19.5.2",
-    "sqlite3": "^5.1.4",
+    "sqlite3": "^5.1.5",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
