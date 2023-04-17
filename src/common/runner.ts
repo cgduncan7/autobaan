@@ -137,6 +137,11 @@ export class Runner {
       .catch((e: Error) => {
         throw new RunnerLoginSubmitError(e)
       })
+    
+    this.session = {
+      loggedInAt: dayjs(),
+      username,
+    }
   }
 
   private async logout() {
@@ -146,6 +151,7 @@ export class Runner {
       .catch((e: Error) => {
         throw new RunnerLogoutError(e)
       })
+    this.session = undefined
   }
 
   private async makeReservation(reservation: Reservation) {
