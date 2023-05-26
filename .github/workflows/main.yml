@@ -13,8 +13,15 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build docker image
-        run: docker build . -f docker/server/Dockerfile -t $GHCR_IMAGE
-      - name: Login to GHCR Docker repo
-        run: docker login ghcr.io -u $GHCR_USERNAME --password $GHCR_PASSWORD
-      - name: Push docker image
-        run: docker push $GHCR_IMAGE
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: $GHCR_IMAGE:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      #   run: docker build . -f docker/server/Dockerfile -t $GHCR_IMAGE
+      # - name: Login to GHCR Docker repo
+      #   run: docker login ghcr.io -u $GHCR_USERNAME --password $GHCR_PASSWORD
+      # - name: Push docker image
+      #   run: docker push $GHCR_IMAGE
