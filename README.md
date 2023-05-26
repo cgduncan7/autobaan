@@ -8,8 +8,9 @@ Automatic court reservation!
 
 - Node.js (18.x)
 - npm (8.x)
-- gcc (g++-12)
-- nvm (optional)
+- nvm 
+- Docker
+- redis
 
 #### Using nvm
 
@@ -21,31 +22,7 @@ Automatic court reservation!
 
 ```bash
 npm install
-npm run local <username> <password> <year> <month> <day> <startTime> <endTime> <opponentName> <opponentId>
-```
-
-## Architecture
-
-```ascii
-|======|
-| User |
-|======|
-    |
-[requests reservation]
-    |
-    |
-    V
-|===========|                             /---\                           |==========|
-| Scheduler | ---[checks possibility]--->/ ok? \--[y/ forward request]--> | Reserver |
-|===========|                            \     /                          |==========|
-                                          \---/                                 |
-                                            |                                   |
-                                          [n/ save request]      [find possible, saved reservations]
-                                            |                                   |
-                                            V                                   |
-                                        |==========|                            |
-                                        | Database |<---------------------------|
-                                        |==========|
+npm start:dev
 ```
 
 ## Deployment

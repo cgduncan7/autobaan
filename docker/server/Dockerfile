@@ -44,4 +44,4 @@ FROM base as app
 
 COPY --chown=node:node --from=builder /app/dist ./dist
 
-ENTRYPOINT node dist/server/index.js
+ENTRYPOINT ["node", "./dist/main.js"]
