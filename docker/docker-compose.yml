@@ -3,6 +3,10 @@ services:
     build:
       context: ..
       dockerfile: ./docker/server/Dockerfile
+      args:
+        - PORT=3000
+        - REDIS_HOST=redis
+        - REDIS_PORT=6379
     restart: always
     environment:
       - PORT=3000

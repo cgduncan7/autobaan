@@ -42,6 +42,15 @@ RUN npm run build
 
 FROM base as app
 
+ARG PORT=3000
+ENV PORT=$PORT
+
+ARG REDIS_HOST=localhost
+ENV REDIS_HOST=$REDIS_HOST
+
+ARG REDIS_PORT=6379
+ENV REDIS_PORT=$REDIS_PORT
+
 COPY --chown=node:node --from=builder /app/dist ./dist
 
 ENTRYPOINT ["node", "./dist/main.js"]
