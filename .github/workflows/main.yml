@@ -19,7 +19,8 @@ jobs:
       - name: Build docker image
         uses: docker/build-push-action@v4
         with:
-          context: ./docker/server
+          context: .
+          file: ./docker/server/Dockerfile
           push: true
           tags: ghcr.io/cgduncan7/autobaan:latest
           cache-from: type=gha
