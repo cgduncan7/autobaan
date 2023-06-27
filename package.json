@@ -20,7 +20,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "migrations:generate": "typeorm migration:create database/migrations/$npm_config_name",
+    "migrations:generate": "npx typeorm-ts-node-commonjs migration:create database/migrations/$npm_config_name",
     "migrations": "npx typeorm-ts-node-commonjs migration:run -d data-source.ts"
   },
   "dependencies": {
