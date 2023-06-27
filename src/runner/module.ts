@@ -6,9 +6,8 @@ import { BaanReserverenService } from './baanreserveren/service'
 import { LoggerModule } from '../logger/module'
 
 @Module({
-  providers: [RunnerService, BaanReserverenService, EmptyPageFactory],
-  imports: [LoggerModule, BullModule.registerQueue({ name: 'reservations' })],
-  exports: [EmptyPageFactory, BaanReserverenService],
+	providers: [RunnerService, BaanReserverenService, EmptyPageFactory],
+	imports: [LoggerModule, BullModule.registerQueue({ name: 'reservations' })],
+	exports: [EmptyPageFactory, BaanReserverenService],
 })
-
 export class RunnerModule {}

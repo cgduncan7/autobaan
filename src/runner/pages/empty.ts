@@ -5,13 +5,13 @@ import { Page } from 'puppeteer'
 export const EmptyPage = Symbol.for('EmptyPage')
 
 export const EmptyPageFactory: FactoryProvider<Page> = {
-  provide: EmptyPage, 
-  useFactory: async (runnerService: RunnerService) => {
-    const browser = await runnerService.getBrowser()
-    const page = await browser.newPage()
+	provide: EmptyPage,
+	useFactory: async (runnerService: RunnerService) => {
+		const browser = await runnerService.getBrowser()
+		const page = await browser.newPage()
 
-    return page
-  },
-  inject: [RunnerService],
-  scope: Scope.TRANSIENT,
+		return page
+	},
+	inject: [RunnerService],
+	scope: Scope.TRANSIENT,
 }

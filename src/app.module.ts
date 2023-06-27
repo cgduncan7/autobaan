@@ -25,7 +25,7 @@ import { LoggerModule } from './logger/module'
 			},
 			defaultJobOptions: {
 				removeOnComplete: true,
-			}
+			},
 		}),
 		ScheduleModule.forRoot(),
 		ConfigModule.forRoot({ isGlobal: true }),

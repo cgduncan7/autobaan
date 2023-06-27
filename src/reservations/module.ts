@@ -10,7 +10,6 @@ import { ReservationsWorker } from './worker'
 import { LoggerModule } from '../logger/module'
 import { RunnerModule } from '../runner/module'
 
-
 @Module({
 	imports: [
 		LoggerModule,

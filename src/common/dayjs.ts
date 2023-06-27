@@ -12,27 +12,27 @@ dayjs.locale('nl')
 dayjs.tz.setDefault('Europe/Amsterdam')
 
 export interface DateRange {
-  start: dayjs.Dayjs
-  end: dayjs.Dayjs
+	start: dayjs.Dayjs
+	end: dayjs.Dayjs
 }
 
 export interface SerializedDateRange {
-  start: string
-  end: string
+	start: string
+	end: string
 }
 
 export const convertDateRangeStringToObject = ({
-  start,
-  end,
+	start,
+	end,
 }: {
-  start: string
-  end: string
+	start: string
+	end: string
 }): DateRange => ({ start: dayjs(start), end: dayjs(end) })
 
 const dayjsTz = (
-  date?: string | number | Date | dayjs.Dayjs | null | undefined
+	date?: string | number | Date | dayjs.Dayjs | null | undefined,
 ) => {
-  return dayjs(date).tz()
+	return dayjs(date).tz()
 }
 
 export default dayjsTz

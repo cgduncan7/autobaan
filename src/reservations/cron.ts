@@ -11,7 +11,7 @@ export class ReservationsCronService {
 	constructor(
 		@Inject(ReservationsService)
 		private readonly reservationService: ReservationsService,
-		
+
 		@InjectQueue(RESERVATIONS_QUEUE_NAME)
 		private readonly reservationsQueue: Queue,
 
@@ -24,8 +24,12 @@ export class ReservationsCronService {
 		timeZone: 'Europe/Amsterdam',
 	})
 	async handleDailyReservations() {
-    const reservationsToPerform = await this.reservationService.getByDate()
-		this.logger.log(`Found ${reservationsToPerform.length} reservations to perform`)
-		await this.reservationsQueue.addBulk(reservationsToPerform.map((r) => ({ data: r })))
-  }
+		const reservationsToPerform = await this.reservationService.getByDate()
+		this.logger.log(
+			`Found ${reservationsToPerform.length} reservations to perform`,
+		)
+		await this.reservationsQueue.addBulk(
+			reservationsToPerform.map((r) => ({ data: r })),
+		)
+	}
 }

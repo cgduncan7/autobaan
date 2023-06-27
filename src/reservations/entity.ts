@@ -21,7 +21,7 @@ export class Reservation {
 	@Type(() => Dayjs)
 	@Transform(({ value }) => dayjs(value).format())
 	dateRangeStart: Dayjs
-	
+
 	@Column('datetime', { nullable: false })
 	@Type(() => Dayjs)
 	@Transform(({ value }) => dayjs(value).format())
@@ -39,33 +39,33 @@ export class Reservation {
 
 	@Exclude()
 	public createPossibleDates(): Dayjs[] {
-    const possibleDates: Dayjs[] = []
+		const possibleDates: Dayjs[] = []
 
-    let possibleDate = dayjs(this.dateRangeStart).second(0).millisecond(0)
-    while (possibleDate.isSameOrBefore(this.dateRangeEnd)) {
-      possibleDates.push(possibleDate)
-      possibleDate = possibleDate.add(15, 'minute')
-    }
+		let possibleDate = dayjs(this.dateRangeStart).second(0).millisecond(0)
+		while (possibleDate.isSameOrBefore(this.dateRangeEnd)) {
+			possibleDates.push(possibleDate)
+			possibleDate = possibleDate.add(15, 'minute')
+		}
 
-    return possibleDates
-  }
+		return possibleDates
+	}
 
-  /**
-   * Method to check if a reservation is available for reservation in the system
-   * @returns is reservation date within 7 days
-   */
+	/**
+	 * Method to check if a reservation is available for reservation in the system
+	 * @returns is reservation date within 7 days
+	 */
 	@Exclude()
-  public isAvailableForReservation(): boolean {
+	public isAvailableForReservation(): boolean {
 		return dayjs().diff(this.dateRangeStart, 'day') <= 7
-  }
+	}
 
 	@Exclude()
-  public getAllowedReservationDate(): Dayjs {
+	public getAllowedReservationDate(): Dayjs {
 		return this.dateRangeStart
-      .hour(0)
-      .minute(0)
-      .second(0)
-      .millisecond(0)
-      .subtract(7, 'days')
-  }
+			.hour(0)
+			.minute(0)
+			.second(0)
+			.millisecond(0)
+			.subtract(7, 'days')
+	}
 }

@@ -9,22 +9,26 @@ import { LoggerService } from '../logger/service'
 
 @Processor(RESERVATIONS_QUEUE_NAME)
 export class ReservationsWorker {
-  constructor(
-    @Inject(BaanReserverenService)
-    private readonly brService: BaanReserverenService,
+	constructor(
+		@Inject(BaanReserverenService)
+		private readonly brService: BaanReserverenService,
 
-    @Inject(LoggerService)
-    private readonly logger: LoggerService,
-  ) {}
+		@Inject(LoggerService)
+		private readonly logger: LoggerService,
+	) {}
 
-  @Process()
-  async handleReservationJob(job: Job<Reservation>) {
-    const reservation = plainToInstance(Reservation, job.data, { groups: ['password'] })
-    this.logger.log('Handling reservation', { reservation: instanceToPlain(reservation) })
-    await this.performReservation(reservation)
-  }
+	@Process()
+	async handleReservationJob(job: Job<Reservation>) {
+		const reservation = plainToInstance(Reservation, job.data, {
+			groups: ['password'],
+		})
+		this.logger.log('Handling reservation', {
+			reservation: instanceToPlain(reservation),
+		})
+		await this.performReservation(reservation)
+	}
 
-  async performReservation(reservation: Reservation) {
-    await this.brService.performReservation(reservation)
-  }
+	async performReservation(reservation: Reservation) {
+		await this.brService.performReservation(reservation)
+	}
 }

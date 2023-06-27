@@ -1,90 +1,92 @@
-import { Inject, Injectable, BeforeApplicationShutdown, OnModuleInit, Scope } from '@nestjs/common'
-import puppeteer, { Browser, BrowserConnectOptions, BrowserLaunchArgumentOptions, LaunchOptions, Page } from 'puppeteer'
-import { LoggerService } from '../logger/service'
-
-enum SessionAction {
-  NoAction,
-  Logout,
-  Login,
-}
+import {
+	Injectable,
+	BeforeApplicationShutdown,
+	OnModuleInit,
+} from '@nestjs/common'
+import puppeteer, {
+	Browser,
+	BrowserConnectOptions,
+	BrowserLaunchArgumentOptions,
+	LaunchOptions,
+} from 'puppeteer'
 
 interface RunnerSession {
-  username: string
-  loggedInAt: Date
+	username: string
+	loggedInAt: Date
 }
 
 @Injectable()
 export class RunnerService implements OnModuleInit, BeforeApplicationShutdown {
-  private browser?: Browser
-  private options: LaunchOptions &
-    BrowserLaunchArgumentOptions &
-    BrowserConnectOptions = {
-      args: ['--disable-setuid-sandbox', '--no-sandbox'],
-      headless: 'new'
-    }
-  private session: RunnerSession | null = null
+	private browser?: Browser
+	private options: LaunchOptions &
+		BrowserLaunchArgumentOptions &
+		BrowserConnectOptions = {
+		args: ['--disable-setuid-sandbox', '--no-sandbox'],
+		headless: 'new',
+	}
+	private session: RunnerSession | null = null
 
-  private async init() {
-    try {
-      if (!this.browser) {
-        this.browser = await puppeteer.launch(this.options)
-      }
-    } catch (error) {
-      throw new PuppeteerBrowserLaunchError(error)
-    } 
-  }
+	private async init() {
+		try {
+			if (!this.browser) {
+				this.browser = await puppeteer.launch(this.options)
+			}
+		} catch (error) {
+			throw new PuppeteerBrowserLaunchError(error)
+		}
+	}
 
-  public async onModuleInit() {
-    await this.init()
-  }
+	public async onModuleInit() {
+		await this.init()
+	}
 
-  public async beforeApplicationShutdown() {
-    try {
-      if (this.browser && this.browser.isConnected()) {
-        await this.browser.close()
-      }
-    } catch (error) {
-      console.error('error shutting down browser', error)
-    }
-  }
+	public async beforeApplicationShutdown() {
+		try {
+			if (this.browser && this.browser.isConnected()) {
+				await this.browser.close()
+			}
+		} catch (error) {
+			console.error('error shutting down browser', error)
+		}
+	}
 
-  public async getBrowser(): Promise<Browser> {
-    await this.init()
-    if (!this.browser) {
-      throw new Error('Browser not initialized')
-    }
-    return this.browser
-  }
+	public async getBrowser(): Promise<Browser> {
+		await this.init()
+		if (!this.browser) {
+			throw new Error('Browser not initialized')
+		}
+		return this.browser
+	}
 
-  public async getSession(): Promise<RunnerSession | null> {
-    return this.session
-  }
+	public async getSession(): Promise<RunnerSession | null> {
+		return this.session
+	}
 
-  public startSession(username: string) {
-    if (this.session && this.session.username !== username) {
-      throw new RunnerNewSessionError(new Error('Session already started'))
-    }
+	public startSession(username: string) {
+		if (this.session && this.session.username !== username) {
+			throw new RunnerNewSessionError(new Error('Session already started'))
+		}
 
-    if (this.session?.username === username) {
-      return
-    }
+		if (this.session?.username === username) {
+			return
+		}
 
-    this.session = {
-      username,
-      loggedInAt: new Date(),
-    }
-  }
+		this.session = {
+			username,
+			loggedInAt: new Date(),
+		}
+	}
 
-  public endSession() {
-    this.session = null
-  }
+	public endSession() {
+		this.session = null
+	}
 }
 
 export class RunnerError extends Error {
-  constructor(error: Error) {
-    super(error.message)
-    this.stack = error.stack
-  }
+	constructor(error: Error) {
+		super(error.message)
+		this.stack = error.stack
+	}
 }
 export class PuppeteerError extends RunnerError {}
 export class PuppeteerBrowserLaunchError extends PuppeteerError {}

@@ -20,7 +20,8 @@ export class ReservationsService {
 	}
 
 	getByDate(date = dayjs()) {
-		return this.reservationsRepository.createQueryBuilder()
+		return this.reservationsRepository
+			.createQueryBuilder()
 			.where(`DATE(dateRangeStart, '-7 day') = DATE(:date)`, { date })
 			.getMany()
 	}
