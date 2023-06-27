@@ -34,11 +34,14 @@ USER node
 
 COPY --chown=node:node package.json package.json
 COPY --chown=node:node package-lock.json package-lock.json
+COPY --chown=node:node database database
 COPY --chown=node:node src src
+COPY --chown=node:node tsconfig.build.json tsconfig.build.json 
 COPY --chown=node:node tsconfig.json tsconfig.json
 
 RUN CXX=g++-12 npm install
-RUN npm run build
+RUN npm run migrations:run
+ENTRYPOINT [ "npm", "run", "start" ]
 
 FROM base as app
 
@@ -53,4 +56,4 @@ ENV REDIS_PORT=$REDIS_PORT
 
 COPY --chown=node:node --from=builder /app/dist ./dist
 
-ENTRYPOINT ["node", "./dist/main.js"]
+ENTRYPOINT ["npm", "run", "start"]

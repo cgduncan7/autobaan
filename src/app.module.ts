@@ -14,9 +14,10 @@ import { LoggerModule } from './logger/module'
 		TypeOrmModule.forRoot({
 			type: 'sqlite',
 			database: resolve('./db/autobaan_db'),
+			migrations: [resolve('./database/migrations/*.ts')],
+			entities: [resolve('./src/**/*.entity.ts')],
 			autoLoadEntities: true,
 			logging: true,
-			synchronize: true,
 		}),
 		BullModule.forRoot({
 			redis: {
