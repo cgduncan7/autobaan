@@ -30,5 +30,5 @@ ENV REDIS_HOST=$REDIS_HOST
 ARG REDIS_PORT=6379
 ENV REDIS_PORT=$REDIS_PORT
 
-RUN npm run migrations:run
+RUN npm run migrations
 ENTRYPOINT ["npm", "run", "start"]
