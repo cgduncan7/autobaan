@@ -138,6 +138,7 @@ export class BaanReserverenService {
 				?.waitForSelector('td.month.next')
 				.then((d) => d?.click())
 				.catch((e: Error) => {
+					this.loggerService.error('Failed to switch months', { error: e })
 					throw new RunnerNavigationMonthError(e)
 				})
 		}
@@ -150,6 +151,7 @@ export class BaanReserverenService {
 			)
 			.then((d) => d?.click())
 			.catch((e: Error) => {
+				this.loggerService.error('Failed to select day', { error: e })
 				throw new RunnerNavigationDayError(e)
 			})
 		await this.page
@@ -159,6 +161,9 @@ export class BaanReserverenService {
 				)}.selected`,
 			)
 			.catch((e: Error) => {
+				this.loggerService.error('Failed to wait for selected day', {
+					error: e,
+				})
 				throw new RunnerNavigationSelectionError(e)
 			})
 	}
