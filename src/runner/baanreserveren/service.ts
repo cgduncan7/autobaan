@@ -76,19 +76,19 @@ export class BaanReserverenService {
 			.waitForSelector('input[name=username]')
 			.then((i) => i?.type(username))
 			.catch((e: Error) => {
-				// throw new RunnerLoginUsernameInputError(e)
+				throw new RunnerLoginUsernameInputError(e)
 			})
 		await this.page
 			.$('input[name=password]')
 			.then((i) => i?.type(password))
 			.catch((e: Error) => {
-				// throw new RunnerLoginPasswordInputError(e)
+				throw new RunnerLoginPasswordInputError(e)
 			})
 		await this.page
 			.$('button')
 			.then((b) => b?.click())
 			.catch((e: Error) => {
-				// throw new RunnerLoginSubmitError(e)
+				throw new RunnerLoginSubmitError(e)
 			})
 		this.startSession(username)
 	}
