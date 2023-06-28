@@ -58,9 +58,11 @@ export class ReservationsController {
 	)
 	async createReservation(@Body() reservation: Reservation) {
 		if (!reservation.isAvailableForReservation()) {
+			this.loggerService.debug('Reservation not available for reservation')
 			await this.reservationsService.create(reservation)
 			return 'Reservation saved'
 		}
+		this.loggerService.debug('Reservation is available for reservation')
 		await this.reservationsQueue.add(reservation)
 		return 'Reservation queued'
 	}
