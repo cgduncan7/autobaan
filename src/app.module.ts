@@ -14,6 +14,7 @@ import { LoggerModule } from './logger/module'
 		ConfigModule.forRoot({ isGlobal: true }),
 		TypeOrmModule.forRootAsync({
 			imports: [ConfigModule],
+			inject: [ConfigService],
 			useFactory: (configService: ConfigService) => ({
 				type: 'sqlite',
 				database: configService.get<string>(
@@ -32,6 +33,7 @@ import { LoggerModule } from './logger/module'
 		}),
 		BullModule.forRootAsync({
 			imports: [ConfigModule],
+			inject: [ConfigService],
 			useFactory: (configService: ConfigService) => ({
 				redis: {
 					host: configService.get<string>('REDIS_HOST', 'localhost'),
