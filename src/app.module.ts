@@ -36,8 +36,8 @@ import { LoggerModule } from './logger/module'
 			inject: [ConfigService],
 			useFactory: (configService: ConfigService) => ({
 				redis: {
-					host: configService.get<string>('REDIS_HOST', 'localhost'),
-					port: configService.get<number>('REDIS_PORT', 6379),
+					host: configService.getOrThrow<string>('REDIS_HOST'),
+					port: configService.getOrThrow<number>('REDIS_PORT'),
 				},
 				defaultJobOptions: {
 					removeOnComplete: true,
