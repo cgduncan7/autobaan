@@ -13,6 +13,7 @@ import { LoggerModule } from './logger/module'
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true }),
 		TypeOrmModule.forRootAsync({
+			imports: [ConfigModule],
 			useFactory: (configService: ConfigService) => ({
 				type: 'sqlite',
 				database: configService.get<string>(
