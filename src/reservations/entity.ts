@@ -2,6 +2,7 @@ import { Exclude, Transform, Type } from 'class-transformer'
 import { Dayjs } from 'dayjs'
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm'
 import dayjs from '../common/dayjs'
+import { TransformationType } from 'class-transformer'
 
 @Entity({ name: 'reservations' })
 export class Reservation {
@@ -17,14 +18,44 @@ export class Reservation {
 	@Column('varchar', { length: 255, nullable: false })
 	password: string
 
-	@Column('datetime', { nullable: false })
+	@Column('datetime', {
+		nullable: false,
+		transformer: {
+			to: (value: Dayjs) => value.format(),
+			from: (value: Date) => dayjs(value),
+		},
+	})
 	@Type(() => Dayjs)
-	@Transform(({ value }) => dayjs(value).format())
+	@Transform(({ value, type }) => {
+		switch (type) {
+			case TransformationType.PLAIN_TO_CLASS:
+				return dayjs(value)
+			case TransformationType.CLASS_TO_PLAIN:
+				return value.format()
+			default:
+				return value
+		}
+	})
 	dateRangeStart: Dayjs
 
-	@Column('datetime', { nullable: false })
+	@Column('datetime', {
+		nullable: false,
+		transformer: {
+			to: (value: Dayjs) => value.format(),
+			from: (value: Date) => dayjs(value),
+		},
+	})
 	@Type(() => Dayjs)
-	@Transform(({ value }) => dayjs(value).format())
+	@Transform(({ value, type }) => {
+		switch (type) {
+			case TransformationType.PLAIN_TO_CLASS:
+				return dayjs(value)
+			case TransformationType.CLASS_TO_PLAIN:
+				return value.format()
+			default:
+				return value
+		}
+	})
 	dateRangeEnd: Dayjs
 
 	@Column('varchar', { length: 32, nullable: false })
@@ -56,9 +87,13 @@ export class Reservation {
 	 */
 	@Exclude()
 	public isAvailableForReservation(): boolean {
-		return dayjs().diff(this.dateRangeStart, 'day') <= 7
+		return this.dateRangeStart.diff(dayjs(), 'day') <= 7
 	}
 
+	/**
+	 * Get the date which a reservation can be made
+	 * @returns the date from which a reservation is allowed to be made
+	 */
 	@Exclude()
 	public getAllowedReservationDate(): Dayjs {
 		return this.dateRangeStart

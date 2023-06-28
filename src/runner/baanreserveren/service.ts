@@ -5,6 +5,7 @@ import { EmptyPage } from '../pages/empty'
 import dayjs from '../../common/dayjs'
 import { Reservation } from '../../reservations/entity'
 import { LoggerService } from 'src/logger/service'
+import { instanceToPlain } from 'class-transformer'
 
 const baanReserverenRoot = 'https://squashcity.baanreserveren.nl'
 
@@ -100,7 +101,9 @@ export class BaanReserverenService {
 	}
 
 	private async init(reservation: Reservation) {
-		this.loggerService.debug('Initializing', { reservation })
+		this.loggerService.debug('Initializing', {
+			reservation: instanceToPlain(reservation),
+		})
 		await this.page.goto(baanReserverenRoot)
 		const action = this.checkSession(reservation.username)
 		switch (action) {
@@ -142,7 +145,6 @@ export class BaanReserverenService {
 					throw new RunnerNavigationMonthError(e)
 				})
 		}
-
 		await this.page
 			?.waitForSelector(
 				`td#cal_${date.get('year')}_${date.get('month') + 1}_${date.get(
@@ -169,7 +171,9 @@ export class BaanReserverenService {
 	}
 
 	private async selectAvailableTime(reservation: Reservation): Promise<void> {
-		this.loggerService.debug('Selecting available time', { reservation })
+		this.loggerService.debug('Selecting available time', {
+			reservation: instanceToPlain(reservation),
+		})
 		let freeCourt: ElementHandle | null | undefined
 		let i = 0
 		const possibleDates = reservation.createPossibleDates()
@@ -187,7 +191,7 @@ export class BaanReserverenService {
 			throw new NoCourtAvailableError()
 		}
 
-		this.loggerService.debug('Free court found', { freeCourt })
+		this.loggerService.debug('Free court found')
 
 		await freeCourt.click().catch((e: Error) => {
 			throw new RunnerCourtSelectionError(e)
@@ -197,7 +201,7 @@ export class BaanReserverenService {
 	private async selectOpponent(id: string, name: string): Promise<void> {
 		this.loggerService.debug('Selecting opponent', { id, name })
 		const player2Search = await this.page
-			?.waitForSelector('tr.res-make-player-2 > td > input')
+			?.waitForSelector('input:has(~ select[name="players[2]"])')
 			.catch((e: Error) => {
 				throw new RunnerOpponentSearchError(e)
 			})
