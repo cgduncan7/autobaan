@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { Dayjs } from 'dayjs'
 import { ElementHandle, Page } from 'puppeteer'
-import { RunnerService } from '../service'
 import { EmptyPage } from '../pages/empty'
 import dayjs from '../../common/dayjs'
 import { Reservation } from '../../reservations/entity'
+import { LoggerService } from 'src/logger/service'
 
 const baanReserverenRoot = 'https://squashcity.baanreserveren.nl'
 
@@ -29,14 +29,18 @@ export class BaanReserverenService {
 	private session: BaanReserverenSession | null = null
 
 	constructor(
-		@Inject(RunnerService)
-		private readonly runnerService: RunnerService,
+		@Inject(LoggerService)
+		private readonly loggerService: LoggerService,
 
 		@Inject(EmptyPage)
 		private readonly page: Page,
 	) {}
 
 	private checkSession(username: string) {
+		this.loggerService.debug('Checking session', {
+			username,
+			session: this.session,
+		})
 		if (this.page.url().endsWith(BaanReserverenUrls.Reservations)) {
 			return this.session?.username !== username
 				? SessionAction.Logout
@@ -46,6 +50,7 @@ export class BaanReserverenService {
 	}
 
 	private startSession(username: string) {
+		this.loggerService.debug('Starting session', { username })
 		if (this.session && this.session.username !== username) {
 			throw new Error('Session already started')
 		}
@@ -61,10 +66,12 @@ export class BaanReserverenService {
 	}
 
 	private endSession() {
+		this.loggerService.debug('Ending session', { session: this.session })
 		this.session = null
 	}
 
 	private async login(username: string, password: string) {
+		this.loggerService.debug('Logging in', { username })
 		await this.page
 			.waitForSelector('input[name=username]')
 			.then((i) => i?.type(username))
@@ -87,13 +94,15 @@ export class BaanReserverenService {
 	}
 
 	private async logout() {
+		this.loggerService.debug('Logging out')
 		await this.page.goto(`${baanReserverenRoot}${BaanReserverenUrls.Logout}`)
 		this.endSession()
 	}
 
 	private async init(reservation: Reservation) {
+		this.loggerService.debug('Initializing', { reservation })
 		await this.page.goto(baanReserverenRoot)
-		const action = await this.checkSession(reservation.username)
+		const action = this.checkSession(reservation.username)
 		switch (action) {
 			case SessionAction.Logout:
 				await this.logout()
@@ -123,6 +132,7 @@ export class BaanReserverenService {
 	}
 
 	private async navigateToDay(date: Dayjs): Promise<void> {
+		this.loggerService.debug('Navigating to day', { date })
 		if (this.getLastVisibleDay().isBefore(date)) {
 			await this.page
 				?.waitForSelector('td.month.next')
@@ -154,9 +164,11 @@ export class BaanReserverenService {
 	}
 
 	private async selectAvailableTime(reservation: Reservation): Promise<void> {
+		this.loggerService.debug('Selecting available time', { reservation })
 		let freeCourt: ElementHandle | null | undefined
 		let i = 0
 		const possibleDates = reservation.createPossibleDates()
+		this.loggerService.debug('Possible dates', { possibleDates })
 		while (i < possibleDates.length && !freeCourt) {
 			const possibleDate = possibleDates[i]
 			const timeString = possibleDate.format('HH:mm')
@@ -170,12 +182,15 @@ export class BaanReserverenService {
 			throw new NoCourtAvailableError()
 		}
 
+		this.loggerService.debug('Free court found', { freeCourt })
+
 		await freeCourt.click().catch((e: Error) => {
 			throw new RunnerCourtSelectionError(e)
 		})
 	}
 
 	private async selectOpponent(id: string, name: string): Promise<void> {
+		this.loggerService.debug('Selecting opponent', { id, name })
 		const player2Search = await this.page
 			?.waitForSelector('tr.res-make-player-2 > td > input')
 			.catch((e: Error) => {
@@ -196,6 +211,7 @@ export class BaanReserverenService {
 	}
 
 	private async confirmReservation(): Promise<void> {
+		this.loggerService.debug('Confirming reservation')
 		await this.page
 			?.$('input#__make_submit')
 			.then((b) => b?.click())
@@ -215,7 +231,7 @@ export class BaanReserverenService {
 		await this.navigateToDay(reservation.dateRangeStart)
 		await this.selectAvailableTime(reservation)
 		await this.selectOpponent(reservation.opponentId, reservation.opponentName)
-		// await this.confirmReservation()
+		await this.confirmReservation()
 	}
 }
 
