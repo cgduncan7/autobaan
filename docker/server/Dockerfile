@@ -22,14 +22,5 @@ COPY --chown=node:node tsconfig.json tsconfig.json
 
 RUN CXX=g++-12 npm install
 
-ARG PORT=3000
-ENV PORT=$PORT
-
-ARG REDIS_HOST=localhost
-ENV REDIS_HOST=$REDIS_HOST
-
-ARG REDIS_PORT=6379
-ENV REDIS_PORT=$REDIS_PORT
-
 RUN npm run migrations
 ENTRYPOINT ["npm", "run", "start"]
