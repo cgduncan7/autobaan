@@ -5,7 +5,7 @@ export const AppDataSource = new DataSource({
 	type: 'sqlite',
 	database: resolve('./db/autobaan_db'),
 	logging: true,
-	entities: [resolve('./src/reservations/entity.ts')],
+	entities: [resolve('./src/**/entity.ts')],
 	migrations: [resolve('./database/migrations/*.ts')],
 	subscribers: [],
 })

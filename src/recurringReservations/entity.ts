@@ -1,4 +1,5 @@
 import { Exclude, Transform } from 'class-transformer'
+import { IsEnum } from 'class-validator'
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
 import dayjs from '../common/dayjs'
@@ -28,10 +29,8 @@ export class RecurringReservation {
 	@Column('varchar', { length: 255, nullable: false })
 	password: string
 
-	@Column('enum', {
-		nullable: false,
-		enum: DayOfWeek,
-	})
+	@Column('int', { nullable: false })
+	@IsEnum(DayOfWeek)
 	dayOfWeek: DayOfWeek
 
 	@Column('varchar', { length: 6, nullable: false })
