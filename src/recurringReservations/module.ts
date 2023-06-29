@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
+import { ReservationsModule } from 'src/reservations/module'
 
 import { LoggerModule } from '../logger/module'
-import { ReservationsService } from '../reservations/service'
 import { RunnerModule } from '../runner/module'
 import { RecurringReservationsController } from './controller'
+import { RecurringReservationsCronService } from './cron'
 import { RecurringReservation } from './entity'
 import { RecurringReservationsService } from './service'
 
@@ -13,9 +14,9 @@ import { RecurringReservationsService } from './service'
 		LoggerModule,
 		TypeOrmModule.forFeature([RecurringReservation]),
 		RunnerModule,
-		ReservationsService,
+		ReservationsModule,
 	],
 	controllers: [RecurringReservationsController],
-	providers: [RecurringReservationsService],
+	providers: [RecurringReservationsService, RecurringReservationsCronService],
 })
 export class RecurringReservationsModule {}

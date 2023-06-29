@@ -17,6 +17,7 @@ import { ReservationsWorker } from './worker'
 		BullModule.registerQueue({ name: RESERVATIONS_QUEUE_NAME }),
 		RunnerModule,
 	],
+	exports: [ReservationsService],
 	controllers: [ReservationsController],
 	providers: [ReservationsService, ReservationsWorker],
 })
