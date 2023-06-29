@@ -23,12 +23,7 @@ import { RunnerModule } from './runner/module'
 					'DATABASE',
 					resolve('./db/autobaan_db'),
 				),
-				migrations: [
-					configService.get<string>(
-						'DATABASE_MIGRATIONS',
-						resolve('./database/migrations/*.ts'),
-					),
-				],
+				migrations: [],
 				autoLoadEntities: true,
 				logging: true,
 			}),
