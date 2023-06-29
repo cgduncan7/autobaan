@@ -1,11 +1,12 @@
-import { Inject } from '@nestjs/common'
 import { Process, Processor } from '@nestjs/bull'
+import { Inject } from '@nestjs/common'
 import { Job } from 'bull'
 import { instanceToPlain, plainToInstance } from 'class-transformer'
+
+import { LoggerService } from '../logger/service'
+import { BaanReserverenService } from '../runner/baanreserveren/service'
 import { RESERVATIONS_QUEUE_NAME } from './config'
 import { Reservation } from './entity'
-import { BaanReserverenService } from '../runner/baanreserveren/service'
-import { LoggerService } from '../logger/service'
 
 @Processor(RESERVATIONS_QUEUE_NAME)
 export class ReservationsWorker {

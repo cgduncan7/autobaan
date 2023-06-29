@@ -1,24 +1,25 @@
+import { InjectQueue } from '@nestjs/bull'
 import {
-	Controller,
-	Get,
-	Post,
 	Body,
-	Param,
+	ClassSerializerInterceptor,
+	Controller,
 	Delete,
+	Get,
 	Inject,
+	Param,
+	Post,
+	Query,
+	UseInterceptors,
 	UsePipes,
 	ValidationPipe,
-	UseInterceptors,
-	ClassSerializerInterceptor,
-	Query,
 } from '@nestjs/common'
-import { InjectQueue } from '@nestjs/bull'
-import { Dayjs } from 'dayjs'
 import { Queue } from 'bull'
+import { Dayjs } from 'dayjs'
+
+import { LoggerService } from '../logger/service'
 import { RESERVATIONS_QUEUE_NAME } from './config'
 import { Reservation } from './entity'
 import { ReservationsService } from './service'
-import { LoggerService } from '../logger/service'
 
 @Controller('reservations')
 @UseInterceptors(ClassSerializerInterceptor)

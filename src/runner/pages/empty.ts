@@ -1,6 +1,7 @@
 import { FactoryProvider, Scope } from '@nestjs/common'
-import { RunnerService } from '../service'
 import { Page } from 'puppeteer'
+
+import { RunnerService } from '../service'
 
 export const EmptyPage = Symbol.for('EmptyPage')
 

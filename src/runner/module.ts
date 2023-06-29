@@ -1,9 +1,10 @@
-import { Module } from '@nestjs/common'
 import { BullModule } from '@nestjs/bull'
+import { Module } from '@nestjs/common'
+
+import { LoggerModule } from '../logger/module'
+import { BaanReserverenService } from './baanreserveren/service'
 import { EmptyPageFactory } from './pages/empty'
 import { RunnerService } from './service'
-import { BaanReserverenService } from './baanreserveren/service'
-import { LoggerModule } from '../logger/module'
 
 @Module({
 	providers: [RunnerService, BaanReserverenService, EmptyPageFactory],

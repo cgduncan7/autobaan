@@ -1,11 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common'
+import { instanceToPlain } from 'class-transformer'
 import { Dayjs } from 'dayjs'
 import { ElementHandle, Page } from 'puppeteer'
-import { EmptyPage } from '../pages/empty'
+import { LoggerService } from 'src/logger/service'
+
 import dayjs from '../../common/dayjs'
 import { Reservation } from '../../reservations/entity'
-import { LoggerService } from 'src/logger/service'
-import { instanceToPlain } from 'class-transformer'
+import { EmptyPage } from '../pages/empty'
 
 const baanReserverenRoot = 'https://squashcity.baanreserveren.nl'
 

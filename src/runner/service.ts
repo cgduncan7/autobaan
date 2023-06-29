@@ -1,6 +1,6 @@
 import {
-	Injectable,
 	BeforeApplicationShutdown,
+	Injectable,
 	OnModuleInit,
 } from '@nestjs/common'
 import puppeteer, {

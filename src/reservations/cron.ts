@@ -2,9 +2,10 @@ import { InjectQueue } from '@nestjs/bull'
 import { Inject, Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { Queue } from 'bull'
+
+import { LoggerService } from '../logger/service'
 import { RESERVATIONS_QUEUE_NAME } from './config'
 import { ReservationsService } from './service'
-import { LoggerService } from '../logger/service'
 
 @Injectable()
 export class ReservationsCronService {

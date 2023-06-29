@@ -1,13 +1,15 @@
 import { BullModule } from '@nestjs/bull'
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
+import { ConfigModule, ConfigService } from '@nestjs/config'
 import { ScheduleModule } from '@nestjs/schedule'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { resolve } from 'path'
-import { ReservationsModule } from './reservations/module'
-import { RunnerModule } from './runner/module'
-import { ConfigModule, ConfigService } from '@nestjs/config'
+
 import { LoggerMiddleware } from './logger/middleware'
 import { LoggerModule } from './logger/module'
+import { RecurringReservationsModule } from './recurringReservations/module'
+import { ReservationsModule } from './reservations/module'
+import { RunnerModule } from './runner/module'
 
 @Module({
 	imports: [
@@ -46,6 +48,7 @@ import { LoggerModule } from './logger/module'
 		}),
 		ScheduleModule.forRoot(),
 		ReservationsModule,
+		RecurringReservationsModule,
 		RunnerModule,
 		LoggerModule,
 	],

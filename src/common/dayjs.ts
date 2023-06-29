@@ -1,8 +1,9 @@
+import 'dayjs/locale/nl'
+
 import * as dayjs from 'dayjs'
 import * as isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
-import * as utc from 'dayjs/plugin/utc'
 import * as timezone from 'dayjs/plugin/timezone'
-import 'dayjs/locale/nl'
+import * as utc from 'dayjs/plugin/utc'
 
 dayjs.extend(isSameOrBefore)
 dayjs.extend(utc)
