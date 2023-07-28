@@ -13,6 +13,8 @@ const baanReserverenRoot = 'https://squashcity.baanreserveren.nl'
 export enum BaanReserverenUrls {
 	Reservations = '/reservations',
 	Logout = '/auth/logout',
+	WaitingList = '/waitinglist',
+	WaitingListAdd = '/waitinglist/add',
 }
 
 enum SessionAction {
@@ -26,6 +28,9 @@ interface BaanReserverenSession {
 	startedAt: Dayjs
 }
 
+const MIN_TYPING_DELAY_MS = 10
+const MAX_TYPING_DELAY_MS = 30
+
 @Injectable()
 export class BaanReserverenService {
 	private session: BaanReserverenSession | null = null
@@ -37,6 +42,14 @@ export class BaanReserverenService {
 		@Inject(EmptyPage)
 		private readonly page: Page,
 	) {}
+
+	// tryna be sneaky
+	private getTypingDelay() {
+		return (
+			(MAX_TYPING_DELAY_MS - MIN_TYPING_DELAY_MS) * Math.random() +
+			MIN_TYPING_DELAY_MS
+		)
+	}
 
 	private checkSession(username: string) {
 		this.loggerService.debug('Checking session', {
@@ -76,13 +89,13 @@ export class BaanReserverenService {
 		this.loggerService.debug('Logging in', { username })
 		await this.page
 			.waitForSelector('input[name=username]')
-			.then((i) => i?.type(username))
+			.then((i) => i?.type(username, { delay: this.getTypingDelay() }))
 			.catch((e: Error) => {
 				throw new RunnerLoginUsernameInputError(e)
 			})
 		await this.page
 			.$('input[name=password]')
-			.then((i) => i?.type(password))
+			.then((i) => i?.type(password, { delay: this.getTypingDelay() }))
 			.catch((e: Error) => {
 				throw new RunnerLoginPasswordInputError(e)
 			})
@@ -135,7 +148,7 @@ export class BaanReserverenService {
 		return lastDayOfMonth.add(daysToAdd, 'day')
 	}
 
-	private async navigateToDay(date: Dayjs): Promise<void> {
+	private async navigateToDay(date: Dayjs) {
 		this.loggerService.debug('Navigating to day', { date })
 		if (this.getLastVisibleDay().isBefore(date)) {
 			await this.page
@@ -171,7 +184,18 @@ export class BaanReserverenService {
 			})
 	}
 
-	private async selectAvailableTime(reservation: Reservation): Promise<void> {
+	private async navigateToWaitingList() {
+		await this.page.goto(
+			`${baanReserverenRoot}${BaanReserverenUrls.WaitingList}`,
+		)
+	}
+
+	private async openWaitingListDialog() {
+		const dialogLink = await this.page.$('a[href="/waitinglist/add"]')
+		await dialogLink?.click()
+	}
+
+	private async selectAvailableTime(reservation: Reservation) {
 		this.loggerService.debug('Selecting available time', {
 			reservation: instanceToPlain(reservation),
 		})
@@ -199,16 +223,18 @@ export class BaanReserverenService {
 		})
 	}
 
-	private async selectOpponent(id: string, name: string): Promise<void> {
+	private async selectOpponent(id: string, name: string) {
 		this.loggerService.debug('Selecting opponent', { id, name })
 		const player2Search = await this.page
 			?.waitForSelector('input:has(~ select[name="players[2]"])')
 			.catch((e: Error) => {
 				throw new RunnerOpponentSearchError(e)
 			})
-		await player2Search?.type(name).catch((e: Error) => {
-			throw new RunnerOpponentSearchInputError(e)
-		})
+		await player2Search
+			?.type(name, { delay: this.getTypingDelay() })
+			.catch((e: Error) => {
+				throw new RunnerOpponentSearchInputError(e)
+			})
 		await this.page?.waitForNetworkIdle().catch((e: Error) => {
 			throw new RunnerOpponentSearchNetworkError(e)
 		})
@@ -220,7 +246,7 @@ export class BaanReserverenService {
 			})
 	}
 
-	private async confirmReservation(): Promise<void> {
+	private async confirmReservation() {
 		this.loggerService.debug('Confirming reservation')
 		await this.page
 			?.$('input#__make_submit')
@@ -236,12 +262,50 @@ export class BaanReserverenService {
 			})
 	}
 
+	private async inputWaitingListDetails(reservation: Reservation) {
+		const startDateInput = await this.page?.$('input[name="start_date"]')
+		await startDateInput?.click({ count: 3, delay: 10 }) // Click 3 times to select all existing text
+		await startDateInput?.type(
+			reservation.dateRangeStart.format('DD-MM-YYYY'),
+			{ delay: this.getTypingDelay() },
+		)
+
+		const endDateInput = await this.page?.$('input[name="end_date"]')
+		await endDateInput?.type(reservation.dateRangeEnd.format('DD-MM-YYYY'), {
+			delay: this.getTypingDelay(),
+		})
+
+		const startTimeInput = await this.page?.$('input[name="start_time"]')
+		startTimeInput?.type(reservation.dateRangeStart.format('HH:mm'), {
+			delay: this.getTypingDelay(),
+		})
+
+		// Use the same time for start and end so that the waiting list only notifies for start time
+		const endTimeInput = await this.page?.$('input[name="end_time"]')
+		endTimeInput?.type(reservation.dateRangeStart.format('HH:mm'), {
+			delay: this.getTypingDelay(),
+		})
+	}
+
+	private async confirmWaitingListDetails() {
+		const saveButton = await this.page?.$('input[type="submit"][value="Save"]')
+		await saveButton?.click()
+	}
+
 	public async performReservation(reservation: Reservation) {
 		await this.init(reservation)
 		await this.navigateToDay(reservation.dateRangeStart)
 		await this.selectAvailableTime(reservation)
 		await this.selectOpponent(reservation.opponentId, reservation.opponentName)
 		await this.confirmReservation()
+	}
+
+	public async addReservationToWaitList(reservation: Reservation) {
+		await this.init(reservation)
+		await this.navigateToWaitingList()
+		await this.openWaitingListDialog()
+		await this.inputWaitingListDetails(reservation)
+		await this.confirmWaitingListDetails()
 	}
 }
 
