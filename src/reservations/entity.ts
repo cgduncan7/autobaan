@@ -65,6 +65,9 @@ export class Reservation {
 	@Column('varchar', { length: 255, nullable: false })
 	opponentName: string
 
+	@Column('boolean', { default: false })
+	waitListed: boolean
+
 	constructor(partial: Partial<Reservation>) {
 		Object.assign(this, partial)
 	}
