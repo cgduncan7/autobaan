@@ -23,14 +23,15 @@ export class ReservationsService {
 	async getByDate(date = dayjs()) {
 		return await this.reservationsRepository
 			.createQueryBuilder()
-			.where(`DATE(dateRangeStart, '-7 day') = DATE(:date)`, { date })
+			.where(`DATE(dateRangeStart) = DATE(:date)`, { date })
 			.getMany()
 	}
 
 	async getByDateOnWaitingList(date = dayjs()) {
 		return await this.reservationsRepository
 			.createQueryBuilder()
-			.where(`DATE(dateRangeStart, '-7 day') = DATE(:date)`, { date })
+			.where(`DATE(dateRangeStart) <= DATE(:date)`, { date })
+			.andWhere(`DATE(dateRangeEnd) >= DATE(:date)`, { date })
 			.andWhere('waitListed = true')
 			.getMany()
 	}
