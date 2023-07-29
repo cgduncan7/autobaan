@@ -12,7 +12,7 @@ export class RecurringReservationsCronService {
 		private readonly recurringReservationsService: RecurringReservationsService,
 
 		@Inject(LoggerService)
-		private readonly logger: LoggerService,
+		private readonly loggerService: LoggerService,
 	) {}
 
 	@Cron(CronExpression.EVERY_DAY_AT_4AM, {
@@ -23,7 +23,7 @@ export class RecurringReservationsCronService {
 		const dayOfWeek = dayjs().get('day')
 		const recurringReservationsToSchedule =
 			await this.recurringReservationsService.getByDayOfWeek(dayOfWeek)
-		this.logger.log(
+		this.loggerService.log(
 			`Found ${recurringReservationsToSchedule.length} recurring reservations to schedule`,
 		)
 		for (const recurringReservation of recurringReservationsToSchedule) {

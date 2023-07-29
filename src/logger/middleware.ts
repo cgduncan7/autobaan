@@ -7,11 +7,11 @@ import { LoggerService } from './service'
 export class LoggerMiddleware implements NestMiddleware {
 	constructor(
 		@Inject(LoggerService)
-		private readonly logger: LoggerService,
+		private readonly loggerService: LoggerService,
 	) {}
 
 	use(req: Request, _res: Response, next: NextFunction) {
-		this.logger.log(`${req.method} ${req.originalUrl}`)
+		this.loggerService.log(`${req.method} ${req.originalUrl}`)
 		next()
 	}
 }

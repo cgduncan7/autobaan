@@ -18,7 +18,7 @@ export class ReservationsWorker {
 		private readonly brService: BaanReserverenService,
 
 		@Inject(LoggerService)
-		private readonly logger: LoggerService,
+		private readonly loggerService: LoggerService,
 	) {}
 
 	@Process()
@@ -26,7 +26,7 @@ export class ReservationsWorker {
 		const reservation = plainToInstance(Reservation, job.data, {
 			groups: ['password'],
 		})
-		this.logger.log('Handling reservation', {
+		this.loggerService.log('Handling reservation', {
 			reservation: instanceToPlain(reservation),
 		})
 		await this.performReservation(reservation)
@@ -38,12 +38,14 @@ export class ReservationsWorker {
 	) {
 		switch (true) {
 			case error instanceof NoCourtAvailableError: {
-				this.logger.warn('No court available, adding to waiting list')
+				this.loggerService.warn('No court available, adding to waiting list')
 				await this.addReservationToWaitList(reservation)
 				return
 			}
 			default:
-				this.logger.error('Error while performing reservation', { error })
+				this.loggerService.error('Error while performing reservation', {
+					error,
+				})
 				throw error
 		}
 	}

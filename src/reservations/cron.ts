@@ -17,7 +17,7 @@ export class ReservationsCronService {
 		private readonly reservationsQueue: Queue,
 
 		@Inject(LoggerService)
-		private readonly logger: LoggerService,
+		private readonly loggerService: LoggerService,
 	) {}
 
 	@Cron(CronExpression.EVERY_DAY_AT_7AM, {
@@ -26,7 +26,7 @@ export class ReservationsCronService {
 	})
 	async handleDailyReservations() {
 		const reservationsToPerform = await this.reservationService.getByDate()
-		this.logger.log(
+		this.loggerService.log(
 			`Found ${reservationsToPerform.length} reservations to perform`,
 		)
 		await this.reservationsQueue.addBulk(
