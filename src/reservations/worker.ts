@@ -10,12 +10,16 @@ import {
 } from '../runner/baanreserveren/service'
 import { RESERVATIONS_QUEUE_NAME } from './config'
 import { Reservation } from './entity'
+import { ReservationsService } from './service'
 
 @Processor(RESERVATIONS_QUEUE_NAME)
 export class ReservationsWorker {
 	constructor(
 		@Inject(BaanReserverenService)
 		private readonly brService: BaanReserverenService,
+
+		@Inject(ReservationsService)
+		private readonly reservationsService: ReservationsService,
 
 		@Inject(LoggerService)
 		private readonly loggerService: LoggerService,
@@ -38,8 +42,11 @@ export class ReservationsWorker {
 	) {
 		switch (true) {
 			case error instanceof NoCourtAvailableError: {
-				this.loggerService.warn('No court available, adding to waiting list')
-				await this.addReservationToWaitList(reservation)
+				this.loggerService.warn('No court available')
+				if (!reservation.waitListed) {
+					this.loggerService.log('Adding reservation to waiting list')
+					await this.addReservationToWaitList(reservation)
+				}
 				return
 			}
 			default:
@@ -53,6 +60,7 @@ export class ReservationsWorker {
 	async performReservation(reservation: Reservation) {
 		try {
 			await this.brService.performReservation(reservation)
+			await this.reservationsService.deleteById(reservation.id)
 		} catch (error: unknown) {
 			await this.handleReservationErrors(error, reservation)
 		}
@@ -60,5 +68,6 @@ export class ReservationsWorker {
 
 	async addReservationToWaitList(reservation: Reservation) {
 		await this.brService.addReservationToWaitList(reservation)
+		await this.reservationsService.update(reservation.id, { waitListed: true })
 	}
 }

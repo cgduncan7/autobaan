@@ -12,34 +12,38 @@ export class ReservationsService {
 		private reservationsRepository: Repository<Reservation>,
 	) {}
 
-	getAll() {
-		return this.reservationsRepository.find()
+	async getAll() {
+		return await this.reservationsRepository.find()
 	}
 
-	getById(id: string) {
-		return this.reservationsRepository.findOneBy({ id })
+	async getById(id: string) {
+		return await this.reservationsRepository.findOneBy({ id })
 	}
 
-	getByDate(date = dayjs()) {
-		return this.reservationsRepository
+	async getByDate(date = dayjs()) {
+		return await this.reservationsRepository
 			.createQueryBuilder()
 			.where(`DATE(dateRangeStart, '-7 day') = DATE(:date)`, { date })
 			.getMany()
 	}
 
-	getByDateOnWaitingList(date = dayjs()) {
-		return this.reservationsRepository
+	async getByDateOnWaitingList(date = dayjs()) {
+		return await this.reservationsRepository
 			.createQueryBuilder()
 			.where(`DATE(dateRangeStart, '-7 day') = DATE(:date)`, { date })
 			.andWhere('waitListed = true')
 			.getMany()
 	}
 
-	create(reservation: Reservation) {
-		return this.reservationsRepository.save(reservation)
+	async create(reservation: Reservation) {
+		return await this.reservationsRepository.save(reservation)
+	}
+
+	async update(reservationId: string, update: Partial<Reservation>) {
+		return await this.reservationsRepository.update(reservationId, update)
 	}
 
 	async deleteById(id: string) {
-		await this.reservationsRepository.delete({ id })
+		return await this.reservationsRepository.delete({ id })
 	}
 }
