@@ -33,4 +33,18 @@ export class ReservationsCronService {
 			reservationsToPerform.map((r) => ({ data: r })),
 		)
 	}
+
+	@Cron(CronExpression.EVERY_DAY_AT_11PM, {
+		name: 'cleanUpExpiredReservations',
+		timeZone: 'Europe/Amsterdam',
+	})
+	async cleanUpExpiredReservations() {
+		const reservations = await this.reservationService.getByDate()
+		this.loggerService.log(
+			`Found ${reservations.length} reservations to delete`,
+		)
+		for (const reservation of reservations) {
+			await this.reservationService.deleteById(reservation.id)
+		}
+	}
 }
