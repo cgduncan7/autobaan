@@ -1,8 +1,9 @@
+import { InjectQueue } from '@nestjs/bull'
 import { Inject, Injectable } from '@nestjs/common'
-import { Box } from 'imap'
+import { Queue } from 'bull'
 
-import { LoggerService } from '../logger/service'
 import { EmailClient } from './client'
+import { EMAILS_QUEUE_NAME } from './config'
 import { Email } from './types'
 
 @Injectable()
@@ -11,14 +12,16 @@ export class EmailProvider {
 		@Inject(EmailClient)
 		private readonly emailClient: EmailClient,
 
-		@Inject(LoggerService)
-		private readonly loggerService: LoggerService,
+		@InjectQueue(EMAILS_QUEUE_NAME)
+		private readonly emailsQueue: Queue,
 	) {
 		this.registerEmailListener()
 	}
 
 	private async handleReceivedEmails(emails: Email[]) {
-		this.loggerService.debug(JSON.stringify(emails))
+		this.emailsQueue.addBulk(
+			emails.map((email) => ({ name: email.id, data: email })),
+		)
 	}
 
 	public registerEmailListener() {

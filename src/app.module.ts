@@ -11,6 +11,7 @@ import { LoggerModule } from './logger/module'
 import { RecurringReservationsModule } from './recurringReservations/module'
 import { ReservationsModule } from './reservations/module'
 import { RunnerModule } from './runner/module'
+import { WaitingListModule } from './waitingList/module'
 
 @Module({
 	imports: [
@@ -48,6 +49,7 @@ import { RunnerModule } from './runner/module'
 		RunnerModule,
 		LoggerModule,
 		EmailModule,
+		WaitingListModule,
 	],
 })
 export class AppModule implements NestModule {

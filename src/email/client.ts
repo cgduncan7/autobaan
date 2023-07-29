@@ -1,9 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { Dayjs } from 'dayjs'
 import * as Imap from 'imap'
+import { MailParser, ParsedEmail } from 'mailparser-mit'
 
-import dayjs from '../common/dayjs'
 import { LoggerService } from '../logger/service'
 import { Email } from './types'
 
@@ -59,12 +58,12 @@ export class EmailClient {
 		if (current > max) {
 			throw Error(`Max attempts reached for ${label}`)
 		}
-		this.loggerService.log(`Attempting ${label} [${current} / ${max}]`)
+		this.loggerService.debug(`Attempting ${label} [${current} / ${max}]`)
 
 		try {
 			fn()
 		} catch (error: unknown) {
-			this.loggerService.warn(
+			this.loggerService.debug(
 				`Attempting ${label} hit error at attempt ${current}`,
 			)
 			setTimeout(
@@ -84,6 +83,10 @@ export class EmailClient {
 		const {
 			messages: { total: totalMessages, new: newMessages },
 		} = mailbox
+
+		this.loggerService.debug(
+			`Total messages: ${totalMessages}; New messages: ${newMessages}; Received messages: ${numMessages}`,
+		)
 
 		if (newMessages > 0) {
 			const startingMessage = totalMessages - newMessages + 1 // starting message is inclusive
@@ -132,47 +135,36 @@ export class EmailClient {
 		})
 	}
 
-	private async generateEmailBody(
-		stream: NodeJS.ReadableStream,
-	): Promise<Buffer> {
-		return new Promise<Buffer>((res, rej) => {
-			const bufferData: any[] = []
-			stream.on('data', (chunk) => {
-				bufferData.push(chunk)
-			})
-			stream.on('end', () => {
-				res(Buffer.concat(bufferData))
-			})
-			stream.on('error', (error: Error) => rej(error))
-		})
-	}
-
 	private async generateEmail(msg: Imap.ImapMessage): Promise<Email> {
 		return new Promise((res, rej) => {
-			let id: number
-			let date: Dayjs
-			let bodyPromise: Promise<Buffer>
+			const mailParser = new MailParser({ defaultCharset: 'utf-8' })
+			let id: string
 			msg.on('body', async (stream) => {
 				try {
-					bodyPromise = this.generateEmailBody(stream)
+					stream.pipe(mailParser)
 				} catch (error: unknown) {
 					rej(error)
 				}
 			})
 
 			msg.on('attributes', (attr) => {
-				id = attr.uid
-				date = dayjs(attr.date)
+				id = `${attr.uid}`
 			})
 
 			msg.on('error', (error: Error) => rej(error))
 
-			msg.on('end', async () => {
-				const body = (await bodyPromise).toString()
+			mailParser.on('error', (error: Error) => rej(error))
+
+			mailParser.on('end', (mail: ParsedEmail) => {
+				const { from = [], subject = '', text = '' } = mail
+				const fromString = from
+					.map(({ address, name }) => `${name} <${address}>`)
+					.join(';')
 				res({
 					id,
-					date,
-					body,
+					from: fromString,
+					subject,
+					text,
 				})
 			})
 		})
@@ -186,7 +178,7 @@ export class EmailClient {
 			`${startingMessageId}:${endingMessageId}`,
 			{
 				bodies: '',
-				struct: true,
+				markSeen: true,
 			},
 		)
 
@@ -219,6 +211,10 @@ export class EmailClient {
 		this.imapClient.on('end', () => {
 			this.loggerService.debug('email client end')
 			this.setStatus(EmailClientStatus.NotReady)
+		})
+
+		this.imapClient.on('error', (error: Error) => {
+			this.loggerService.error(`Error with imap client ${error.message}`)
 		})
 	}
 

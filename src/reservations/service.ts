@@ -27,6 +27,14 @@ export class ReservationsService {
 			.getMany()
 	}
 
+	getByDateOnWaitingList(date = dayjs()) {
+		return this.reservationsRepository
+			.createQueryBuilder()
+			.where(`DATE(dateRangeStart, '-7 day') = DATE(:date)`, { date })
+			.andWhere('waitListed = true')
+			.getMany()
+	}
+
 	create(reservation: Reservation) {
 		return this.reservationsRepository.save(reservation)
 	}
