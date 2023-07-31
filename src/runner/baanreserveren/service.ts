@@ -8,7 +8,7 @@ import dayjs from '../../common/dayjs'
 import { Reservation } from '../../reservations/entity'
 import { EmptyPage } from '../pages/empty'
 
-const baanReserverenRoot = 'https://squashcity.baanreserveren.nl'
+const BAAN_RESERVEREN_ROOT_URL = 'https://squashcity.baanreserveren.nl'
 
 export enum BaanReserverenUrls {
 	Reservations = '/reservations',
@@ -51,12 +51,18 @@ export class BaanReserverenService {
 		)
 	}
 
-	private checkSession(username: string) {
+	private async checkSession(username: string) {
 		this.loggerService.debug('Checking session', {
 			username,
 			session: this.session,
 		})
-		if (this.page.url().endsWith(BaanReserverenUrls.Reservations)) {
+		if (this.page.url().includes(BAAN_RESERVEREN_ROOT_URL)) {
+			// Check session via reload to see if we are still logged in via cookies
+			await this.page.reload()
+			if (this.page.url().includes('?reason=LOGGED_IN')) {
+				return SessionAction.Login
+			}
+
 			return this.session?.username !== username
 				? SessionAction.Logout
 				: SessionAction.NoAction
@@ -110,7 +116,9 @@ export class BaanReserverenService {
 
 	private async logout() {
 		this.loggerService.debug('Logging out')
-		await this.page.goto(`${baanReserverenRoot}${BaanReserverenUrls.Logout}`)
+		await this.page.goto(
+			`${BAAN_RESERVEREN_ROOT_URL}${BaanReserverenUrls.Logout}`,
+		)
 		this.endSession()
 	}
 
@@ -118,8 +126,8 @@ export class BaanReserverenService {
 		this.loggerService.debug('Initializing', {
 			reservation: instanceToPlain(reservation),
 		})
-		await this.page.goto(baanReserverenRoot)
-		const action = this.checkSession(reservation.username)
+		await this.page.goto(BAAN_RESERVEREN_ROOT_URL)
+		const action = await this.checkSession(reservation.username)
 		switch (action) {
 			case SessionAction.Logout:
 				await this.logout()
@@ -185,14 +193,25 @@ export class BaanReserverenService {
 	}
 
 	private async navigateToWaitingList() {
-		await this.page.goto(
-			`${baanReserverenRoot}${BaanReserverenUrls.WaitingList}`,
-		)
+		this.loggerService.debug('Navigating to waiting list')
+		await this.page
+			.goto(`${BAAN_RESERVEREN_ROOT_URL}${BaanReserverenUrls.WaitingList}`)
+			.catch((e) => {
+				throw new RunnerWaitingListNavigationError(e)
+			})
 	}
 
 	private async openWaitingListDialog() {
+		this.loggerService.debug('Opening waiting list dialog')
+		const menuButtons = await this.page.$x('//button[text()="Menu"]')
+		const menuButton = await menuButtons[0].$('button')
+		await menuButton?.click().catch((e) => {
+			throw new RunnerWaitingListNavigationMenuError(e)
+		})
 		const dialogLink = await this.page.$('a[href="/waitinglist/add"]')
-		await dialogLink?.click()
+		await dialogLink?.click().catch((e) => {
+			throw new RunnerWaitingListNavigationAddError(e)
+		})
 	}
 
 	private async selectAvailableTime(reservation: Reservation) {
@@ -263,33 +282,55 @@ export class BaanReserverenService {
 	}
 
 	private async inputWaitingListDetails(reservation: Reservation) {
+		this.loggerService.debug('Inputting waiting list details')
 		const startDateInput = await this.page?.$('input[name="start_date"]')
-		await startDateInput?.click({ count: 3, delay: 10 }) // Click 3 times to select all existing text
-		await startDateInput?.type(
-			reservation.dateRangeStart.format('DD-MM-YYYY'),
-			{ delay: this.getTypingDelay() },
-		)
+		// Click 3 times to select all existing text
+		await startDateInput?.click({ count: 3, delay: 10 }).catch((e) => {
+			throw new RunnerWaitingListInputError(e)
+		})
+		await startDateInput
+			?.type(reservation.dateRangeStart.format('DD-MM-YYYY'), {
+				delay: this.getTypingDelay(),
+			})
+			.catch((e) => {
+				throw new RunnerWaitingListInputError(e)
+			})
 
 		const endDateInput = await this.page?.$('input[name="end_date"]')
-		await endDateInput?.type(reservation.dateRangeEnd.format('DD-MM-YYYY'), {
-			delay: this.getTypingDelay(),
-		})
+		await endDateInput
+			?.type(reservation.dateRangeEnd.format('DD-MM-YYYY'), {
+				delay: this.getTypingDelay(),
+			})
+			.catch((e) => {
+				throw new RunnerWaitingListInputError(e)
+			})
 
 		const startTimeInput = await this.page?.$('input[name="start_time"]')
-		startTimeInput?.type(reservation.dateRangeStart.format('HH:mm'), {
-			delay: this.getTypingDelay(),
-		})
+		startTimeInput
+			?.type(reservation.dateRangeStart.format('HH:mm'), {
+				delay: this.getTypingDelay(),
+			})
+			.catch((e) => {
+				throw new RunnerWaitingListInputError(e)
+			})
 
 		// Use the same time for start and end so that the waiting list only notifies for start time
 		const endTimeInput = await this.page?.$('input[name="end_time"]')
-		endTimeInput?.type(reservation.dateRangeStart.format('HH:mm'), {
-			delay: this.getTypingDelay(),
-		})
+		endTimeInput
+			?.type(reservation.dateRangeStart.format('HH:mm'), {
+				delay: this.getTypingDelay(),
+			})
+			.catch((e) => {
+				throw new RunnerWaitingListInputError(e)
+			})
 	}
 
 	private async confirmWaitingListDetails() {
+		this.loggerService.debug('Confirming waiting list details')
 		const saveButton = await this.page?.$('input[type="submit"][value="Save"]')
-		await saveButton?.click()
+		await saveButton?.click().catch((e) => {
+			throw new RunnerWaitingListConfirmError(e)
+		})
 	}
 
 	public async performReservation(reservation: Reservation) {
@@ -331,6 +372,14 @@ export class RunnerLoginSubmitError extends RunnerError {}
 export class RunnerNavigationMonthError extends RunnerError {}
 export class RunnerNavigationDayError extends RunnerError {}
 export class RunnerNavigationSelectionError extends RunnerError {}
+
+export class RunnerWaitingListNavigationError extends RunnerError {}
+export class RunnerWaitingListNavigationMenuError extends RunnerError {}
+export class RunnerWaitingListNavigationAddError extends RunnerError {}
+
+export class RunnerWaitingListInputError extends RunnerError {}
+
+export class RunnerWaitingListConfirmError extends RunnerError {}
 
 export class RunnerCourtSelectionError extends RunnerError {}
 export class NoCourtAvailableError extends Error {}

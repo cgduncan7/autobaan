@@ -33,7 +33,7 @@ export class ReservationsCronService {
 			`Found ${reservationsToPerform.length} reservations to perform`,
 		)
 		await this.reservationsQueue.addBulk(
-			reservationsToPerform.map((r) => ({ data: r })),
+			reservationsToPerform.map((r) => ({ data: r, opts: { attempts: 1 } })),
 		)
 	}
 

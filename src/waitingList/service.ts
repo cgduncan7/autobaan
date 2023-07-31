@@ -65,7 +65,9 @@ export class WaitingListService {
 			`Found ${reservations.length} reservations on waiting list`,
 		)
 
-		await this.reservationsQueue.addBulk(reservations.map((r) => ({ data: r })))
+		await this.reservationsQueue.addBulk(
+			reservations.map((r) => ({ data: r, opts: { attempts: 1 } })),
+		)
 	}
 
 	private getWaitingListDetails(email: Email): WaitingListDetails {
