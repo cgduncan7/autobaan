@@ -50,9 +50,7 @@ export class ReservationsWorker {
 				return
 			}
 			default:
-				this.loggerService.error('Error while performing reservation', {
-					error,
-				})
+				this.loggerService.error('Error while performing reservation', error)
 				throw error
 		}
 	}
@@ -73,9 +71,10 @@ export class ReservationsWorker {
 				waitListed: true,
 			})
 		} catch (error: unknown) {
-			this.loggerService.error('Error adding reservation to waiting list', {
+			this.loggerService.error(
+				'Error adding reservation to waiting list',
 				error,
-			})
+			)
 		}
 	}
 }
