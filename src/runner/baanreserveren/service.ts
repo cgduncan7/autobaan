@@ -117,7 +117,7 @@ export class BaanReserverenService {
 	private async logout() {
 		this.loggerService.debug('Logging out')
 		await this.page.goto(
-			`${BAAN_RESERVEREN_ROOT_URL}${BaanReserverenUrls.Logout}`,
+			`${BAAN_RESERVEREN_ROOT_URL}/${BaanReserverenUrls.Logout}`,
 		)
 		this.endSession()
 	}
@@ -195,7 +195,7 @@ export class BaanReserverenService {
 	private async navigateToWaitingList() {
 		this.loggerService.debug('Navigating to waiting list')
 		await this.page
-			.goto(`${BAAN_RESERVEREN_ROOT_URL}${BaanReserverenUrls.WaitingList}`)
+			.goto(`${BAAN_RESERVEREN_ROOT_URL}/${BaanReserverenUrls.WaitingList}`)
 			.catch((e) => {
 				throw new RunnerWaitingListNavigationError(e)
 			})
@@ -203,15 +203,10 @@ export class BaanReserverenService {
 
 	private async openWaitingListDialog() {
 		this.loggerService.debug('Opening waiting list dialog')
-		const menuButtons = await this.page.$x('//button[text()="Menu"]')
-		const menuButton = await menuButtons[0].$('button')
-		await menuButton?.click().catch((e) => {
-			throw new RunnerWaitingListNavigationMenuError(e)
-		})
-		const dialogLink = await this.page.$('a[href="/waitinglist/add"]')
-		await dialogLink?.click().catch((e) => {
-			throw new RunnerWaitingListNavigationAddError(e)
-		})
+		await this.page.waitForNetworkIdle()
+		await this.page.goto(
+			`${BAAN_RESERVEREN_ROOT_URL}/${BaanReserverenUrls.WaitingListAdd}`,
+		)
 	}
 
 	private async selectAvailableTime(reservation: Reservation) {
@@ -232,7 +227,7 @@ export class BaanReserverenService {
 		}
 
 		if (!freeCourt) {
-			throw new NoCourtAvailableError()
+			throw new NoCourtAvailableError('No court available for reservation')
 		}
 
 		this.loggerService.debug('Free court found')
@@ -306,7 +301,7 @@ export class BaanReserverenService {
 			})
 
 		const startTimeInput = await this.page?.$('input[name="start_time"]')
-		startTimeInput
+		await startTimeInput
 			?.type(reservation.dateRangeStart.format('HH:mm'), {
 				delay: this.getTypingDelay(),
 			})
@@ -316,8 +311,8 @@ export class BaanReserverenService {
 
 		// Use the same time for start and end so that the waiting list only notifies for start time
 		const endTimeInput = await this.page?.$('input[name="end_time"]')
-		endTimeInput
-			?.type(reservation.dateRangeStart.format('HH:mm'), {
+		await endTimeInput
+			?.type(reservation.dateRangeStart.add(1, 'minutes').format('HH:mm'), {
 				delay: this.getTypingDelay(),
 			})
 			.catch((e) => {
@@ -351,43 +346,146 @@ export class BaanReserverenService {
 }
 
 export class RunnerError extends Error {
-	constructor(error: Error) {
+	constructor(error: Error, name?: string) {
 		super(error.message)
 		this.stack = error.stack
+		this.name = name ?? 'RunnerError'
 	}
 }
-export class PuppeteerError extends RunnerError {}
-export class PuppeteerBrowserLaunchError extends PuppeteerError {}
-export class PuppeteerNewPageError extends PuppeteerError {}
+export class PuppeteerError extends RunnerError {
+	constructor(error: Error, name?: string) {
+		super(error, name)
+	}
+}
+export class PuppeteerBrowserLaunchError extends PuppeteerError {
+	constructor(error: Error) {
+		super(error, 'PuppeteerBrowserLaunchError')
+	}
+}
+export class PuppeteerNewPageError extends PuppeteerError {
+	constructor(error: Error) {
+		super(error, 'PuppeteerNewPageError')
+	}
+}
 
-export class RunnerNewSessionError extends RunnerError {}
+export class RunnerNewSessionError extends RunnerError {
+	constructor(error: Error) {
+		super(error, 'RunnerNewSessionError')
+	}
+}
 
-export class RunnerLogoutError extends RunnerError {}
+export class RunnerLogoutError extends RunnerError {
+	constructor(error: Error) {
+		super(error, 'RunnerLogoutError')
+	}
+}
 
-export class RunnerLoginNavigationError extends RunnerError {}
-export class RunnerLoginUsernameInputError extends RunnerError {}
-export class RunnerLoginPasswordInputError extends RunnerError {}
-export class RunnerLoginSubmitError extends RunnerError {}
+export class RunnerLoginNavigationError extends RunnerError {
+	constructor(error: Error) {
+		super(error, 'RunnerLoginNavigationError')
+	}
+}
+export class RunnerLoginUsernameInputError extends RunnerError {
+	constructor(error: Error) {
+		super(error, 'RunnerLoginUsernameInputError')
+	}
+}
+export class RunnerLoginPasswordInputError extends RunnerError {
+	constructor(error: Error) {
+		super(error, 'RunnerLoginPasswordInputError')
+	}
+}
+export class RunnerLoginSubmitError extends RunnerError {
+	constructor(error: Error) {
+		super(error, 'RunnerLoginSubmitError')
+	}
+}
 
-export class RunnerNavigationMonthError extends RunnerError {}
-export class RunnerNavigationDayError extends RunnerError {}
-export class RunnerNavigationSelectionError extends RunnerError {}
+export class RunnerNavigationMonthError extends RunnerError {
+	constructor(error: Error) {
+		super(error, 'RunnerNavigationMonthError')
+	}
+}
+export class RunnerNavigationDayError extends RunnerError {
+	constructor(error: Error) {
+		super(error, 'RunnerNavigationDayError')
+	}
+}
+export class RunnerNavigationSelectionError extends RunnerError {
+	constructor(error: Error) {
+		super(error, 'RunnerNavigationSelectionError')
+	}
+}
 
-export class RunnerWaitingListNavigationError extends RunnerError {}
-export class RunnerWaitingListNavigationMenuError extends RunnerError {}
-export class RunnerWaitingListNavigationAddError extends RunnerError {}
+export class RunnerWaitingListNavigationError extends RunnerError {
+	constructor(error: Error) {
+		super(error, 'RunnerWaitingListNavigationError')
+	}
+}
+export class RunnerWaitingListNavigationMenuError extends RunnerError {
+	constructor(error: Error) {
+		super(error, 'RunnerWaitingListNavigationMenuError')
+	}
+}
+export class RunnerWaitingListNavigationAddError extends RunnerError {
+	constructor(error: Error) {
+		super(error, 'RunnerWaitingListNavigationAddError')
+	}
+}
 
-export class RunnerWaitingListInputError extends RunnerError {}
+export class RunnerWaitingListInputError extends RunnerError {
+	constructor(error: Error) {
+		super(error, 'RunnerWaitingListInputError')
+	}
+}
 
-export class RunnerWaitingListConfirmError extends RunnerError {}
+export class RunnerWaitingListConfirmError extends RunnerError {
+	constructor(error: Error) {
+		super(error, 'RunnerWaitingListConfirmError')
+	}
+}
 
-export class RunnerCourtSelectionError extends RunnerError {}
-export class NoCourtAvailableError extends Error {}
+export class RunnerCourtSelectionError extends RunnerError {
+	constructor(error: Error) {
+		super(error, 'RunnerCourtSelectionError')
+	}
+}
 
-export class RunnerOpponentSearchError extends RunnerError {}
-export class RunnerOpponentSearchInputError extends RunnerError {}
-export class RunnerOpponentSearchNetworkError extends RunnerError {}
-export class RunnerOpponentSearchSelectionError extends RunnerError {}
+export class NoCourtAvailableError extends Error {
+	constructor(message: string) {
+		super(message)
+		this.name = 'NoCourtAvailableError'
+	}
+}
 
-export class RunnerReservationConfirmButtonError extends RunnerError {}
-export class RunnerReservationConfirmSubmitError extends RunnerError {}
+export class RunnerOpponentSearchError extends RunnerError {
+	constructor(error: Error) {
+		super(error, 'RunnerOpponentSearchError')
+	}
+}
+export class RunnerOpponentSearchInputError extends RunnerError {
+	constructor(error: Error) {
+		super(error, 'RunnerOpponentSearchInputError')
+	}
+}
+export class RunnerOpponentSearchNetworkError extends RunnerError {
+	constructor(error: Error) {
+		super(error, 'RunnerOpponentSearchNetworkError')
+	}
+}
+export class RunnerOpponentSearchSelectionError extends RunnerError {
+	constructor(error: Error) {
+		super(error, 'RunnerOpponentSearchSelectionError')
+	}
+}
+
+export class RunnerReservationConfirmButtonError extends RunnerError {
+	constructor(error: Error) {
+		super(error, 'RunnerReservationConfirmButtonError')
+	}
+}
+export class RunnerReservationConfirmSubmitError extends RunnerError {
+	constructor(error: Error) {
+		super(error, 'RunnerReservationConfirmSubmitError')
+	}
+}
