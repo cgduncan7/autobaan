@@ -9,6 +9,7 @@ import { Email } from './types'
 export enum EmailClientStatus {
 	NotReady,
 	Ready,
+	Error,
 }
 
 @Injectable()
@@ -205,16 +206,19 @@ export class EmailClient {
 
 		this.imapClient.on('close', () => {
 			this.loggerService.debug('email client close')
-			this.setStatus(EmailClientStatus.NotReady)
+			if (this.status !== EmailClientStatus.Error)
+				this.setStatus(EmailClientStatus.NotReady)
 		})
 
 		this.imapClient.on('end', () => {
 			this.loggerService.debug('email client end')
-			this.setStatus(EmailClientStatus.NotReady)
+			if (this.status !== EmailClientStatus.Error)
+				this.setStatus(EmailClientStatus.NotReady)
 		})
 
 		this.imapClient.on('error', (error: Error) => {
 			this.loggerService.error(`Error with imap client ${error.message}`)
+			this.setStatus(EmailClientStatus.Error)
 		})
 	}
 
