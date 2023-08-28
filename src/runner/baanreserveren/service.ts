@@ -57,8 +57,8 @@ export class BaanReserverenService {
 			session: this.session,
 		})
 		if (this.page.url().includes(BAAN_RESERVEREN_ROOT_URL)) {
-			// Check session via reload to see if we are still logged in via cookies
-			await this.page.reload()
+			// Check session by going to /reservations to see if we are still logged in via cookies
+			await this.navigateToReservations()
 			if (this.page.url().includes('?reason=LOGGED_IN')) {
 				return SessionAction.Login
 			}
@@ -196,6 +196,15 @@ export class BaanReserverenService {
 		this.loggerService.debug('Navigating to waiting list')
 		await this.page
 			.goto(`${BAAN_RESERVEREN_ROOT_URL}/${BaanReserverenUrls.WaitingList}`)
+			.catch((e) => {
+				throw new RunnerWaitingListNavigationError(e)
+			})
+	}
+
+	private async navigateToReservations() {
+		this.loggerService.debug('Navigating to waiting list')
+		await this.page
+			.goto(`${BAAN_RESERVEREN_ROOT_URL}/${BaanReserverenUrls.Reservations}`)
 			.catch((e) => {
 				throw new RunnerWaitingListNavigationError(e)
 			})
