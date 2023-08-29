@@ -27,7 +27,7 @@ export class RecurringReservationsController {
 	@Get()
 	getRecurringReservations(@Query('dayOfWeek') dayOfWeek?: DayOfWeek) {
 		if (dayOfWeek) {
-			return this.recurringReservationsService.getByDayOfWeek
+			return this.recurringReservationsService.getByDayOfWeek(dayOfWeek)
 		}
 		return this.recurringReservationsService.getAll()
 	}
