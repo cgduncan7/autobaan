@@ -16,7 +16,7 @@ export class DatabaseLoggerService implements Logger {
 		parameters?: any[] | undefined,
 		_queryRunner?: QueryRunner | undefined,
 	) {
-		this.loggerService.debug('Query', `${query} - ${parameters?.join(',')}`)
+		this.loggerService.debug('Query', { query, parameters })
 	}
 
 	logQueryError(
@@ -25,10 +25,7 @@ export class DatabaseLoggerService implements Logger {
 		parameters?: any[] | undefined,
 		_queryRunner?: QueryRunner | undefined,
 	) {
-		this.loggerService.error(
-			'Query error',
-			`${error}: ${query} - ${parameters?.join(',')}`,
-		)
+		this.loggerService.error('Query error', { error, query, parameters })
 	}
 
 	logQuerySlow(
@@ -37,10 +34,7 @@ export class DatabaseLoggerService implements Logger {
 		parameters?: any[] | undefined,
 		_queryRunner?: QueryRunner | undefined,
 	) {
-		this.loggerService.warn(
-			'Slow query',
-			`${query} - ${parameters?.join(',')} took ${time}`,
-		)
+		this.loggerService.warn('Slow query', { time, query, parameters })
 	}
 
 	logSchemaBuild(message: string, _queryRunner?: QueryRunner | undefined) {
