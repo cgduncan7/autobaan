@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common'
 import { instanceToPlain } from 'class-transformer'
 import { Dayjs } from 'dayjs'
 import { ElementHandle, Page } from 'puppeteer'
-import { LoggerService } from 'src/logger/service'
+import { LoggerService } from 'src/logger/service.logger'
 
 import dayjs from '../../common/dayjs'
 import { Reservation } from '../../reservations/entity'

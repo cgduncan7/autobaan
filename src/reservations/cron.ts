@@ -4,7 +4,7 @@ import { Cron, CronExpression } from '@nestjs/schedule'
 import { Queue } from 'bull'
 
 import dayjs from '../common/dayjs'
-import { LoggerService } from '../logger/service'
+import { LoggerService } from '../logger/service.logger'
 import { RESERVATIONS_QUEUE_NAME } from './config'
 import { ReservationsService } from './service'
 
@@ -26,6 +26,7 @@ export class ReservationsCronService {
 		timeZone: 'Europe/Amsterdam',
 	})
 	async handleDailyReservations() {
+		this.loggerService.log('handleDailyReservations beginning')
 		const reservationsToPerform = await this.reservationService.getByDate(
 			dayjs().subtract(7, 'days'),
 		)
@@ -35,6 +36,7 @@ export class ReservationsCronService {
 		await this.reservationsQueue.addBulk(
 			reservationsToPerform.map((r) => ({ data: r, opts: { attempts: 1 } })),
 		)
+		this.loggerService.log('handleDailyReservations ending')
 	}
 
 	@Cron(CronExpression.EVERY_DAY_AT_11PM, {
@@ -42,6 +44,7 @@ export class ReservationsCronService {
 		timeZone: 'Europe/Amsterdam',
 	})
 	async cleanUpExpiredReservations() {
+		this.loggerService.log('cleanUpExpiredReservations beginning')
 		const reservations = await this.reservationService.getByDate()
 		this.loggerService.log(
 			`Found ${reservations.length} reservations to delete`,
@@ -49,5 +52,6 @@ export class ReservationsCronService {
 		for (const reservation of reservations) {
 			await this.reservationService.deleteById(reservation.id)
 		}
+		this.loggerService.log('cleanUpExpiredReservations ending')
 	}
 }

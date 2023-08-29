@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
 
 import dayjs from '../common/dayjs'
-import { LoggerService } from '../logger/service'
+import { LoggerService } from '../logger/service.logger'
 import { RecurringReservationsService } from './service'
 
 @Injectable()
@@ -20,6 +20,7 @@ export class RecurringReservationsCronService {
 		timeZone: 'Europe/Amsterdam',
 	})
 	async handleRecurringReservations() {
+		this.loggerService.log('handleRecurringReservations beginning')
 		const dayOfWeek = dayjs().get('day')
 		const recurringReservationsToSchedule =
 			await this.recurringReservationsService.getByDayOfWeek(dayOfWeek)
@@ -31,5 +32,6 @@ export class RecurringReservationsCronService {
 				recurringReservation,
 			)
 		}
+		this.loggerService.log('handleRecurringReservations ending')
 	}
 }

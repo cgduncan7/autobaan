@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config'
 import * as Imap from 'imap'
 import { MailParser, ParsedEmail } from 'mailparser-mit'
 
-import { LoggerService } from '../logger/service'
+import { LoggerService } from '../logger/service.logger'
 import { Email } from './types'
 
 export enum EmailClientStatus {

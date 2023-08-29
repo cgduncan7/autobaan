@@ -3,7 +3,7 @@ import { Inject } from '@nestjs/common'
 import { Job } from 'bull'
 import { instanceToPlain, plainToInstance } from 'class-transformer'
 
-import { LoggerService } from '../logger/service'
+import { LoggerService } from '../logger/service.logger'
 import {
 	BaanReserverenService,
 	NoCourtAvailableError,

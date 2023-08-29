@@ -16,7 +16,7 @@ import {
 import { Queue } from 'bull'
 import { Dayjs } from 'dayjs'
 
-import { LoggerService } from '../logger/service'
+import { LoggerService } from '../logger/service.logger'
 import { RESERVATIONS_QUEUE_NAME } from './config'
 import { Reservation } from './entity'
 import { ReservationsService } from './service'

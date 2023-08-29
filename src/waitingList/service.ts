@@ -6,7 +6,7 @@ import { ReservationsService } from 'src/reservations/service'
 import dayjs from '../common/dayjs'
 import { EMAILS_QUEUE_NAME } from '../email/config'
 import { Email } from '../email/types'
-import { LoggerService } from '../logger/service'
+import { LoggerService } from '../logger/service.logger'
 import { RESERVATIONS_QUEUE_NAME } from '../reservations/config'
 import { WaitingListDetails } from './types'
 
