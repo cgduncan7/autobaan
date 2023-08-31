@@ -111,6 +111,7 @@ export class BaanReserverenService {
 			.catch((e: Error) => {
 				throw new RunnerLoginSubmitError(e)
 			})
+		await this.page.waitForNetworkIdle()
 		this.startSession(username)
 	}
 
@@ -119,6 +120,7 @@ export class BaanReserverenService {
 		await this.page.goto(
 			`${BAAN_RESERVEREN_ROOT_URL}/${BaanReserverenUrls.Logout}`,
 		)
+		await this.page.waitForNetworkIdle()
 		this.endSession()
 	}
 
@@ -202,7 +204,7 @@ export class BaanReserverenService {
 	}
 
 	private async navigateToReservations() {
-		this.loggerService.debug('Navigating to waiting list')
+		this.loggerService.debug('Navigating to reservations')
 		await this.page
 			.goto(`${BAAN_RESERVEREN_ROOT_URL}/${BaanReserverenUrls.Reservations}`)
 			.catch((e) => {
@@ -253,8 +255,17 @@ export class BaanReserverenService {
 			)
 		}
 
+		const acceptedDialogPromise = new Promise<void>((res, rej) => {
+			this.page.on('dialog', async (dialog) => {
+				await dialog.accept().catch(rej)
+				res()
+			})
+			setTimeout(rej, 10000)
+		})
+
 		const deleteButton = await rows[0].$('a.wl-delete')
 		await deleteButton?.click()
+		await acceptedDialogPromise
 	}
 
 	private async openWaitingListDialog() {
@@ -378,7 +389,7 @@ export class BaanReserverenService {
 
 	private async confirmWaitingListDetails() {
 		this.loggerService.debug('Confirming waiting list details')
-		const saveButton = await this.page.$('input[type="submit"][value="Save"]')
+		const saveButton = await this.page.$('input[type="submit"]')
 		await saveButton?.click().catch((e) => {
 			throw new RunnerWaitingListConfirmError(e)
 		})
