@@ -66,9 +66,12 @@ export class ReservationsWorker {
 
 	async addReservationToWaitList(reservation: Reservation) {
 		try {
-			await this.brService.addReservationToWaitList(reservation)
+			const waitingListId = await this.brService.addReservationToWaitList(
+				reservation,
+			)
 			await this.reservationsService.update(reservation.id, {
 				waitListed: true,
+				waitingListId,
 			})
 		} catch (error: unknown) {
 			this.loggerService.error(

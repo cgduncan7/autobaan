@@ -68,6 +68,9 @@ export class Reservation {
 	@Column('boolean', { default: false })
 	waitListed: boolean
 
+	@Column('int', { nullable: true })
+	waitingListId: number
+
 	constructor(partial: Partial<Reservation>) {
 		Object.assign(this, partial)
 	}

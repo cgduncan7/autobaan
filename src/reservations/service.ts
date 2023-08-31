@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 
 import dayjs from '../common/dayjs'
+import { BaanReserverenService } from '../runner/baanreserveren/service'
 import { Reservation } from './entity'
 
 @Injectable()
@@ -10,6 +11,9 @@ export class ReservationsService {
 	constructor(
 		@InjectRepository(Reservation)
 		private reservationsRepository: Repository<Reservation>,
+
+		@Inject(BaanReserverenService)
+		private readonly brService: BaanReserverenService,
 	) {}
 
 	async getAll() {
@@ -45,6 +49,10 @@ export class ReservationsService {
 	}
 
 	async deleteById(id: string) {
-		return await this.reservationsRepository.delete({ id })
+		const reservation = await this.getById(id)
+		if (!reservation) return
+
+		await this.brService.removeReservationFromWaitList(reservation)
+		return await this.reservationsRepository.delete({ id: reservation.id })
 	}
 }

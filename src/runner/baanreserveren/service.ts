@@ -73,7 +73,7 @@ export class BaanReserverenService {
 	private startSession(username: string) {
 		this.loggerService.debug('Starting session', { username })
 		if (this.session && this.session.username !== username) {
-			throw new Error('Session already started')
+			throw new SessionStartError('Session already started')
 		}
 
 		if (this.session?.username === username) {
@@ -160,7 +160,7 @@ export class BaanReserverenService {
 		this.loggerService.debug('Navigating to day', { date })
 		if (this.getLastVisibleDay().isBefore(date)) {
 			await this.page
-				?.waitForSelector('td.month.next')
+				.waitForSelector('td.month.next')
 				.then((d) => d?.click())
 				.catch((e: Error) => {
 					this.loggerService.error('Failed to switch months', { error: e })
@@ -168,7 +168,7 @@ export class BaanReserverenService {
 				})
 		}
 		await this.page
-			?.waitForSelector(
+			.waitForSelector(
 				`td#cal_${date.get('year')}_${date.get('month') + 1}_${date.get(
 					'date',
 				)}`,
@@ -179,7 +179,7 @@ export class BaanReserverenService {
 				throw new RunnerNavigationDayError(e)
 			})
 		await this.page
-			?.waitForSelector(
+			.waitForSelector(
 				`td#cal_${date.get('year')}_${date.get('month') + 1}_${date.get(
 					'date',
 				)}.selected`,
@@ -210,6 +210,53 @@ export class BaanReserverenService {
 			})
 	}
 
+	private async recordWaitingListEntries(): Promise<number[]> {
+		const waitingListEntriesElements = await this.page.$$(
+			'#content tbody tr td:nth-child(1)',
+		)
+		if (!waitingListEntriesElements) return []
+
+		const waitingListIds = (
+			await Promise.all(
+				waitingListEntriesElements.map(async (e) => {
+					const elementTextContent = await (
+						await e.getProperty('textContent')
+					).jsonValue()
+
+					if (elementTextContent) {
+						return Number.parseInt(elementTextContent)
+					}
+				}),
+			)
+		).filter((id): id is number => id != null && typeof id === 'number')
+
+		return waitingListIds
+	}
+
+	private findNewWaitingListEntryId(
+		previous: number[],
+		current: number[],
+	): number | null {
+		const previousSet = new Set(previous)
+		for (const c of current) {
+			if (!previousSet.has(c)) return c
+		}
+
+		return null
+	}
+
+	private async deleteWaitingListEntryRowById(id: number) {
+		const rows = await this.page.$x(`//td[text()="${id}"]/parent::tr`)
+		if (rows.length === 0) {
+			throw new WaitingListEntryDeletionError(
+				'Cannot find waiting list entry to delete',
+			)
+		}
+
+		const deleteButton = await rows[0].$('a.wl-delete')
+		await deleteButton?.click()
+	}
+
 	private async openWaitingListDialog() {
 		this.loggerService.debug('Opening waiting list dialog')
 		await this.page.waitForNetworkIdle()
@@ -231,7 +278,7 @@ export class BaanReserverenService {
 			const timeString = possibleDate.format('HH:mm')
 			const selector =
 				`tr[data-time='${timeString}']` + `> td.free[rowspan='3'][type='free']`
-			freeCourt = await this.page?.$(selector)
+			freeCourt = await this.page.$(selector)
 			i++
 		}
 
@@ -249,7 +296,7 @@ export class BaanReserverenService {
 	private async selectOpponent(id: string, name: string) {
 		this.loggerService.debug('Selecting opponent', { id, name })
 		const player2Search = await this.page
-			?.waitForSelector('input:has(~ select[name="players[2]"])')
+			.waitForSelector('input:has(~ select[name="players[2]"])')
 			.catch((e: Error) => {
 				throw new RunnerOpponentSearchError(e)
 			})
@@ -258,11 +305,11 @@ export class BaanReserverenService {
 			.catch((e: Error) => {
 				throw new RunnerOpponentSearchInputError(e)
 			})
-		await this.page?.waitForNetworkIdle().catch((e: Error) => {
+		await this.page.waitForNetworkIdle().catch((e: Error) => {
 			throw new RunnerOpponentSearchNetworkError(e)
 		})
 		await this.page
-			?.$('select.br-user-select[name="players[2]"]')
+			.$('select.br-user-select[name="players[2]"]')
 			.then((d) => d?.select(id))
 			.catch((e: Error) => {
 				throw new RunnerOpponentSearchSelectionError(e)
@@ -272,13 +319,13 @@ export class BaanReserverenService {
 	private async confirmReservation() {
 		this.loggerService.debug('Confirming reservation')
 		await this.page
-			?.$('input#__make_submit')
+			.$('input#__make_submit')
 			.then((b) => b?.click())
 			.catch((e: Error) => {
 				throw new RunnerReservationConfirmButtonError(e)
 			})
 		await this.page
-			?.waitForSelector('input#__make_submit2')
+			.waitForSelector('input#__make_submit2')
 			.then((b) => b?.click())
 			.catch((e: Error) => {
 				throw new RunnerReservationConfirmSubmitError(e)
@@ -287,7 +334,7 @@ export class BaanReserverenService {
 
 	private async inputWaitingListDetails(reservation: Reservation) {
 		this.loggerService.debug('Inputting waiting list details')
-		const startDateInput = await this.page?.$('input[name="start_date"]')
+		const startDateInput = await this.page.$('input[name="start_date"]')
 		// Click 3 times to select all existing text
 		await startDateInput?.click({ count: 3, delay: 10 }).catch((e) => {
 			throw new RunnerWaitingListInputError(e)
@@ -300,7 +347,7 @@ export class BaanReserverenService {
 				throw new RunnerWaitingListInputError(e)
 			})
 
-		const endDateInput = await this.page?.$('input[name="end_date"]')
+		const endDateInput = await this.page.$('input[name="end_date"]')
 		await endDateInput
 			?.type(reservation.dateRangeEnd.format('DD-MM-YYYY'), {
 				delay: this.getTypingDelay(),
@@ -309,7 +356,7 @@ export class BaanReserverenService {
 				throw new RunnerWaitingListInputError(e)
 			})
 
-		const startTimeInput = await this.page?.$('input[name="start_time"]')
+		const startTimeInput = await this.page.$('input[name="start_time"]')
 		await startTimeInput
 			?.type(reservation.dateRangeStart.format('HH:mm'), {
 				delay: this.getTypingDelay(),
@@ -319,7 +366,7 @@ export class BaanReserverenService {
 			})
 
 		// Use the same time for start and end so that the waiting list only notifies for start time
-		const endTimeInput = await this.page?.$('input[name="end_time"]')
+		const endTimeInput = await this.page.$('input[name="end_time"]')
 		await endTimeInput
 			?.type(reservation.dateRangeStart.add(1, 'minutes').format('HH:mm'), {
 				delay: this.getTypingDelay(),
@@ -331,7 +378,7 @@ export class BaanReserverenService {
 
 	private async confirmWaitingListDetails() {
 		this.loggerService.debug('Confirming waiting list details')
-		const saveButton = await this.page?.$('input[type="submit"][value="Save"]')
+		const saveButton = await this.page.$('input[type="submit"][value="Save"]')
 		await saveButton?.click().catch((e) => {
 			throw new RunnerWaitingListConfirmError(e)
 		})
@@ -348,9 +395,31 @@ export class BaanReserverenService {
 	public async addReservationToWaitList(reservation: Reservation) {
 		await this.init(reservation)
 		await this.navigateToWaitingList()
+		const previousWaitingListIds = await this.recordWaitingListEntries()
 		await this.openWaitingListDialog()
 		await this.inputWaitingListDetails(reservation)
 		await this.confirmWaitingListDetails()
+		const currentWaitingListIds = await this.recordWaitingListEntries()
+		const waitingListId = this.findNewWaitingListEntryId(
+			previousWaitingListIds,
+			currentWaitingListIds,
+		)
+
+		if (waitingListId == null) {
+			throw new WaitingListSubmissionError(
+				'Failed to find new waiting list entry',
+			)
+		}
+
+		return waitingListId
+	}
+
+	public async removeReservationFromWaitList(reservation: Reservation) {
+		if (!reservation.waitListed || !reservation.waitingListId) return
+
+		await this.init(reservation)
+		await this.navigateToWaitingList()
+		await this.deleteWaitingListEntryRowById(reservation.waitingListId)
 	}
 }
 
@@ -496,5 +565,26 @@ export class RunnerReservationConfirmButtonError extends RunnerError {
 export class RunnerReservationConfirmSubmitError extends RunnerError {
 	constructor(error: Error) {
 		super(error, 'RunnerReservationConfirmSubmitError')
+	}
+}
+
+export class SessionStartError extends Error {
+	constructor(message: string) {
+		super(message)
+		this.name = 'SessionStartError'
+	}
+}
+
+export class WaitingListSubmissionError extends Error {
+	constructor(message: string) {
+		super(message)
+		this.name = 'WaitingListSubmissionError'
+	}
+}
+
+export class WaitingListEntryDeletionError extends Error {
+	constructor(message: string) {
+		super(message)
+		this.name = 'WaitingListEntryDeletionError'
 	}
 }
