@@ -46,17 +46,19 @@ export class RecurringReservation {
 	opponentName: string
 
 	@Exclude()
-	public createReservation(): Reservation {
+	public createReservationInAdvance(daysInAdvance = 7): Reservation {
 		const [hourStart, minuteStart] = this.timeStart.split(':')
 		const [hourEnd, minuteEnd] = this.timeEnd.split(':')
 		const dateRangeStart = dayjs()
 			.set('day', this.dayOfWeek)
 			.set('hour', Number.parseInt(hourStart))
 			.set('minute', Number.parseInt(minuteStart))
+			.add(daysInAdvance, 'days')
 		const dateRangeEnd = dayjs()
 			.set('day', this.dayOfWeek)
 			.set('hour', Number.parseInt(hourEnd))
 			.set('minute', Number.parseInt(minuteEnd))
+			.add(daysInAdvance, 'days')
 		const reservation = new Reservation({
 			username: this.username,
 			password: this.password,

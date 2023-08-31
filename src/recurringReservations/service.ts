@@ -34,7 +34,7 @@ export class RecurringReservationsService {
 	}
 
 	scheduleReservation(recurringReservation: RecurringReservation) {
-		const reservation = recurringReservation.createReservation()
+		const reservation = recurringReservation.createReservationInAdvance()
 		return this.reservationsService.create(reservation)
 	}
 
