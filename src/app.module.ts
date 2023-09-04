@@ -5,6 +5,7 @@ import { ScheduleModule } from '@nestjs/schedule'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { resolve } from 'path'
 
+import { ClientModule } from './client/module'
 import { EmailModule } from './email/module'
 import { LoggerMiddleware } from './logger/middleware'
 import { LoggerModule } from './logger/module'
@@ -55,6 +56,7 @@ import { WaitingListModule } from './waitingList/module'
 		LoggerModule,
 		EmailModule,
 		WaitingListModule,
+		ClientModule,
 	],
 })
 export class AppModule implements NestModule {

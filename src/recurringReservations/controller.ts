@@ -13,11 +13,12 @@ import {
 	ValidationPipe,
 } from '@nestjs/common'
 
+import { CustomResponseTransformInterceptor } from '../common/customResponse'
 import { DayOfWeek, RecurringReservation } from './entity'
 import { RecurringReservationsService } from './service'
 
 @Controller('recurring-reservations')
-@UseInterceptors(ClassSerializerInterceptor)
+@UseInterceptors(ClassSerializerInterceptor, CustomResponseTransformInterceptor)
 export class RecurringReservationsController {
 	constructor(
 		@Inject(RecurringReservationsService)

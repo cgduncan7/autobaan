@@ -16,13 +16,14 @@ import {
 import { Queue } from 'bull'
 import { Dayjs } from 'dayjs'
 
+import { CustomResponseTransformInterceptor } from '../common/customResponse'
 import { LoggerService } from '../logger/service.logger'
 import { RESERVATIONS_QUEUE_NAME } from './config'
 import { Reservation } from './entity'
 import { ReservationsService } from './service'
 
 @Controller('reservations')
-@UseInterceptors(ClassSerializerInterceptor)
+@UseInterceptors(ClassSerializerInterceptor, CustomResponseTransformInterceptor)
 export class ReservationsController {
 	constructor(
 		@Inject(ReservationsService)
