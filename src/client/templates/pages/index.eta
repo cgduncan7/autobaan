@@ -1,0 +1,3 @@
+<% layout('../layouts/main') %>
+
+<p>Hello <%= it.name %>!</p>
