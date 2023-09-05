@@ -1,5 +1,6 @@
 import { BullModule } from '@nestjs/bull'
 import { Module } from '@nestjs/common'
+import { EmailModule } from 'src/email/module'
 import { ReservationsModule } from 'src/reservations/module'
 
 import { EMAILS_QUEUE_NAME } from '../email/config'
@@ -13,6 +14,7 @@ import { WaitingListService } from './service'
 		ReservationsModule,
 		BullModule.registerQueue({ name: EMAILS_QUEUE_NAME }),
 		BullModule.registerQueue({ name: RESERVATIONS_QUEUE_NAME }),
+		EmailModule,
 	],
 	providers: [WaitingListService],
 	exports: [WaitingListService],

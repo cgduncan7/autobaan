@@ -19,12 +19,16 @@ export class EmailProvider {
 	}
 
 	private async handleReceivedEmails(emails: Email[]) {
-		this.emailsQueue.addBulk(
+		await this.emailsQueue.addBulk(
 			emails.map((email) => ({ name: email.id, data: email })),
 		)
 	}
 
 	public registerEmailListener() {
 		this.emailClient.listen((emails) => this.handleReceivedEmails(emails))
+	}
+
+	public async readEmails(emails: Email[]) {
+		await this.emailClient.markMailsSeen(emails.map((e) => e.id))
 	}
 }

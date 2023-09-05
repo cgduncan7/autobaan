@@ -15,6 +15,7 @@ export enum EmailClientStatus {
 @Injectable()
 export class EmailClient {
 	public readonly imapClient: Imap
+	private readonly mailboxName: string
 	private mailbox?: Imap.Box
 	private status: EmailClientStatus
 
@@ -25,6 +26,7 @@ export class EmailClient {
 		@Inject(ConfigService)
 		private readonly configService: ConfigService,
 	) {
+		this.mailboxName = this.configService.getOrThrow<string>('EMAIL_MAILBOX')
 		this.imapClient = new Imap({
 			host: this.configService.getOrThrow('EMAIL_HOST'),
 			port: this.configService.get('EMAIL_PORT', 993),
@@ -90,8 +92,10 @@ export class EmailClient {
 		)
 
 		if (newMessages > 0) {
-			const startingMessage = totalMessages - newMessages + 1 // starting message is inclusive
-			const emails = await this.fetchMails(`${startingMessage}`, '*')
+			const emails = await this.fetchMailsFrom(
+				totalMessages - (numMessages - 1),
+			)
+			this.loggerService.debug(`Fetched ${emails.length} emails`)
 			callback(emails)
 		}
 	}
@@ -102,8 +106,7 @@ export class EmailClient {
 			throw new Error('Not ready to listen')
 		}
 
-		const mailbox = this.configService.get<string>('EMAIL_MAILBOX', 'INBOX')
-		this.imapClient.openBox(mailbox, (error, mailbox) => {
+		this.imapClient.openBox(this.mailboxName, (error, mailbox) => {
 			if (error) {
 				this.loggerService.error('Error opening mailbox', {
 					...error,
@@ -171,17 +174,13 @@ export class EmailClient {
 		})
 	}
 
-	public async fetchMails(startingMessageId: string, endingMessageId: string) {
+	public async fetchMailsFrom(startingMessageSeqNo: number) {
 		this.loggerService.debug(
-			`Fetching mails ${startingMessageId}:${endingMessageId}`,
+			`Fetching mails starting from ${startingMessageSeqNo}`,
 		)
-		const fetcher = this.imapClient.fetch(
-			`${startingMessageId}:${endingMessageId}`,
-			{
-				bodies: '',
-				markSeen: true,
-			},
-		)
+		const fetcher = this.imapClient.seq.fetch(`${startingMessageSeqNo}:*`, {
+			bodies: '',
+		})
 
 		return new Promise<Email[]>((res, rej) => {
 			const generateEmailPromises: Promise<Email>[] = []
@@ -194,6 +193,18 @@ export class EmailClient {
 			fetcher.on('end', async () => {
 				const emails = await Promise.all(generateEmailPromises)
 				res(emails)
+			})
+		})
+	}
+
+	public async markMailsSeen(messageIds: string[]) {
+		this.loggerService.debug('Marking mails as seen', { messageIds })
+		return new Promise<void>((res, rej) => {
+			this.imapClient.addFlags(messageIds.join(','), ['\\Seen'], (error) => {
+				if (error != null) {
+					rej(error)
+				}
+				res()
 			})
 		})
 	}

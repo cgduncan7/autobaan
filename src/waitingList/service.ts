@@ -1,6 +1,7 @@
 import { InjectQueue, Process, Processor } from '@nestjs/bull'
 import { Inject } from '@nestjs/common'
 import { Job, Queue } from 'bull'
+import { EmailProvider } from 'src/email/provider'
 import { ReservationsService } from 'src/reservations/service'
 
 import dayjs from '../common/dayjs'
@@ -31,6 +32,9 @@ export class WaitingListService {
 		@Inject(ReservationsService)
 		private readonly reservationsService: ReservationsService,
 
+		@Inject(EmailProvider)
+		private readonly emailProvider: EmailProvider,
+
 		@Inject(LoggerService)
 		private readonly loggerService: LoggerService,
 	) {}
@@ -46,6 +50,7 @@ export class WaitingListService {
 
 		if (!this.isRelevantEmail) return
 
+		await this.emailProvider.readEmails([email])
 		await this.handleWaitingListEmail(email)
 	}
 
