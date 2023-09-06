@@ -4,6 +4,7 @@ import { Job } from 'bull'
 import { instanceToPlain, plainToInstance } from 'class-transformer'
 
 import { LoggerService } from '../logger/service.logger'
+import { NtfyProvider } from '../ntfy/provider'
 import {
 	BaanReserverenService,
 	NoCourtAvailableError,
@@ -23,6 +24,9 @@ export class ReservationsWorker {
 
 		@Inject(LoggerService)
 		private readonly loggerService: LoggerService,
+
+		@Inject(NtfyProvider)
+		private readonly ntfyProvider: NtfyProvider,
 	) {}
 
 	@Process()
@@ -33,11 +37,16 @@ export class ReservationsWorker {
 		this.loggerService.log('Handling reservation', {
 			reservation: instanceToPlain(reservation),
 		})
+		await this.ntfyProvider.sendPerformingReservationNotification(
+			reservation.id,
+			reservation.dateRangeStart,
+			reservation.dateRangeEnd,
+		)
 		await this.performReservation(reservation)
 	}
 
 	private async handleReservationErrors(
-		error: unknown,
+		error: Error,
 		reservation: Reservation,
 	) {
 		switch (true) {
@@ -45,12 +54,23 @@ export class ReservationsWorker {
 				this.loggerService.warn('No court available')
 				if (!reservation.waitListed) {
 					this.loggerService.log('Adding reservation to waiting list')
+					await this.ntfyProvider.sendReservationWaitlistedNotification(
+						reservation.id,
+						reservation.dateRangeStart,
+						reservation.dateRangeEnd,
+					)
 					await this.addReservationToWaitList(reservation)
 				}
 				return
 			}
 			default:
 				this.loggerService.error('Error while performing reservation', error)
+				this.ntfyProvider.sendErrorPerformingReservationNotification(
+					reservation.id,
+					reservation.dateRangeStart,
+					reservation.dateRangeEnd,
+					error,
+				)
 				throw error
 		}
 	}
@@ -60,7 +80,7 @@ export class ReservationsWorker {
 			await this.brService.performReservation(reservation)
 			await this.reservationsService.deleteById(reservation.id)
 		} catch (error: unknown) {
-			await this.handleReservationErrors(error, reservation)
+			await this.handleReservationErrors(error as Error, reservation)
 		}
 	}
 

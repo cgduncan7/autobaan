@@ -4,6 +4,7 @@ import { Cron, CronExpression } from '@nestjs/schedule'
 import { Queue } from 'bull'
 
 import { LoggerService } from '../logger/service.logger'
+import { NtfyProvider } from '../ntfy/provider'
 import { RESERVATIONS_QUEUE_NAME } from './config'
 import { ReservationsService } from './service'
 
@@ -16,6 +17,9 @@ export class ReservationsCronService {
 		@InjectQueue(RESERVATIONS_QUEUE_NAME)
 		private readonly reservationsQueue: Queue,
 
+		@Inject(NtfyProvider)
+		private readonly ntfyProvider: NtfyProvider,
+
 		@Inject(LoggerService)
 		private readonly loggerService: LoggerService,
 	) {}
@@ -26,6 +30,7 @@ export class ReservationsCronService {
 	})
 	async handleDailyReservations() {
 		this.loggerService.log('handleDailyReservations beginning')
+		await this.ntfyProvider.sendCronStartNotification('handleDailyReservations')
 		const reservationsToPerform = await this.reservationService.getSchedulable()
 		this.loggerService.log(
 			`Found ${reservationsToPerform.length} reservations to perform`,
@@ -34,6 +39,10 @@ export class ReservationsCronService {
 			reservationsToPerform.map((r) => ({ data: r, opts: { attempts: 1 } })),
 		)
 		this.loggerService.log('handleDailyReservations ending')
+		await this.ntfyProvider.sendCronStopNotification(
+			'handleDailyReservations',
+			`Count: ${reservationsToPerform.length}`,
+		)
 	}
 
 	@Cron(CronExpression.EVERY_DAY_AT_11PM, {
@@ -42,6 +51,9 @@ export class ReservationsCronService {
 	})
 	async cleanUpExpiredReservations() {
 		this.loggerService.log('cleanUpExpiredReservations beginning')
+		await this.ntfyProvider.sendCronStartNotification(
+			'cleanUpExpiredReservations',
+		)
 		const reservations = await this.reservationService.getByDate()
 		this.loggerService.log(
 			`Found ${reservations.length} reservations to delete`,
@@ -50,5 +62,9 @@ export class ReservationsCronService {
 			await this.reservationService.deleteById(reservation.id)
 		}
 		this.loggerService.log('cleanUpExpiredReservations ending')
+		await this.ntfyProvider.sendCronStopNotification(
+			'cleanUpExpiredReservations',
+			`Count: ${reservations.length}`,
+		)
 	}
 }

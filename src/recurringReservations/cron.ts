@@ -3,6 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule'
 
 import dayjs from '../common/dayjs'
 import { LoggerService } from '../logger/service.logger'
+import { NtfyProvider } from '../ntfy/provider'
 import { RecurringReservationsService } from './service'
 
 @Injectable()
@@ -13,6 +14,9 @@ export class RecurringReservationsCronService {
 
 		@Inject(LoggerService)
 		private readonly loggerService: LoggerService,
+
+		@Inject(NtfyProvider)
+		private readonly ntfyProvider: NtfyProvider,
 	) {}
 
 	@Cron(CronExpression.EVERY_DAY_AT_4AM, {
@@ -21,6 +25,9 @@ export class RecurringReservationsCronService {
 	})
 	async handleRecurringReservations() {
 		this.loggerService.log('handleRecurringReservations beginning')
+		await this.ntfyProvider.sendCronStartNotification(
+			'handleRecurringReservations',
+		)
 		const dayOfWeek = dayjs().get('day')
 		const recurringReservationsToSchedule =
 			await this.recurringReservationsService.getByDayOfWeek(dayOfWeek)
@@ -33,5 +40,9 @@ export class RecurringReservationsCronService {
 			)
 		}
 		this.loggerService.log('handleRecurringReservations ending')
+		await this.ntfyProvider.sendCronStopNotification(
+			'handleRecurringReservations',
+			`Count: ${recurringReservationsToSchedule.length}`,
+		)
 	}
 }

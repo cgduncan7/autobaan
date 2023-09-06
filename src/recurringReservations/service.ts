@@ -10,6 +10,7 @@ export class RecurringReservationsService {
 	constructor(
 		@InjectRepository(RecurringReservation)
 		private recurringReservationsRepository: Repository<RecurringReservation>,
+
 		@Inject(ReservationsService)
 		private reservationsService: ReservationsService,
 	) {}

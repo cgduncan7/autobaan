@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 
 import { LoggerModule } from '../logger/module'
+import { NtfyModule } from '../ntfy/module'
 import { RunnerModule } from '../runner/module'
 import { RESERVATIONS_QUEUE_NAME } from './config'
 import { ReservationsController } from './controller'
@@ -17,6 +18,7 @@ import { ReservationsWorker } from './worker'
 		TypeOrmModule.forFeature([Reservation]),
 		BullModule.registerQueue({ name: RESERVATIONS_QUEUE_NAME }),
 		RunnerModule,
+		NtfyModule,
 	],
 	exports: [ReservationsService],
 	controllers: [ReservationsController],

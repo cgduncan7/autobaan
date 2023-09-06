@@ -1,14 +1,14 @@
 import { InjectQueue, Process, Processor } from '@nestjs/bull'
 import { Inject } from '@nestjs/common'
 import { Job, Queue } from 'bull'
-import { EmailProvider } from 'src/email/provider'
-import { ReservationsService } from 'src/reservations/service'
 
 import dayjs from '../common/dayjs'
 import { EMAILS_QUEUE_NAME } from '../email/config'
+import { EmailProvider } from '../email/provider'
 import { Email } from '../email/types'
 import { LoggerService } from '../logger/service.logger'
 import { RESERVATIONS_QUEUE_NAME } from '../reservations/config'
+import { ReservationsService } from '../reservations/service'
 import { WaitingListDetails } from './types'
 
 const EMAIL_SUBJECT_REGEX = new RegExp(
