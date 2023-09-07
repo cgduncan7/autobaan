@@ -3,7 +3,6 @@ import { Inject, Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { Queue } from 'bull'
 
-import dayjs from '../common/dayjs'
 import { LoggerService } from '../logger/service.logger'
 import { RESERVATIONS_QUEUE_NAME } from './config'
 import { ReservationsService } from './service'
@@ -27,9 +26,8 @@ export class ReservationsCronService {
 	})
 	async handleDailyReservations() {
 		this.loggerService.log('handleDailyReservations beginning')
-		const reservationsToPerform = await this.reservationService.getByDate(
-			dayjs().subtract(7, 'days'),
-		)
+		const reservationsToPerform =
+			await this.reservationService.getScheduleable()
 		this.loggerService.log(
 			`Found ${reservationsToPerform.length} reservations to perform`,
 		)

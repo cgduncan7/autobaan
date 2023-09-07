@@ -31,6 +31,20 @@ export class ReservationsService {
 			.getMany()
 	}
 
+	/**
+	 * Gets all reservations that have not been scheduled that are within the reservation window
+	 * @returns Reservations that can be scheduled
+	 */
+	async getScheduleable() {
+		return await this.reservationsRepository
+			.createQueryBuilder()
+			.where(`DATE(dateRangeStart) <= DATE(:date)`, {
+				date: dayjs().add(7, 'days'),
+			})
+			.andWhere(`waitListed = false`)
+			.getMany()
+	}
+
 	async getByDateOnWaitingList(date = dayjs()) {
 		return await this.reservationsRepository
 			.createQueryBuilder()
