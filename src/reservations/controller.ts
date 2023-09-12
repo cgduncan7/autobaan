@@ -36,7 +36,13 @@ export class ReservationsController {
 	) {}
 
 	@Get()
-	getReservations(@Query('date') date?: Dayjs) {
+	getReservations(
+		@Query('date') date?: Dayjs,
+		@Query('schedulable') schedulable?: boolean,
+	) {
+		if (schedulable) {
+			return this.reservationsService.getScheduleable()
+		}
 		if (date) {
 			return this.reservationsService.getByDate(date)
 		}
