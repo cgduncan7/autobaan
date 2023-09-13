@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 
 import dayjs from '../common/dayjs'
+import { LoggerService } from '../logger/service.logger'
 import { BaanReserverenService } from '../runner/baanreserveren/service'
 import { Reservation } from './entity'
 
@@ -14,6 +15,9 @@ export class ReservationsService {
 
 		@Inject(BaanReserverenService)
 		private readonly brService: BaanReserverenService,
+
+		@Inject(LoggerService)
+		private readonly loggerService: LoggerService,
 	) {}
 
 	async getAll() {
@@ -35,14 +39,17 @@ export class ReservationsService {
 	 * Gets all reservations that have not been scheduled that are within the reservation window
 	 * @returns Reservations that can be scheduled
 	 */
-	async getScheduleable() {
-		return await this.reservationsRepository
+	async getSchedulable() {
+		const query = this.reservationsRepository
 			.createQueryBuilder()
 			.where(`DATE(dateRangeStart) <= DATE(:date)`, {
 				date: dayjs().add(7, 'days'),
 			})
 			.andWhere(`waitListed = false`)
-			.getMany()
+
+		this.loggerService.debug('Query: ' + query.getSql())
+
+		return await query.getMany()
 	}
 
 	async getByDateOnWaitingList(date = dayjs()) {

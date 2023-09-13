@@ -26,8 +26,7 @@ export class ReservationsCronService {
 	})
 	async handleDailyReservations() {
 		this.loggerService.log('handleDailyReservations beginning')
-		const reservationsToPerform =
-			await this.reservationService.getScheduleable()
+		const reservationsToPerform = await this.reservationService.getSchedulable()
 		this.loggerService.log(
 			`Found ${reservationsToPerform.length} reservations to perform`,
 		)

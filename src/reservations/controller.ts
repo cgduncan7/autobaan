@@ -41,7 +41,7 @@ export class ReservationsController {
 		@Query('schedulable') schedulable?: boolean,
 	) {
 		if (schedulable) {
-			return this.reservationsService.getScheduleable()
+			return this.reservationsService.getSchedulable()
 		}
 		if (date) {
 			return this.reservationsService.getByDate(date)
