@@ -14,10 +14,12 @@ export class NtfyClient {
 	) {
 		const host = this.configService.getOrThrow<string>('NTFY_HOST')
 		this.topic = this.configService.getOrThrow<string>('NTFY_TOPIC')
+		const token = this.configService.getOrThrow<string>('NTFY_TOKEN')
 		this.httpClient = new Axios({
 			baseURL: `https://${host}`,
 			headers: {
 				'Content-Type': 'application/json',
+				Authorization: `Bearer ${token}`,
 			},
 		})
 	}

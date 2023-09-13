@@ -1,5 +1,5 @@
 import { InjectQueue, Process, Processor } from '@nestjs/bull'
-import { Inject, Injectable } from '@nestjs/common'
+import { Inject, Injectable, OnApplicationBootstrap } from '@nestjs/common'
 import { Job, JobOptions, Queue } from 'bull'
 import { Dayjs } from 'dayjs'
 
@@ -13,7 +13,7 @@ import {
 
 @Processor(NTFY_PUBLISH_QUEUE_NAME)
 @Injectable()
-export class NtfyProvider {
+export class NtfyProvider implements OnApplicationBootstrap {
 	constructor(
 		@Inject(NtfyClient)
 		private readonly ntfyClient: NtfyClient,
@@ -21,6 +21,10 @@ export class NtfyProvider {
 		@InjectQueue(NTFY_PUBLISH_QUEUE_NAME)
 		private readonly publishQueue: Queue,
 	) {}
+
+	async onApplicationBootstrap() {
+		await this.sendBootstrappedNotification()
+	}
 
 	@Process()
 	async handlePublishJob(job: Job<Omit<MessageConfig, 'topic'>>) {
@@ -42,6 +46,15 @@ export class NtfyProvider {
 				},
 			},
 		]
+	}
+
+	async sendBootstrappedNotification() {
+		await this.publishQueue.add(
+			...NtfyProvider.defaultJob({
+				title: 'Autobaan up and running',
+				tags: [MessageTags.badminton],
+			}),
+		)
 	}
 
 	async sendCronStartNotification(title: string) {
