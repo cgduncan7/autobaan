@@ -43,7 +43,7 @@ export class ReservationsService {
 		const query = this.reservationsRepository
 			.createQueryBuilder()
 			.where(`DATE(dateRangeStart) <= DATE(:date)`, {
-				date: dayjs().add(7, 'days'),
+				date: dayjs().add(7, 'days').toISOString(),
 			})
 			.andWhere(`waitListed = false`)
 
@@ -55,8 +55,12 @@ export class ReservationsService {
 	async getByDateOnWaitingList(date = dayjs()) {
 		return await this.reservationsRepository
 			.createQueryBuilder()
-			.where(`DATE(dateRangeStart) <= DATE(:date)`, { date })
-			.andWhere(`DATE(dateRangeEnd) >= DATE(:date)`, { date })
+			.where(`DATE(dateRangeStart) <= DATE(:date)`, {
+				date: date.toISOString(),
+			})
+			.andWhere(`DATE(dateRangeEnd) >= DATE(:date)`, {
+				date: date.toISOString(),
+			})
 			.andWhere('waitListed = true')
 			.getMany()
 	}

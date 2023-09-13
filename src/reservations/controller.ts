@@ -7,6 +7,7 @@ import {
 	Get,
 	Inject,
 	Param,
+	ParseBoolPipe,
 	Post,
 	Query,
 	UseInterceptors,
@@ -15,6 +16,7 @@ import {
 } from '@nestjs/common'
 import { Queue } from 'bull'
 import { Dayjs } from 'dayjs'
+import { ParseDayjsPipe } from 'src/common/pipes/parseDayjsPipe'
 
 import { LoggerService } from '../logger/service.logger'
 import { RESERVATIONS_QUEUE_NAME } from './config'
@@ -37,9 +39,10 @@ export class ReservationsController {
 
 	@Get()
 	getReservations(
-		@Query('date') date?: Dayjs,
-		@Query('schedulable') schedulable?: boolean,
+		@Query('date', ParseDayjsPipe) date?: Dayjs,
+		@Query('schedulable', ParseBoolPipe) schedulable?: boolean,
 	) {
+		console.log(schedulable)
 		if (schedulable) {
 			return this.reservationsService.getSchedulable()
 		}
