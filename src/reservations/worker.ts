@@ -65,7 +65,7 @@ export class ReservationsWorker {
 			}
 			default:
 				this.loggerService.error('Error while performing reservation', error)
-				this.ntfyProvider.sendErrorPerformingReservationNotification(
+				await this.ntfyProvider.sendErrorPerformingReservationNotification(
 					reservation.id,
 					reservation.dateRangeStart,
 					reservation.dateRangeEnd,
