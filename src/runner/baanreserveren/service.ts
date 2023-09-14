@@ -250,9 +250,8 @@ export class BaanReserverenService {
 	private async deleteWaitingListEntryRowById(id: number) {
 		const rows = await this.page.$x(`//td[text()="${id}"]/parent::tr`)
 		if (rows.length === 0) {
-			throw new WaitingListEntryDeletionError(
-				'Cannot find waiting list entry to delete',
-			)
+			this.loggerService.error('Cannot find waiting list entry to delete')
+			return
 		}
 
 		const acceptedDialogPromise = new Promise<void>((res, rej) => {
