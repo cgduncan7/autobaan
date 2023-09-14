@@ -42,9 +42,13 @@ export class ReservationsService {
 	async getSchedulable() {
 		const query = this.reservationsRepository
 			.createQueryBuilder()
-			.where(`DATE(dateRangeStart) <= DATE(:date)`, {
-				date: dayjs().add(7, 'days').toISOString(),
-			})
+			.where(
+				`DATE(dateRangeStart) BETWEEN DATE(:startDate) AND DATE(:endDate)`,
+				{
+					startDate: dayjs().add(7, 'days').toISOString(),
+					endDate: dayjs().toISOString(),
+				},
+			)
 			.andWhere(`waitListed = false`)
 
 		return await query.getMany()
