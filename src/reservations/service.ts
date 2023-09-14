@@ -31,7 +31,7 @@ export class ReservationsService {
 	async getByDate(date = dayjs()) {
 		return await this.reservationsRepository
 			.createQueryBuilder()
-			.where(`DATE(dateRangeStart) = DATE(:date)`, { date })
+			.where(`DATE(dateRangeStart) = DATE(:date)`, { date: date.toISOString() })
 			.getMany()
 	}
 
@@ -46,8 +46,6 @@ export class ReservationsService {
 				date: dayjs().add(7, 'days').toISOString(),
 			})
 			.andWhere(`waitListed = false`)
-
-		this.loggerService.debug('Query: ' + query.getSql())
 
 		return await query.getMany()
 	}
