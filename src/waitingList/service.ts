@@ -61,7 +61,7 @@ export class WaitingListService {
 			dateRangeStart,
 		)
 
-		if (reservations.length) {
+		if (reservations.length === 0) {
 			this.loggerService.error('Found no reservations on waiting list')
 			return
 		}
