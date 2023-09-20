@@ -201,6 +201,7 @@ export class BaanReserverenService {
 			.catch((e) => {
 				throw new RunnerWaitingListNavigationError(e)
 			})
+		await this.page.waitForNetworkIdle()
 	}
 
 	private async navigateToReservations() {
@@ -210,6 +211,7 @@ export class BaanReserverenService {
 			.catch((e) => {
 				throw new RunnerWaitingListNavigationError(e)
 			})
+		await this.page.waitForNetworkIdle()
 	}
 
 	private async recordWaitingListEntries(): Promise<number[]> {
@@ -273,6 +275,7 @@ export class BaanReserverenService {
 		await this.page.goto(
 			`${BAAN_RESERVEREN_ROOT_URL}/${BaanReserverenUrls.WaitingListAdd}`,
 		)
+		await this.page.waitForNetworkIdle()
 	}
 
 	private async selectAvailableTime(reservation: Reservation) {
@@ -392,6 +395,7 @@ export class BaanReserverenService {
 		await saveButton?.click().catch((e) => {
 			throw new RunnerWaitingListConfirmError(e)
 		})
+		await this.page.waitForNetworkIdle()
 	}
 
 	public async performReservation(reservation: Reservation) {
@@ -409,6 +413,7 @@ export class BaanReserverenService {
 		await this.openWaitingListDialog()
 		await this.inputWaitingListDetails(reservation)
 		await this.confirmWaitingListDetails()
+		await this.navigateToWaitingList()
 		const currentWaitingListIds = await this.recordWaitingListEntries()
 		const waitingListId = this.findNewWaitingListEntryId(
 			previousWaitingListIds,
