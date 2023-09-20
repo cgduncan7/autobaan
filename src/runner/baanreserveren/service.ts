@@ -378,10 +378,10 @@ export class BaanReserverenService {
 				throw new RunnerWaitingListInputError(e)
 			})
 
-		// Use the same time for start and end so that the waiting list only notifies for start time
+		// Use one reservation (45m) as end time because it seems to work better
 		const endTimeInput = await this.page.$('input[name="end_time"]')
 		await endTimeInput
-			?.type(reservation.dateRangeStart.add(1, 'minutes').format('HH:mm'), {
+			?.type(reservation.dateRangeStart.add(45, 'minutes').format('HH:mm'), {
 				delay: this.getTypingDelay(),
 			})
 			.catch((e) => {
