@@ -1,5 +1,6 @@
 import { InjectQueue, Process, Processor } from '@nestjs/bull'
 import { Inject, Injectable, OnApplicationBootstrap } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { Job, JobOptions, Queue } from 'bull'
 import { Dayjs } from 'dayjs'
 
@@ -15,6 +16,9 @@ import {
 @Injectable()
 export class NtfyProvider implements OnApplicationBootstrap {
 	constructor(
+		@Inject(ConfigService)
+		private readonly configService: ConfigService,
+
 		@Inject(NtfyClient)
 		private readonly ntfyClient: NtfyClient,
 
@@ -49,9 +53,11 @@ export class NtfyProvider implements OnApplicationBootstrap {
 	}
 
 	async sendBootstrappedNotification() {
+		const gitCommit = this.configService.get<string>('GIT_COMMIT')
 		await this.publishQueue.add(
 			...NtfyProvider.defaultJob({
 				title: 'Autobaan up and running',
+				message: `Version ${gitCommit}`,
 				tags: [MessageTags.badminton],
 			}),
 		)

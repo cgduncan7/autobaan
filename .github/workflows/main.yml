@@ -16,6 +16,10 @@ jobs:
           registry: ghcr.io
           username: ${{ secrets.GHCR_USERNAME }}
           password: ${{ secrets.GHCR_PASSWORD }}
+      - name: Declare GIT_COMMIT 
+        shell: bash
+        run: |
+          echo "GIT_COMMIT=$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
       - name: Build docker image
         uses: docker/build-push-action@v4
         with:
@@ -25,3 +29,5 @@ jobs:
           tags: ghcr.io/cgduncan7/autobaan:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args:
+            - GIT_COMMIT: ${{ env.GIT_COMMIT }}

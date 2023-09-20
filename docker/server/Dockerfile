@@ -23,4 +23,9 @@ COPY --chown=node:node tsconfig.json tsconfig.json
 RUN CXX=g++-12 npm install
 
 RUN npm run migrations
+
+ARG GIT_COMMIT
+
+ENV GIT_COMMIT ${GIT_COMMIT:-unknown}
+
 ENTRYPOINT ["npm", "run", "start"]
