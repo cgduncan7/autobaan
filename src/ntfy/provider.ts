@@ -123,4 +123,15 @@ export class NtfyProvider implements OnApplicationBootstrap {
 			}),
 		)
 	}
+
+	async sendWaitListEmailReceivedNotification(subject: string) {
+		await this.publishQueue.add(
+			...NtfyProvider.defaultJob({
+				title: 'Wait listed reservation available',
+				message: `${subject}`,
+				tags: [MessageTags.badminton, MessageTags.hourglass],
+				priority: MessagePriority.low,
+			}),
+		)
+	}
 }

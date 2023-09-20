@@ -1,6 +1,7 @@
 import { InjectQueue, Process, Processor } from '@nestjs/bull'
 import { Inject } from '@nestjs/common'
 import { Job, Queue } from 'bull'
+import { NtfyProvider } from 'src/ntfy/provider'
 
 import dayjs from '../common/dayjs'
 import { EMAILS_QUEUE_NAME } from '../email/config'
@@ -12,7 +13,7 @@ import { ReservationsService } from '../reservations/service'
 import { WaitingListDetails } from './types'
 
 const EMAIL_SUBJECT_REGEX = new RegExp(
-	/^personal waitinglist reservation free at/i,
+	/^(?:personal waitinglist reservation free at|persoonlijke wachtlijst reservering vrij om)/i,
 )
 const EMAIL_ADDRESS = 'Squash City <no-reply@i-reservations.nl>'
 const EMAIL_DATE_REGEX = new RegExp(
@@ -35,6 +36,9 @@ export class WaitingListService {
 		@Inject(EmailProvider)
 		private readonly emailProvider: EmailProvider,
 
+		@Inject(NtfyProvider)
+		private readonly ntfyProvider: NtfyProvider,
+
 		@Inject(LoggerService)
 		private readonly loggerService: LoggerService,
 	) {}
@@ -50,8 +54,11 @@ export class WaitingListService {
 
 		if (!this.isRelevantEmail) return
 
-		await this.emailProvider.readEmails([email])
-		await this.handleWaitingListEmail(email)
+		await Promise.all([
+			this.ntfyProvider.sendWaitListEmailReceivedNotification(email.subject),
+			this.emailProvider.readEmails([email]),
+			this.handleWaitingListEmail(email),
+		])
 	}
 
 	private async handleWaitingListEmail(email: Email) {
