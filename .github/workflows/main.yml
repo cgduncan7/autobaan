@@ -29,5 +29,4 @@ jobs:
           tags: ghcr.io/cgduncan7/autobaan:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args:
-            - GIT_COMMIT: ${{ env.GIT_COMMIT }}
+          build-args: GIT_COMMIT=${{ env.GIT_COMMIT }}
