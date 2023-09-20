@@ -7,7 +7,6 @@ import {
 	Get,
 	Inject,
 	Param,
-	ParseBoolPipe,
 	Post,
 	Query,
 	UseInterceptors,
@@ -15,13 +14,25 @@ import {
 	ValidationPipe,
 } from '@nestjs/common'
 import { Queue } from 'bull'
+import { Transform } from 'class-transformer'
+import { IsBoolean, IsOptional } from 'class-validator'
 import { Dayjs } from 'dayjs'
-import { ParseDayjsPipe } from 'src/common/pipes/parseDayjsPipe'
 
 import { LoggerService } from '../logger/service.logger'
 import { RESERVATIONS_QUEUE_NAME } from './config'
 import { Reservation } from './entity'
 import { ReservationsService } from './service'
+
+export class GetReservationsQueryParams {
+	@IsOptional()
+	@Transform(() => Dayjs)
+	date?: Dayjs
+
+	@IsOptional()
+	@IsBoolean()
+	@Transform(({ value }) => value === 'true')
+	readonly schedulable?: boolean
+}
 
 @Controller('reservations')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -38,11 +49,8 @@ export class ReservationsController {
 	) {}
 
 	@Get()
-	getReservations(
-		@Query('date', ParseDayjsPipe) date?: Dayjs,
-		@Query('schedulable', ParseBoolPipe) schedulable?: boolean,
-	) {
-		console.log(schedulable)
+	getReservations(@Query() params: GetReservationsQueryParams) {
+		const { schedulable, date } = params
 		if (schedulable) {
 			return this.reservationsService.getSchedulable()
 		}

@@ -1,3 +1,4 @@
+import { ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
 
@@ -9,6 +10,7 @@ async function bootstrap() {
 	const config = app.get(ConfigService)
 	const port = config.get('PORT', 3000)
 	app.enableShutdownHooks()
+	app.useGlobalPipes(new ValidationPipe())
 	app.useGlobalInterceptors(new CustomResponseTransformInterceptor())
 	await app.listen(port, () => console.log(`Listening on port ${port}`))
 }
