@@ -45,11 +45,12 @@ export class ReservationsService {
 			.where(
 				`DATE(dateRangeStart) BETWEEN DATE(:startDate) AND DATE(:endDate)`,
 				{
-					startDate: dayjs().add(7, 'days').toISOString(),
-					endDate: dayjs().toISOString(),
+					startDate: dayjs().add(1, 'days').toISOString(),
+					endDate: dayjs().add(7, 'days').toISOString(),
 				},
 			)
 			.andWhere(`waitListed = false`)
+			.orderBy('dateRangeStart', 'DESC')
 
 		return await query.getMany()
 	}
