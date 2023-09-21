@@ -92,7 +92,6 @@ export class NtfyProvider implements OnApplicationBootstrap {
 				title: 'Performing reservation',
 				message: `${reservationId} - ${startTime.format()} to ${endTime.format()}`,
 				tags: [MessageTags.badminton],
-				priority: MessagePriority.low,
 			}),
 		)
 	}
@@ -110,7 +109,6 @@ export class NtfyProvider implements OnApplicationBootstrap {
 					error.name
 				}) - ${error.message}`,
 				tags: [MessageTags.badminton, MessageTags.red_x],
-				priority: MessagePriority.low,
 			}),
 		)
 	}
@@ -125,7 +123,6 @@ export class NtfyProvider implements OnApplicationBootstrap {
 				title: 'Reservation waitlisted',
 				message: `${reservationId} - ${startTime.format()} to ${endTime.format()}`,
 				tags: [MessageTags.badminton, MessageTags.hourglass],
-				priority: MessagePriority.low,
 			}),
 		)
 	}
@@ -136,7 +133,6 @@ export class NtfyProvider implements OnApplicationBootstrap {
 				title: 'Wait listed reservation available',
 				message: `${subject}`,
 				tags: [MessageTags.badminton, MessageTags.hourglass],
-				priority: MessagePriority.low,
 			}),
 		)
 	}
