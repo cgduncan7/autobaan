@@ -129,6 +129,7 @@ export class BaanReserverenService {
 			reservation: instanceToPlain(reservation),
 		})
 		await this.page.goto(BAAN_RESERVEREN_ROOT_URL)
+		await this.page.waitForNetworkIdle()
 		const action = await this.checkSession(reservation.username)
 		switch (action) {
 			case SessionAction.Logout:
@@ -271,7 +272,6 @@ export class BaanReserverenService {
 
 	private async openWaitingListDialog() {
 		this.loggerService.debug('Opening waiting list dialog')
-		await this.page.waitForNetworkIdle()
 		await this.page.goto(
 			`${BAAN_RESERVEREN_ROOT_URL}/${BaanReserverenUrls.WaitingListAdd}`,
 		)
@@ -343,6 +343,7 @@ export class BaanReserverenService {
 			.catch((e: Error) => {
 				throw new RunnerReservationConfirmSubmitError(e)
 			})
+		await this.page.waitForNetworkIdle()
 	}
 
 	private async inputWaitingListDetails(reservation: Reservation) {
