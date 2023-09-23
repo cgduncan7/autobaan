@@ -116,10 +116,7 @@ export class EmailClient {
 			this.mailbox = mailbox
 		})
 
-		this.imapClient.on(
-			'mail',
-			(n: number) => this.handleNewMail(n, callback),
-		)
+		this.imapClient.on('mail', (n: number) => this.handleNewMail(n, callback))
 	}
 
 	public listen(callback: (emails: Email[]) => Promise<void>) {
