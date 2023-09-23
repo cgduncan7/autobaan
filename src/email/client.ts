@@ -78,7 +78,7 @@ export class EmailClient {
 
 	private async handleNewMail(
 		numMessages: number,
-		callback: (emails: Email[]) => void,
+		callback: (emails: Email[]) => Promise<void>,
 	) {
 		this.loggerService.log(`Received ${numMessages} emails`)
 		const mailbox = await new Promise<Imap.Box>((res) => this.getMailbox(res))
@@ -96,11 +96,11 @@ export class EmailClient {
 				totalMessages - (numMessages - 1),
 			)
 			this.loggerService.debug(`Fetched ${emails.length} emails`)
-			callback(emails)
+			await callback(emails)
 		}
 	}
 
-	private _listen(callback: (emails: Email[]) => void) {
+	private _listen(callback: (emails: Email[]) => Promise<void>) {
 		// Don't start listening until we are ready
 		if (this.status === EmailClientStatus.NotReady) {
 			throw new Error('Not ready to listen')
@@ -116,10 +116,13 @@ export class EmailClient {
 			this.mailbox = mailbox
 		})
 
-		this.imapClient.on('mail', (n: number) => this.handleNewMail(n, callback))
+		this.imapClient.on(
+			'mail',
+			(n: number) => this.handleNewMail(n, callback),
+		)
 	}
 
-	public listen(callback: (emails: Email[]) => void) {
+	public listen(callback: (emails: Email[]) => Promise<void>) {
 		this.attempt('listen', 0, 5, 1000, () => {
 			this._listen(callback)
 		})
@@ -198,7 +201,7 @@ export class EmailClient {
 	}
 
 	public async markMailsSeen(messageIds: string[]) {
-		this.loggerService.debug('Marking mails as seen', { messageIds })
+		this.loggerService.debug(`Marking mails as seen (${messageIds.join(',')})`)
 		return new Promise<void>((res, rej) => {
 			this.imapClient.addFlags(messageIds.join(','), ['\\Seen'], (error) => {
 				if (error != null) {

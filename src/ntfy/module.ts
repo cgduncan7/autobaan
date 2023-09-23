@@ -8,7 +8,7 @@ import { NTFY_PUBLISH_QUEUE_NAME } from './types'
 
 @Module({
 	imports: [
-		BullModule.registerQueue({ name: NTFY_PUBLISH_QUEUE_NAME }),
+		BullModule.registerQueueAsync({ name: NTFY_PUBLISH_QUEUE_NAME }),
 		LoggerModule,
 	],
 	providers: [NtfyProvider, NtfyClient],

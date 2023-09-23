@@ -9,7 +9,7 @@ import { EmailProvider } from './provider'
 @Module({
 	imports: [
 		LoggerModule,
-		BullModule.registerQueue({ name: EMAILS_QUEUE_NAME }),
+		BullModule.registerQueueAsync({ name: EMAILS_QUEUE_NAME }),
 	],
 	providers: [EmailClient, EmailProvider],
 	exports: [EmailClient, EmailProvider],

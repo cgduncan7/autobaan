@@ -13,8 +13,8 @@ import { WaitingListService } from './service'
 	imports: [
 		LoggerModule,
 		ReservationsModule,
-		BullModule.registerQueue({ name: EMAILS_QUEUE_NAME }),
-		BullModule.registerQueue({ name: RESERVATIONS_QUEUE_NAME }),
+		BullModule.registerQueueAsync({ name: EMAILS_QUEUE_NAME }),
+		BullModule.registerQueueAsync({ name: RESERVATIONS_QUEUE_NAME }),
 		EmailModule,
 		NtfyModule,
 	],

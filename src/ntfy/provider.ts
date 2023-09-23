@@ -5,12 +5,7 @@ import { Job, JobOptions, Queue } from 'bull'
 import { Dayjs } from 'dayjs'
 
 import { NtfyClient } from './client'
-import {
-	MessageConfig,
-	MessagePriority,
-	MessageTags,
-	NTFY_PUBLISH_QUEUE_NAME,
-} from './types'
+import { MessageConfig, MessageTags, NTFY_PUBLISH_QUEUE_NAME } from './types'
 
 @Processor(NTFY_PUBLISH_QUEUE_NAME)
 @Injectable()

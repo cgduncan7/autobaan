@@ -1,5 +1,5 @@
 import { InjectQueue, Process, Processor } from '@nestjs/bull'
-import { Inject } from '@nestjs/common'
+import { Inject, Injectable } from '@nestjs/common'
 import { Job, Queue } from 'bull'
 import { NtfyProvider } from 'src/ntfy/provider'
 
@@ -25,6 +25,7 @@ const EMAIL_START_TIME_REGEX = new RegExp(
 const EMAIL_END_TIME_REGEX = new RegExp(/^Eindtijd: ([0-9]{1,2}:[0-9]{1,2})$/im)
 
 @Processor(EMAILS_QUEUE_NAME)
+@Injectable()
 export class WaitingListService {
 	constructor(
 		@InjectQueue(RESERVATIONS_QUEUE_NAME)

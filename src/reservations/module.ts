@@ -16,7 +16,7 @@ import { ReservationsWorker } from './worker'
 	imports: [
 		LoggerModule,
 		TypeOrmModule.forFeature([Reservation]),
-		BullModule.registerQueue({ name: RESERVATIONS_QUEUE_NAME }),
+		BullModule.registerQueueAsync({ name: RESERVATIONS_QUEUE_NAME }),
 		RunnerModule,
 		NtfyModule,
 	],

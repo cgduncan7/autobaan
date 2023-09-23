@@ -8,7 +8,10 @@ import { RunnerService } from './service'
 
 @Module({
 	providers: [RunnerService, BaanReserverenService, EmptyPageFactory],
-	imports: [LoggerModule, BullModule.registerQueue({ name: 'reservations' })],
+	imports: [
+		LoggerModule,
+		BullModule.registerQueueAsync({ name: 'reservations' }),
+	],
 	exports: [EmptyPageFactory, BaanReserverenService],
 })
 export class RunnerModule {}
