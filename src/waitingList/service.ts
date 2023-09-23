@@ -53,7 +53,7 @@ export class WaitingListService {
 			subject: email.subject,
 		})
 
-		if (!this.isRelevantEmail) return
+		if (!this.isRelevantEmail(email)) return
 
 		await Promise.all([
 			this.ntfyProvider.sendWaitListEmailReceivedNotification(email.subject),
