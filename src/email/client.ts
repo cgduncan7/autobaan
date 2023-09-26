@@ -47,8 +47,21 @@ export class EmailClient {
 		this.status = status
 	}
 
-	public connect() {
+	private connect() {
 		this.imapClient.connect()
+	}
+
+	private openBox() {
+		this.imapClient.openBox(this.mailboxName, (error, mailbox) => {
+			if (error) {
+				this.loggerService.error('Error opening mailbox', {
+					...error,
+				})
+				return
+			}
+			this.loggerService.debug('Mailbox opened', { mailbox })
+			this.mailbox = mailbox
+		})
 	}
 
 	private attempt(
@@ -105,16 +118,6 @@ export class EmailClient {
 		if (this.status === EmailClientStatus.NotReady) {
 			throw new Error('Not ready to listen')
 		}
-
-		this.imapClient.openBox(this.mailboxName, (error, mailbox) => {
-			if (error) {
-				this.loggerService.error('Error opening mailbox', {
-					...error,
-				})
-				return
-			}
-			this.mailbox = mailbox
-		})
 
 		this.imapClient.on('mail', (n: number) => this.handleNewMail(n, callback))
 	}
@@ -212,19 +215,19 @@ export class EmailClient {
 	private setupDefaultListeners() {
 		this.imapClient.on('ready', () => {
 			this.loggerService.debug('email client ready')
-			this.setStatus(EmailClientStatus.Ready)
+			if (this.status === EmailClientStatus.NotReady) {
+				this.setStatus(EmailClientStatus.Ready)
+				this.openBox()
+			}
 		})
 
 		this.imapClient.on('close', () => {
 			this.loggerService.debug('email client close')
-			if (this.status !== EmailClientStatus.Error)
+			if (this.status !== EmailClientStatus.Error) {
+				this.loggerService.debug('email client reconnecting')
 				this.setStatus(EmailClientStatus.NotReady)
-		})
-
-		this.imapClient.on('end', () => {
-			this.loggerService.debug('email client end')
-			if (this.status !== EmailClientStatus.Error)
-				this.setStatus(EmailClientStatus.NotReady)
+				this.connect()
+			}
 		})
 
 		this.imapClient.on('error', (error: Error) => {
