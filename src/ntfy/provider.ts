@@ -131,4 +131,14 @@ export class NtfyProvider implements OnApplicationBootstrap {
 			}),
 		)
 	}
+
+	async sendEmailClientErrorNotification(errorMessage: string) {
+		await this.publishQueue.add(
+			...NtfyProvider.defaultJob({
+				title: 'Email client error',
+				message: errorMessage,
+				tags: [MessageTags.exclamation],
+			}),
+		)
+	}
 }

@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import * as Imap from 'imap'
 import { MailParser, ParsedEmail } from 'mailparser-mit'
+import { NtfyProvider } from 'src/ntfy/provider'
 
 import { LoggerService } from '../logger/service.logger'
 import { Email } from './types'
@@ -22,6 +23,9 @@ export class EmailClient {
 	constructor(
 		@Inject(LoggerService)
 		private readonly loggerService: LoggerService,
+
+		@Inject(NtfyProvider)
+		private readonly ntfyProvider: NtfyProvider,
 
 		@Inject(ConfigService)
 		private readonly configService: ConfigService,
@@ -230,8 +234,9 @@ export class EmailClient {
 			}
 		})
 
-		this.imapClient.on('error', (error: Error) => {
+		this.imapClient.on('error', async (error: Error) => {
 			this.loggerService.error(`Error with imap client ${error.message}`)
+			await this.ntfyProvider.sendEmailClientErrorNotification(error.message)
 			this.setStatus(EmailClientStatus.Error)
 		})
 	}
