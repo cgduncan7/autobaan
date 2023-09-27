@@ -1,13 +1,15 @@
 import 'dayjs/locale/nl'
 
 import * as dayjs from 'dayjs'
+import * as customParseFormat from 'dayjs/plugin/customParseFormat'
 import * as isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import * as timezone from 'dayjs/plugin/timezone'
 import * as utc from 'dayjs/plugin/utc'
 
+dayjs.extend(customParseFormat)
 dayjs.extend(isSameOrBefore)
-dayjs.extend(utc)
 dayjs.extend(timezone)
+dayjs.extend(utc)
 dayjs.locale('nl')
 
 dayjs.tz.setDefault('Europe/Amsterdam')
@@ -32,8 +34,9 @@ export const convertDateRangeStringToObject = ({
 
 const dayjsTz = (
 	date?: string | number | Date | dayjs.Dayjs | null | undefined,
+	format?: string,
 ) => {
-	return dayjs(date).tz()
+	return dayjs(date, format).tz()
 }
 
 export default dayjsTz

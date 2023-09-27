@@ -64,7 +64,14 @@ export class WaitingListService {
 
 	private async handleWaitingListEmail(email: Email) {
 		const { date, startTime } = this.getWaitingListDetails(email)
-		const dateRangeStart = dayjs(`${date} ${startTime}`)
+		const dateRangeStart = dayjs(`${date} ${startTime}`, 'YYYY-MM-DD HH:mm')
+		if (!dateRangeStart.isValid()) {
+			this.loggerService.error('Invalid date parsed from email', {
+				date,
+				startTime,
+			})
+			return
+		}
 		const reservations = await this.reservationsService.getByDateOnWaitingList(
 			dateRangeStart,
 		)
