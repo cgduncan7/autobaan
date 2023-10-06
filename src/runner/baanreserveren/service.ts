@@ -308,6 +308,7 @@ export class BaanReserverenService {
 		await this.page.waitForNetworkIdle()
 	}
 
+	// As a wise man once said, «Из говна и палок»
 	private async filterShittyCourts(
 		freeCourts: ElementHandle<Element>[],
 	): Promise<ElementHandle | null> {
