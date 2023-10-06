@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { instanceToPlain } from 'class-transformer'
 import { Dayjs } from 'dayjs'
 import { ElementHandle, Page } from 'puppeteer'
@@ -28,20 +29,49 @@ interface BaanReserverenSession {
 	startedAt: Dayjs
 }
 
+// TODO: Add to DB to make configurable
+enum Court {
+	One = '51',
+	Two = '52',
+	Three = '53',
+	Four = '54',
+	Five = '55',
+	Six = '56',
+	Seven = '57',
+	Eight = '58',
+	Nine = '59',
+	Ten = '60',
+	Eleven = '61',
+	Twelve = '62',
+	Thirteen = '63',
+}
+
 const MIN_TYPING_DELAY_MS = 10
 const MAX_TYPING_DELAY_MS = 30
 
 @Injectable()
 export class BaanReserverenService {
 	private session: BaanReserverenSession | null = null
+	private username: string
+	private password: string
 
 	constructor(
 		@Inject(LoggerService)
 		private readonly loggerService: LoggerService,
 
+		@Inject(ConfigService)
+		private readonly configService: ConfigService,
+
 		@Inject(EmptyPage)
 		private readonly page: Page,
-	) {}
+	) {
+		this.username = this.configService.getOrThrow<string>(
+			'BAANRESERVEREN_USERNAME',
+		)
+		this.password = this.configService.getOrThrow<string>(
+			'BAANRESERVEREN_PASSWORD',
+		)
+	}
 
 	// tryna be sneaky
 	private getTypingDelay() {
@@ -63,7 +93,7 @@ export class BaanReserverenService {
 				return SessionAction.Login
 			}
 
-			return this.session?.username !== username
+			return this.session?.username !== this.username
 				? SessionAction.Logout
 				: SessionAction.NoAction
 		}
@@ -130,14 +160,14 @@ export class BaanReserverenService {
 		})
 		await this.page.goto(BAAN_RESERVEREN_ROOT_URL)
 		await this.page.waitForNetworkIdle()
-		const action = await this.checkSession(reservation.username)
+		const action = await this.checkSession(this.username)
 		switch (action) {
 			case SessionAction.Logout:
 				await this.logout()
-				await this.login(reservation.username, reservation.password)
+				await this.login(this.username, this.password)
 				break
 			case SessionAction.Login:
-				await this.login(reservation.username, reservation.password)
+				await this.login(this.username, this.password)
 				break
 			case SessionAction.NoAction:
 			default:
@@ -278,6 +308,22 @@ export class BaanReserverenService {
 		await this.page.waitForNetworkIdle()
 	}
 
+	private async filterShittyCourts(
+		freeCourts: ElementHandle<Element>[],
+	): Promise<ElementHandle | null> {
+		for (const fc of freeCourts) {
+			const fcValue = await fc.jsonValue()
+			switch (fcValue.slot) {
+				case Court.Five:
+				case Court.Six:
+					continue
+				default:
+					return fc
+			}
+		}
+		return null
+	}
+
 	private async selectAvailableTime(reservation: Reservation) {
 		this.loggerService.debug('Selecting available time', {
 			reservation: instanceToPlain(reservation),
@@ -291,7 +337,12 @@ export class BaanReserverenService {
 			const timeString = possibleDate.format('HH:mm')
 			const selector =
 				`tr[data-time='${timeString}']` + `> td.free[rowspan='3'][type='free']`
-			freeCourt = await this.page.$(selector)
+			const freeCourts = await this.page.$$(selector)
+			freeCourt = await this.filterShittyCourts(freeCourts)
+			if (freeCourts.length > 0 && freeCourt == null) {
+				// If there is only a shitty court, sucks
+				freeCourt = freeCourts[0]
+			}
 			i++
 		}
 
@@ -304,6 +355,19 @@ export class BaanReserverenService {
 		await freeCourt.click().catch((e: Error) => {
 			throw new RunnerCourtSelectionError(e)
 		})
+	}
+
+	private async selectOwner(id: string) {
+		this.loggerService.debug('Selecting owner', { id })
+		await this.page.waitForNetworkIdle().catch((e: Error) => {
+			throw new RunnerOwnerSearchNetworkError(e)
+		})
+		await this.page
+			.$('select.br-user-select[name="players[1]"]')
+			.then((d) => d?.select(id))
+			.catch((e: Error) => {
+				throw new RunnerOwnerSearchSelectionError(e)
+			})
 	}
 
 	private async selectOpponent(id: string, name: string) {
@@ -403,6 +467,7 @@ export class BaanReserverenService {
 		await this.init(reservation)
 		await this.navigateToDay(reservation.dateRangeStart)
 		await this.selectAvailableTime(reservation)
+		await this.selectOwner(reservation.ownerId)
 		await this.selectOpponent(reservation.opponentId, reservation.opponentName)
 		await this.confirmReservation()
 	}
@@ -549,6 +614,17 @@ export class NoCourtAvailableError extends Error {
 	constructor(message: string) {
 		super(message)
 		this.name = 'NoCourtAvailableError'
+	}
+}
+
+export class RunnerOwnerSearchNetworkError extends RunnerError {
+	constructor(error: Error) {
+		super(error, 'RunnerOwnerSearchNetworkError')
+	}
+}
+export class RunnerOwnerSearchSelectionError extends RunnerError {
+	constructor(error: Error) {
+		super(error, 'RunnerOwnerSearchSelectionError')
 	}
 }
 

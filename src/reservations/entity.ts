@@ -10,14 +10,8 @@ export class Reservation {
 	@PrimaryGeneratedColumn('uuid')
 	id: string
 
-	@Column('varchar', { length: 64, nullable: false })
-	username: string
-
-	@Transform(({ value, options: { groups = [] } }) =>
-		groups.includes('password') ? value : '***',
-	)
-	@Column('varchar', { length: 255, nullable: false })
-	password: string
+	@Column('varchar', { length: 32, nullable: false })
+	ownerId: string
 
 	@Column('datetime', {
 		nullable: false,

@@ -20,14 +20,8 @@ export class RecurringReservation {
 	@PrimaryGeneratedColumn('uuid')
 	id: string
 
-	@Column('varchar', { length: 64, nullable: false })
-	username: string
-
-	@Transform(({ value, options: { groups = [] } }) =>
-		groups.includes('password') ? value : '***',
-	)
-	@Column('varchar', { length: 255, nullable: false })
-	password: string
+	@Column('varchar', { length: 32, nullable: false })
+	ownerId: string
 
 	@Column('int', { nullable: false })
 	@IsEnum(DayOfWeek)
@@ -60,8 +54,6 @@ export class RecurringReservation {
 			.set('minute', Number.parseInt(minuteEnd))
 			.add(daysInAdvance, 'days')
 		const reservation = new Reservation({
-			username: this.username,
-			password: this.password,
 			dateRangeStart: dateRangeStart,
 			dateRangeEnd: dateRangeEnd,
 			opponentId: this.opponentId,
