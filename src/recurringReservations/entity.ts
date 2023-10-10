@@ -54,6 +54,7 @@ export class RecurringReservation {
 			.set('minute', Number.parseInt(minuteEnd))
 			.add(daysInAdvance, 'days')
 		const reservation = new Reservation({
+			ownerId: this.ownerId,
 			dateRangeStart: dateRangeStart,
 			dateRangeEnd: dateRangeEnd,
 			opponentId: this.opponentId,
