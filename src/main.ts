@@ -10,7 +10,7 @@ async function bootstrap() {
 	const config = app.get(ConfigService)
 	const port = config.get('PORT', 3000)
 	app.enableShutdownHooks()
-	app.useGlobalPipes(new ValidationPipe())
+	app.useGlobalPipes(new ValidationPipe({ transform: true }))
 	app.useGlobalInterceptors(new CustomResponseTransformInterceptor())
 	await app.listen(port, () => console.log(`Listening on port ${port}`))
 }

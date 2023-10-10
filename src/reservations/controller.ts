@@ -10,14 +10,13 @@ import {
 	Post,
 	Query,
 	UseInterceptors,
-	UsePipes,
-	ValidationPipe,
 } from '@nestjs/common'
 import { Queue } from 'bull'
-import { Transform } from 'class-transformer'
-import { IsBoolean, IsOptional } from 'class-validator'
+import { Transform, TransformationType } from 'class-transformer'
+import { IsBoolean, IsOptional, IsString } from 'class-validator'
 import { Dayjs } from 'dayjs'
 
+import dayjs from '../common/dayjs'
 import { LoggerService } from '../logger/service.logger'
 import { RESERVATIONS_QUEUE_NAME } from './config'
 import { Reservation } from './entity'
@@ -32,6 +31,44 @@ export class GetReservationsQueryParams {
 	@IsBoolean()
 	@Transform(({ value }) => value === 'true')
 	readonly schedulable?: boolean
+}
+
+export class CreateReservationRequest {
+	@IsString()
+	ownerId: string
+
+	@Transform(({ value, type }) => {
+		switch (type) {
+			case TransformationType.PLAIN_TO_CLASS:
+				return dayjs(value)
+			case TransformationType.CLASS_TO_PLAIN:
+				return value.format()
+			default:
+				return value
+		}
+	})
+	dateRangeStart: Dayjs
+
+	@IsOptional()
+	@Transform(({ value, type }) => {
+		switch (type) {
+			case TransformationType.PLAIN_TO_CLASS:
+				return dayjs(value)
+			case TransformationType.CLASS_TO_PLAIN:
+				return value.format()
+			default:
+				return value
+		}
+	})
+	dateRangeEnd?: Dayjs
+
+	@IsOptional()
+	@IsString()
+	opponentId?: string
+
+	@IsOptional()
+	@IsString()
+	opponentName?: string
 }
 
 @Controller('reservations')
@@ -66,21 +103,15 @@ export class ReservationsController {
 	}
 
 	@Post()
-	@UsePipes(
-		new ValidationPipe({
-			transform: true,
-			transformOptions: { groups: ['password'] },
-			groups: ['password'],
-		}),
-	)
-	async createReservation(@Body() reservation: Reservation) {
-		await this.reservationsService.create(reservation)
+	async createReservation(@Body() req: CreateReservationRequest) {
+		console.log(req)
+		const reservation = await this.reservationsService.create(req)
 		if (!reservation.isAvailableForReservation()) {
 			this.loggerService.debug('Reservation not available for reservation')
 			return 'Reservation saved'
 		}
 		this.loggerService.debug('Reservation is available for reservation')
-		await this.reservationsQueue.add(reservation)
+		// await this.reservationsQueue.add(reservation)
 		return 'Reservation queued'
 	}
 

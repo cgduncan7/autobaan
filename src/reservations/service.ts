@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+import { Dayjs } from 'dayjs'
 import { Repository } from 'typeorm'
 
 import dayjs from '../common/dayjs'
@@ -68,8 +69,27 @@ export class ReservationsService {
 			.getMany()
 	}
 
-	async create(reservation: Reservation) {
-		return await this.reservationsRepository.save(reservation)
+	async create({
+		ownerId,
+		dateRangeStart,
+		dateRangeEnd,
+		opponentId = '-1',
+		opponentName = 'Gast',
+	}: {
+		ownerId: string
+		dateRangeStart: Dayjs
+		dateRangeEnd?: Dayjs
+		opponentId?: string
+		opponentName?: string
+	}) {
+		const res = this.reservationsRepository.create({
+			ownerId,
+			dateRangeStart,
+			dateRangeEnd: dateRangeEnd ?? dateRangeStart,
+			opponentId,
+			opponentName,
+		})
+		return await this.reservationsRepository.save(res)
 	}
 
 	async update(reservationId: string, update: Partial<Reservation>) {

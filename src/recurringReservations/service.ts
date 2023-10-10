@@ -30,8 +30,30 @@ export class RecurringReservationsService {
 			.getMany()
 	}
 
-	create(recurringReservation: RecurringReservation) {
-		return this.recurringReservationsRepository.save(recurringReservation)
+	async create({
+		ownerId,
+		dayOfWeek,
+		timeStart,
+		timeEnd,
+		opponentId = '-1',
+		opponentName = 'Gast',
+	}: {
+		ownerId: string
+		dayOfWeek: DayOfWeek
+		timeStart: string
+		timeEnd?: string
+		opponentId?: string
+		opponentName?: string
+	}) {
+		const recRes = this.recurringReservationsRepository.create({
+			ownerId,
+			dayOfWeek,
+			timeStart,
+			timeEnd: timeEnd ?? timeStart,
+			opponentId,
+			opponentName,
+		})
+		return await this.recurringReservationsRepository.save(recRes)
 	}
 
 	scheduleReservation(recurringReservation: RecurringReservation) {

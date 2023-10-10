@@ -9,12 +9,36 @@ import {
 	Post,
 	Query,
 	UseInterceptors,
-	UsePipes,
-	ValidationPipe,
 } from '@nestjs/common'
+import { IsEnum, IsOptional, IsString, Matches } from 'class-validator'
 
-import { DayOfWeek, RecurringReservation } from './entity'
+import { DayOfWeek } from './entity'
 import { RecurringReservationsService } from './service'
+
+export class CreateRecurringReservationRequest {
+	@IsString()
+	ownerId: string
+
+	@IsEnum(DayOfWeek)
+	dayOfWeek: number
+
+	@IsString()
+	@Matches(/[012][0-9]:[0-5][0-9]/)
+	timeStart: string
+
+	@IsOptional()
+	@IsString()
+	@Matches(/[012][0-9]:[0-5][0-9]/)
+	timeEnd?: string
+
+	@IsOptional()
+	@IsString()
+	opponentId?: string
+
+	@IsOptional()
+	@IsString()
+	opponentName?: string
+}
 
 @Controller('recurring-reservations')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -38,15 +62,8 @@ export class RecurringReservationsController {
 	}
 
 	@Post()
-	@UsePipes(
-		new ValidationPipe({
-			transform: true,
-			transformOptions: { groups: ['password'] },
-			groups: ['password'],
-		}),
-	)
-	async createReservation(@Body() recurringReservation: RecurringReservation) {
-		await this.recurringReservationsService.create(recurringReservation)
+	async createReservation(@Body() req: CreateRecurringReservationRequest) {
+		await this.recurringReservationsService.create(req)
 		return 'Recurring reservation created'
 	}
 
