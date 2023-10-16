@@ -111,7 +111,7 @@ export class ReservationsController {
 			return 'Reservation saved'
 		}
 		this.loggerService.debug('Reservation is available for reservation')
-		// await this.reservationsQueue.add(reservation)
+		await this.reservationsQueue.add(reservation)
 		return 'Reservation queued'
 	}
 
