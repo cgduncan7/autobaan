@@ -17,7 +17,7 @@ const EMAIL_SUBJECT_REGEX = new RegExp(
 )
 const EMAIL_ADDRESS = 'Squash City <no-reply@i-reservations.nl>'
 const EMAIL_DATE_REGEX = new RegExp(
-	/^Datum: ([0-9]{1,2}-[0-9]{1,2}-[0,9]{4})$/im,
+	/^Datum: ([0-9]{1,2}-[0-9]{1,2}-[0-9]{4})$/im,
 )
 const EMAIL_START_TIME_REGEX = new RegExp(
 	/^Begintijd: ([0-9]{1,2}:[0-9]{1,2})$/im,
@@ -60,7 +60,7 @@ export class WaitingListService {
 				.sendWaitListEmailReceivedNotification(email.subject)
 				.catch(this.loggerService.error),
 			this.emailProvider.readEmails([email]).catch(this.loggerService.error),
-			this.handleWaitingListEmail(email),
+			this.handleWaitingListEmail(email).catch(this.loggerService.error),
 		])
 	}
 
