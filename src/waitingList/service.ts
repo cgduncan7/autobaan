@@ -56,8 +56,10 @@ export class WaitingListService {
 		if (!this.isRelevantEmail(email)) return
 
 		await Promise.all([
-			this.ntfyProvider.sendWaitListEmailReceivedNotification(email.subject),
-			this.emailProvider.readEmails([email]),
+			this.ntfyProvider
+				.sendWaitListEmailReceivedNotification(email.subject)
+				.catch(this.loggerService.error),
+			this.emailProvider.readEmails([email]).catch(this.loggerService.error),
 			this.handleWaitingListEmail(email),
 		])
 	}
@@ -65,6 +67,10 @@ export class WaitingListService {
 	private async handleWaitingListEmail(email: Email) {
 		const { date, startTime } = this.getWaitingListDetails(email)
 		const dateRangeStart = dayjs(`${date} ${startTime}`, 'YYYY-MM-DD HH:mm')
+		this.loggerService.debug('Handling waiting list email', {
+			date,
+			startTime,
+		})
 		if (!dateRangeStart.isValid()) {
 			this.loggerService.error('Invalid date parsed from email', {
 				date,
