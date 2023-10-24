@@ -1,4 +1,4 @@
-import { Exclude, Transform } from 'class-transformer'
+import { Exclude } from 'class-transformer'
 import { IsEnum } from 'class-validator'
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
