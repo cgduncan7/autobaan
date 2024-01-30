@@ -2,13 +2,13 @@ import { Inject, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { instanceToPlain } from 'class-transformer'
 import { Dayjs } from 'dayjs'
+import path from 'path'
 import { ElementHandle, Page } from 'puppeteer'
 
 import dayjs from '../../common/dayjs'
 import { LoggerService } from '../../logger/service.logger'
 import { Reservation } from '../../reservations/entity'
 import { EmptyPage } from '../pages/empty'
-import path from 'path'
 
 const BAAN_RESERVEREN_ROOT_URL = 'https://squashcity.baanreserveren.nl'
 
@@ -31,7 +31,7 @@ interface BaanReserverenSession {
 }
 
 // TODO: Add to DB to make configurable
-enum Court {
+enum CourtSlot {
 	One = '51',
 	Two = '52',
 	Three = '53',
@@ -46,6 +46,39 @@ enum Court {
 	Twelve = '62',
 	Thirteen = '63',
 }
+
+const CourtSlotToNumber = {
+	[CourtSlot.One]: 1,
+	[CourtSlot.Two]: 2,
+	[CourtSlot.Three]: 3,
+	[CourtSlot.Four]: 4,
+	[CourtSlot.Five]: 5,
+	[CourtSlot.Six]: 6,
+	[CourtSlot.Seven]: 7,
+	[CourtSlot.Eight]: 8,
+	[CourtSlot.Nine]: 9,
+	[CourtSlot.Ten]: 10,
+	[CourtSlot.Eleven]: 11,
+	[CourtSlot.Twelve]: 12,
+	[CourtSlot.Thirteen]: 13,
+} as const
+
+// Lower is better
+const CourtRank = {
+	[CourtSlot.One]: 0,
+	[CourtSlot.Two]: 0,
+	[CourtSlot.Three]: 0,
+	[CourtSlot.Four]: 0,
+	[CourtSlot.Five]: 99, // shitty
+	[CourtSlot.Six]: 99, // shitty
+	[CourtSlot.Seven]: 0,
+	[CourtSlot.Eight]: 0,
+	[CourtSlot.Nine]: 0,
+	[CourtSlot.Ten]: 0,
+	[CourtSlot.Eleven]: 1, // no one likes upstairs
+	[CourtSlot.Twelve]: 1, // no one likes upstairs
+	[CourtSlot.Thirteen]: 1, // no one likes upstairs
+} as const
 
 const MIN_TYPING_DELAY_MS = 10
 const MAX_TYPING_DELAY_MS = 30
@@ -166,10 +199,8 @@ export class BaanReserverenService {
 		this.endSession()
 	}
 
-	private async init(reservation: Reservation) {
-		this.loggerService.debug('Initializing', {
-			reservation: instanceToPlain(reservation),
-		})
+	private async init() {
+		this.loggerService.debug('Initializing')
 		await this.page.goto(BAAN_RESERVEREN_ROOT_URL)
 		await this.page.waitForNetworkIdle()
 		const action = await this.checkSession(this.username)
@@ -321,20 +352,22 @@ export class BaanReserverenService {
 	}
 
 	// As a wise man once said, «Из говна и палок»
-	private async filterShittyCourts(
+	private async sortCourtsByRank(
 		freeCourts: ElementHandle<Element>[],
 	): Promise<ElementHandle | null> {
-		for (const fc of freeCourts) {
-			const fcValue = await fc.jsonValue()
-			switch (fcValue.slot) {
-				case Court.Five:
-				case Court.Six:
-					continue
-				default:
-					return fc
-			}
-		}
-		return null
+		if (freeCourts.length === 0) return null
+		const freeCourtsWithJson = await Promise.all(
+			freeCourts.map(async (fc) => ({
+				elementHAndle: fc,
+				jsonValue: await fc.jsonValue(),
+			})),
+		)
+		freeCourtsWithJson.sort(
+			(a, b) =>
+				(CourtRank[a.jsonValue.slot as CourtSlot] ?? 99) -
+				(CourtRank[b.jsonValue.slot as CourtSlot] ?? 99),
+		)
+		return freeCourtsWithJson[0].elementHAndle
 	}
 
 	private async selectAvailableTime(reservation: Reservation) {
@@ -351,11 +384,7 @@ export class BaanReserverenService {
 			const selector =
 				`tr[data-time='${timeString}']` + `> td.free[rowspan='3'][type='free']`
 			const freeCourts = await this.page.$$(selector)
-			freeCourt = await this.filterShittyCourts(freeCourts)
-			if (freeCourts.length > 0 && freeCourt == null) {
-				// If there is only a shitty court, sucks
-				freeCourt = freeCourts[0]
-			}
+			freeCourt = await this.sortCourtsByRank(freeCourts)
 			i++
 		}
 
@@ -478,7 +507,7 @@ export class BaanReserverenService {
 
 	public async performReservation(reservation: Reservation) {
 		try {
-			await this.init(reservation)
+			await this.init()
 			await this.navigateToDay(reservation.dateRangeStart)
 			await this.selectAvailableTime(reservation)
 			await this.selectOwner(reservation.ownerId)
@@ -495,7 +524,7 @@ export class BaanReserverenService {
 
 	public async addReservationToWaitList(reservation: Reservation) {
 		try {
-			await this.init(reservation)
+			await this.init()
 			await this.navigateToWaitingList()
 			const previousWaitingListIds = await this.recordWaitingListEntries()
 			await this.openWaitingListDialog()
@@ -524,13 +553,48 @@ export class BaanReserverenService {
 	public async removeReservationFromWaitList(reservation: Reservation) {
 		try {
 			if (!reservation.waitListed || !reservation.waitingListId) return
-			await this.init(reservation)
+			await this.init()
 			await this.navigateToWaitingList()
 			await this.deleteWaitingListEntryRowById(reservation.waitingListId)
 		} catch (error: unknown) {
 			await this.handleError()
 			throw error
 		}
+	}
+
+	private async getAllCourtStatuses() {
+		const courts = await this.page.$$('tr > td.slot')
+		const courtStatuses: {
+			courtNumber: string
+			startTime: string
+			status: string
+			duration: string
+		}[] = []
+		for (const court of courts) {
+			const courtJsonValue = await court.jsonValue()
+			const courtParent = courtJsonValue.parentElement
+			const startTime = dayjs(
+				Number(courtParent?.getAttribute('utc') ?? 0),
+			).toISOString()
+			const status = courtJsonValue.getAttribute('type') ?? 'closed'
+			const courtSlot = courtJsonValue.getAttribute('slot')
+			const courtNumber =
+				courtSlot != null
+					? `${CourtSlotToNumber[courtSlot as CourtSlot]}`
+					: 'unknown'
+			const duration = `${
+				Number(courtJsonValue.getAttribute('rowspan') ?? '0') * 15
+			} minutes`
+			courtStatuses.push({ courtNumber, startTime, status, duration })
+		}
+
+		return courtStatuses
+	}
+
+	public async monitorCourtReservations(date: Dayjs) {
+		await this.init()
+		await this.navigateToDay(date)
+		return await this.getAllCourtStatuses()
 	}
 }
 
