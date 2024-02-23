@@ -10,11 +10,6 @@ import puppeteer, {
 	LaunchOptions,
 } from 'puppeteer'
 
-interface RunnerSession {
-	username: string
-	loggedInAt: Date
-}
-
 @Injectable()
 export class RunnerService implements OnModuleInit, BeforeApplicationShutdown {
 	private browser?: Browser
