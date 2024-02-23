@@ -83,10 +83,14 @@ export class BaanReserverenService {
 	}
 
 	private async handleError() {
-		await this.page.screenshot({
-			type: 'png',
-			path: path.resolve('.', `${Date.now()}_error-screenshot.png`),
-		}).catch((reason: any) => this.loggerService.warn('Failed to take screenshot', { reason }))
+		await this.page
+			.screenshot({
+				type: 'png',
+				path: path.resolve('.', `${Date.now()}_error-screenshot.png`),
+			})
+			.catch((reason: any) =>
+				this.loggerService.warn('Failed to take screenshot', { reason }),
+			)
 	}
 
 	private async checkSession(username: string) {

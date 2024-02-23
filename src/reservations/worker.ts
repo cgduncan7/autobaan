@@ -12,6 +12,7 @@ import {
 import { RESERVATIONS_QUEUE_NAME } from './config'
 import { Reservation } from './entity'
 import { ReservationsService } from './service'
+import { DAILY_RESERVATIONS_ATTEMPTS } from './cron'
 
 @Processor(RESERVATIONS_QUEUE_NAME)
 export class ReservationsWorker {
@@ -42,45 +43,42 @@ export class ReservationsWorker {
 			reservation.dateRangeStart,
 			reservation.dateRangeEnd,
 		)
-		await this.performReservation(reservation)
+		await this.performReservation(reservation, job.attemptsMade)
 	}
 
 	private async handleReservationErrors(
 		error: Error,
 		reservation: Reservation,
+		attemptsMade: number,
 	) {
-		switch (true) {
-			case error instanceof NoCourtAvailableError: {
-				this.loggerService.warn('No court available')
-				if (!reservation.waitListed) {
-					this.loggerService.log('Adding reservation to waiting list')
-					await this.ntfyProvider.sendReservationWaitlistedNotification(
-						reservation.id,
-						reservation.dateRangeStart,
-						reservation.dateRangeEnd,
-					)
-					await this.addReservationToWaitList(reservation)
-				}
-				return
-			}
-			default:
-				this.loggerService.error('Error while performing reservation', error)
-				await this.ntfyProvider.sendErrorPerformingReservationNotification(
-					reservation.id,
-					reservation.dateRangeStart,
-					reservation.dateRangeEnd,
-					error,
-				)
-				throw error
+		if (error instanceof NoCourtAvailableError) {
+			this.loggerService.warn('No court available')
+		}
+		this.loggerService.error('Error while performing reservation', error)
+		if (
+			attemptsMade === DAILY_RESERVATIONS_ATTEMPTS &&
+			!reservation.waitListed
+		) {
+			this.loggerService.log('Adding reservation to waiting list')
+			await this.ntfyProvider.sendReservationWaitlistedNotification(
+				reservation.id,
+				reservation.dateRangeStart,
+				reservation.dateRangeEnd,
+			)
+			await this.brService.addReservationToWaitList(reservation)
 		}
 	}
 
-	async performReservation(reservation: Reservation) {
+	async performReservation(reservation: Reservation, attemptsMade: number) {
 		try {
 			await this.brService.performReservation(reservation)
 			await this.reservationsService.deleteById(reservation.id)
 		} catch (error: unknown) {
-			await this.handleReservationErrors(error as Error, reservation)
+			await this.handleReservationErrors(
+				error as Error,
+				reservation,
+				attemptsMade,
+			)
 		}
 	}
 

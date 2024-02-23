@@ -8,6 +8,8 @@ import { NtfyProvider } from '../ntfy/provider'
 import { RESERVATIONS_QUEUE_NAME } from './config'
 import { ReservationsService } from './service'
 
+export const DAILY_RESERVATIONS_ATTEMPTS = 2
+
 @Injectable()
 export class ReservationsCronService {
 	constructor(
@@ -36,7 +38,10 @@ export class ReservationsCronService {
 			`Found ${reservationsToPerform.length} reservations to perform`,
 		)
 		await this.reservationsQueue.addBulk(
-			reservationsToPerform.map((r) => ({ data: r, opts: { attempts: 1 } })),
+			reservationsToPerform.map((r) => ({
+				data: r,
+				opts: { attempts: DAILY_RESERVATIONS_ATTEMPTS },
+			})),
 		)
 		this.loggerService.log('handleDailyReservations ending')
 		await this.ntfyProvider.sendCronStopNotification(

@@ -10,7 +10,7 @@ export const EmptyPageFactory: FactoryProvider<Page> = {
 	useFactory: async (runnerService: RunnerService) => {
 		const browser = await runnerService.getBrowser()
 		const page = await browser.newPage()
-		
+
 		// Default navigation timeout and loading timeout of 5s
 		page.setDefaultNavigationTimeout(5_000)
 		page.setDefaultTimeout(5_000)
