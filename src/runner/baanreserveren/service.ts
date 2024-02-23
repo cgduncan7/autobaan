@@ -8,6 +8,7 @@ import dayjs from '../../common/dayjs'
 import { LoggerService } from '../../logger/service.logger'
 import { Reservation } from '../../reservations/entity'
 import { EmptyPage } from '../pages/empty'
+import path from 'path'
 
 const BAAN_RESERVEREN_ROOT_URL = 'https://squashcity.baanreserveren.nl'
 
@@ -79,6 +80,13 @@ export class BaanReserverenService {
 			(MAX_TYPING_DELAY_MS - MIN_TYPING_DELAY_MS) * Math.random() +
 			MIN_TYPING_DELAY_MS
 		)
+	}
+
+	private async handleError() {
+		await this.page.screenshot({
+			type: 'png',
+			path: path.resolve('.', `${Date.now()}_error-screenshot.png`),
+		}).catch((reason: any) => this.loggerService.warn('Failed to take screenshot', { reason }))
 	}
 
 	private async checkSession(username: string) {
@@ -465,43 +473,60 @@ export class BaanReserverenService {
 	}
 
 	public async performReservation(reservation: Reservation) {
-		await this.init(reservation)
-		await this.navigateToDay(reservation.dateRangeStart)
-		await this.selectAvailableTime(reservation)
-		await this.selectOwner(reservation.ownerId)
-		await this.selectOpponent(reservation.opponentId, reservation.opponentName)
-		await this.confirmReservation()
+		try {
+			await this.init(reservation)
+			await this.navigateToDay(reservation.dateRangeStart)
+			await this.selectAvailableTime(reservation)
+			await this.selectOwner(reservation.ownerId)
+			await this.selectOpponent(
+				reservation.opponentId,
+				reservation.opponentName,
+			)
+			await this.confirmReservation()
+		} catch (error: unknown) {
+			await this.handleError()
+			throw error
+		}
 	}
 
 	public async addReservationToWaitList(reservation: Reservation) {
-		await this.init(reservation)
-		await this.navigateToWaitingList()
-		const previousWaitingListIds = await this.recordWaitingListEntries()
-		await this.openWaitingListDialog()
-		await this.inputWaitingListDetails(reservation)
-		await this.confirmWaitingListDetails()
-		await this.navigateToWaitingList()
-		const currentWaitingListIds = await this.recordWaitingListEntries()
-		const waitingListId = this.findNewWaitingListEntryId(
-			previousWaitingListIds,
-			currentWaitingListIds,
-		)
-
-		if (waitingListId == null) {
-			throw new WaitingListSubmissionError(
-				'Failed to find new waiting list entry',
+		try {
+			await this.init(reservation)
+			await this.navigateToWaitingList()
+			const previousWaitingListIds = await this.recordWaitingListEntries()
+			await this.openWaitingListDialog()
+			await this.inputWaitingListDetails(reservation)
+			await this.confirmWaitingListDetails()
+			await this.navigateToWaitingList()
+			const currentWaitingListIds = await this.recordWaitingListEntries()
+			const waitingListId = this.findNewWaitingListEntryId(
+				previousWaitingListIds,
+				currentWaitingListIds,
 			)
-		}
 
-		return waitingListId
+			if (waitingListId == null) {
+				throw new WaitingListSubmissionError(
+					'Failed to find new waiting list entry',
+				)
+			}
+
+			return waitingListId
+		} catch (error: unknown) {
+			await this.handleError()
+			throw error
+		}
 	}
 
 	public async removeReservationFromWaitList(reservation: Reservation) {
-		if (!reservation.waitListed || !reservation.waitingListId) return
-
-		await this.init(reservation)
-		await this.navigateToWaitingList()
-		await this.deleteWaitingListEntryRowById(reservation.waitingListId)
+		try {
+			if (!reservation.waitListed || !reservation.waitingListId) return
+			await this.init(reservation)
+			await this.navigateToWaitingList()
+			await this.deleteWaitingListEntryRowById(reservation.waitingListId)
+		} catch (error: unknown) {
+			await this.handleError()
+			throw error
+		}
 	}
 }
 
