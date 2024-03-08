@@ -10,6 +10,7 @@ import { LoggerMiddleware } from './logger/middleware'
 import { LoggerModule } from './logger/module'
 import { DatabaseLoggerService } from './logger/service.database_logger'
 import { MembersModule } from './members/module'
+import { MonitoringModule } from './monitoring/module'
 import { NtfyModule } from './ntfy/module'
 import { RecurringReservationsModule } from './recurringReservations/module'
 import { ReservationsModule } from './reservations/module'
@@ -59,6 +60,7 @@ import { WaitingListModule } from './waitingList/module'
 		MembersModule,
 		WaitingListModule,
 		NtfyModule,
+		MonitoringModule,
 	],
 })
 export class AppModule implements NestModule {

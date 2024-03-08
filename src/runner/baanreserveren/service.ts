@@ -509,6 +509,7 @@ export class BaanReserverenService {
 		try {
 			await this.init()
 			await this.navigateToDay(reservation.dateRangeStart)
+			await this.monitorCourtReservations()
 			await this.selectAvailableTime(reservation)
 			await this.selectOwner(reservation.ownerId)
 			await this.selectOpponent(
@@ -591,10 +592,19 @@ export class BaanReserverenService {
 		return courtStatuses
 	}
 
-	public async monitorCourtReservations(date: Dayjs) {
-		await this.init()
-		await this.navigateToDay(date)
-		return await this.getAllCourtStatuses()
+	public async monitorCourtReservations(date?: Dayjs, swallowError = true) {
+		try {
+			if (date) {
+				await this.init()
+				await this.navigateToDay(date)
+			}
+			return await this.getAllCourtStatuses()
+		} catch (error: unknown) {
+			this.loggerService.error('Failed to monitor court reservations')
+			if (!swallowError) {
+				throw error
+			}
+		}
 	}
 }
 
