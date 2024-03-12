@@ -10,9 +10,9 @@ import {
 	NoCourtAvailableError,
 } from '../runner/baanreserveren/service'
 import { RESERVATIONS_QUEUE_NAME } from './config'
+import { DAILY_RESERVATIONS_ATTEMPTS } from './cron'
 import { Reservation } from './entity'
 import { ReservationsService } from './service'
-import { DAILY_RESERVATIONS_ATTEMPTS } from './cron'
 
 @Processor(RESERVATIONS_QUEUE_NAME)
 export class ReservationsWorker {
