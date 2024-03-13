@@ -2,9 +2,9 @@ import { Inject, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import * as Imap from 'imap'
 import { MailParser, ParsedEmail } from 'mailparser-mit'
-import { NtfyProvider } from 'src/ntfy/provider'
 
 import { LoggerService } from '../logger/service.logger'
+import { NtfyProvider } from '../ntfy/provider'
 import { Email } from './types'
 
 export enum EmailClientStatus {
