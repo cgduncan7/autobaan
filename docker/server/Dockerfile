@@ -17,11 +17,11 @@ COPY --chown=node:node package-lock.json package-lock.json
 
 RUN CXX=g++-12 npm install
 
-COPY --chown=node:node database database
 COPY --chown=node:node data-source.ts data-source.ts
-COPY --chown=node:node src src
-COPY --chown=node:node tsconfig.build.json tsconfig.build.json 
 COPY --chown=node:node tsconfig.json tsconfig.json
+COPY --chown=node:node tsconfig.build.json tsconfig.build.json 
+COPY --chown=node:node database database
+COPY --chown=node:node src src
 
 RUN npm run migrations
 
