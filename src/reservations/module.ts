@@ -3,6 +3,8 @@ import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 
 import { LoggerModule } from '../logger/module'
+import { MONITORING_QUEUE_NAME } from '../monitoring/config'
+import { MonitoringModule } from '../monitoring/module'
 import { NtfyModule } from '../ntfy/module'
 import { RunnerModule } from '../runner/module'
 import { RESERVATIONS_QUEUE_NAME } from './config'
@@ -16,9 +18,11 @@ import { ReservationsWorker } from './worker'
 	imports: [
 		LoggerModule,
 		TypeOrmModule.forFeature([Reservation]),
+		BullModule.registerQueueAsync({ name: MONITORING_QUEUE_NAME }),
 		BullModule.registerQueueAsync({ name: RESERVATIONS_QUEUE_NAME }),
 		RunnerModule,
 		NtfyModule,
+		MonitoringModule,
 	],
 	exports: [ReservationsService],
 	controllers: [ReservationsController],

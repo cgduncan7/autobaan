@@ -11,15 +11,13 @@ import {
 	Query,
 	UseInterceptors,
 } from '@nestjs/common'
-import { Queue } from 'bull'
 import { Transform, TransformationType } from 'class-transformer'
 import { IsBoolean, IsOptional, IsString } from 'class-validator'
 import { Dayjs } from 'dayjs'
 
 import dayjs from '../common/dayjs'
 import { LoggerService } from '../logger/service.logger'
-import { RESERVATIONS_QUEUE_NAME } from './config'
-import { Reservation } from './entity'
+import { RESERVATIONS_QUEUE_NAME, ReservationsQueue } from './config'
 import { ReservationsService } from './service'
 
 export class GetReservationsQueryParams {
@@ -79,7 +77,7 @@ export class ReservationsController {
 		private reservationsService: ReservationsService,
 
 		@InjectQueue(RESERVATIONS_QUEUE_NAME)
-		private reservationsQueue: Queue<Reservation>,
+		private reservationsQueue: ReservationsQueue,
 
 		@Inject(LoggerService)
 		private loggerService: LoggerService,

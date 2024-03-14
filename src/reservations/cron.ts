@@ -1,11 +1,14 @@
 import { InjectQueue } from '@nestjs/bull'
 import { Inject, Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
-import { Queue } from 'bull'
 
+import dayjs from '../common/dayjs'
 import { LoggerService } from '../logger/service.logger'
+import { MONITORING_QUEUE_NAME, MonitoringQueue } from '../monitoring/config'
+import { MonitorType } from '../monitoring/entity'
 import { NtfyProvider } from '../ntfy/provider'
-import { RESERVATIONS_QUEUE_NAME } from './config'
+import { BaanReserverenService } from '../runner/baanreserveren/service'
+import { RESERVATIONS_QUEUE_NAME, ReservationsQueue } from './config'
 import { ReservationsService } from './service'
 
 export const DAILY_RESERVATIONS_ATTEMPTS = 2
@@ -16,8 +19,14 @@ export class ReservationsCronService {
 		@Inject(ReservationsService)
 		private readonly reservationService: ReservationsService,
 
+		@Inject(BaanReserverenService)
+		private readonly brService: BaanReserverenService,
+
 		@InjectQueue(RESERVATIONS_QUEUE_NAME)
-		private readonly reservationsQueue: Queue,
+		private readonly reservationsQueue: ReservationsQueue,
+
+		@InjectQueue(MONITORING_QUEUE_NAME)
+		private readonly monitoringQueue: MonitoringQueue,
 
 		@Inject(NtfyProvider)
 		private readonly ntfyProvider: NtfyProvider,
@@ -34,15 +43,24 @@ export class ReservationsCronService {
 		this.loggerService.log('handleDailyReservations beginning')
 		await this.ntfyProvider.sendCronStartNotification('handleDailyReservations')
 		const reservationsToPerform = await this.reservationService.getSchedulable()
-		this.loggerService.log(
-			`Found ${reservationsToPerform.length} reservations to perform`,
-		)
-		await this.reservationsQueue.addBulk(
-			reservationsToPerform.map((r) => ({
-				data: r,
-				opts: { attempts: DAILY_RESERVATIONS_ATTEMPTS },
-			})),
-		)
+		if (reservationsToPerform.length > 0) {
+			this.loggerService.log(
+				`Found ${reservationsToPerform.length} reservations to perform`,
+			)
+			await this.reservationsQueue.addBulk(
+				reservationsToPerform.map((r) => ({
+					data: r,
+					opts: { attempts: DAILY_RESERVATIONS_ATTEMPTS },
+				})),
+			)
+		} else {
+			this.loggerService.log('Monitoring reservations')
+			const monitorData = await this.brService.monitorCourtReservations(dayjs())
+			await this.monitoringQueue.add({
+				type: MonitorType.CourtReservations,
+				data: monitorData,
+			})
+		}
 		this.loggerService.log('handleDailyReservations ending')
 		await this.ntfyProvider.sendCronStopNotification(
 			'handleDailyReservations',

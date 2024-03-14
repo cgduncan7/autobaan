@@ -1,6 +1,6 @@
 import { InjectQueue, Process, Processor } from '@nestjs/bull'
 import { Inject, Injectable } from '@nestjs/common'
-import { Job, Queue } from 'bull'
+import { Job } from 'bull'
 
 import dayjs from '../common/dayjs'
 import { EMAILS_QUEUE_NAME } from '../email/config'
@@ -8,7 +8,10 @@ import { EmailProvider } from '../email/provider'
 import { Email } from '../email/types'
 import { LoggerService } from '../logger/service.logger'
 import { NtfyProvider } from '../ntfy/provider'
-import { RESERVATIONS_QUEUE_NAME } from '../reservations/config'
+import {
+	RESERVATIONS_QUEUE_NAME,
+	ReservationsQueue,
+} from '../reservations/config'
 import { ReservationsService } from '../reservations/service'
 import { WaitingListDetails } from './types'
 
@@ -29,7 +32,7 @@ const EMAIL_END_TIME_REGEX = new RegExp(/^Eindtijd: ([0-9]{1,2}:[0-9]{1,2})$/im)
 export class WaitingListService {
 	constructor(
 		@InjectQueue(RESERVATIONS_QUEUE_NAME)
-		private readonly reservationsQueue: Queue,
+		private readonly reservationsQueue: ReservationsQueue,
 
 		@Inject(ReservationsService)
 		private readonly reservationsService: ReservationsService,
