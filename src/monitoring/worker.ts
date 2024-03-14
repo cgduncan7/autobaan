@@ -6,6 +6,11 @@ import { MONITORING_QUEUE_NAME } from './config'
 import { MonitorType } from './entity'
 import { MonitorsService } from './service'
 
+export interface MonitoringQueueData {
+	type: MonitorType
+	data: unknown
+}
+
 @Processor(MONITORING_QUEUE_NAME)
 export class MonitoringWorker {
 	constructor(
@@ -14,9 +19,7 @@ export class MonitoringWorker {
 	) {}
 
 	@Process()
-	async handleMonitoringCourtsJob(
-		job: Job<{ type: MonitorType; data: unknown }>,
-	) {
+	async handleMonitoringCourtsJob(job: Job<MonitoringQueueData>) {
 		await this.monitorsService.performMonitor(job.data.type, job.data.data)
 	}
 }
