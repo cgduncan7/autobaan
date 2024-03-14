@@ -14,13 +14,14 @@ USER node
 
 COPY --chown=node:node package.json package.json
 COPY --chown=node:node package-lock.json package-lock.json
+
+RUN CXX=g++-12 npm install
+
 COPY --chown=node:node database database
 COPY --chown=node:node data-source.ts data-source.ts
 COPY --chown=node:node src src
 COPY --chown=node:node tsconfig.build.json tsconfig.build.json 
 COPY --chown=node:node tsconfig.json tsconfig.json
-
-RUN CXX=g++-12 npm install
 
 RUN npm run migrations
 
