@@ -612,7 +612,9 @@ export class BaanReserverenService {
 				data: statuses,
 			})
 		} catch (error: unknown) {
-			this.loggerService.error('Failed to monitor court reservations')
+			this.loggerService.error('Failed to monitor court reservations', {
+				error,
+			})
 			if (!swallowError) {
 				throw error
 			}
