@@ -580,21 +580,23 @@ export class BaanReserverenService {
 			duration: string
 		}[] = []
 		for (const court of courts) {
-			const courtJsonValue = await court.jsonValue()
-			const courtParent = courtJsonValue.parentElement
-			const startTime = dayjs(
-				Number(courtParent?.getAttribute('utc') ?? 0),
-			).toISOString()
-			const status = courtJsonValue.getAttribute('type') ?? 'closed'
-			const courtSlot = courtJsonValue.getAttribute('slot')
+			const classListObj = await (
+				await court.getProperty('classList')
+			).jsonValue()
+			const classList = Object.values(classListObj)
+			const rClass = classList.filter((cl) => /r-\d{2}/.test(cl))[0]
 			const courtNumber =
-				courtSlot != null
-					? `${CourtSlotToNumber[courtSlot as CourtSlot]}`
-					: 'unknown'
-			const duration = `${
-				Number(courtJsonValue.getAttribute('rowspan') ?? '0') * 15
-			} minutes`
-			courtStatuses.push({ courtNumber, startTime, status, duration })
+				`${CourtSlotToNumber[rClass.replace(/r-/, '') as CourtSlot]}` ??
+				'unknown court'
+			const startTime = await court
+				.$eval('div.slot-period', (e) => e.innerText.trim())
+				.catch(() => 'unknown')
+			const status = classList.includes('free') ? 'available' : 'unavailable'
+			const courtRowSpan = await (
+				await court.getProperty('rowSpan')
+			).jsonValue()
+			const duration = `${Number(courtRowSpan ?? '0') * 15} minutes`
+			courtStatuses.push({ courtNumber, startTime, status, duration }) //const d = require('dayjs'); await get(BaanReserverenService).monitorCourtReservations(d());
 		}
 
 		return courtStatuses
@@ -612,9 +614,9 @@ export class BaanReserverenService {
 				data: statuses,
 			})
 		} catch (error: unknown) {
-			this.loggerService.error('Failed to monitor court reservations', {
-				error,
-			})
+			this.loggerService.error(
+				`Failed to monitor court reservations: ${(error as Error).message}`,
+			)
 			if (!swallowError) {
 				throw error
 			}
