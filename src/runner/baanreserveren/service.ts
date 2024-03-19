@@ -4,7 +4,6 @@ import { ConfigService } from '@nestjs/config'
 import { Queue } from 'bull'
 import { instanceToPlain } from 'class-transformer'
 import { Dayjs } from 'dayjs'
-import path from 'path'
 import { ElementHandle, Page } from 'puppeteer'
 
 import dayjs from '../../common/dayjs'
@@ -127,7 +126,7 @@ export class BaanReserverenService {
 		await this.page
 			.screenshot({
 				type: 'png',
-				path: path.resolve('.', `${Date.now()}_error-screenshot.png`),
+				path: `./${Date.now()}_error-screenshot.png`,
 			})
 			.catch((reason: any) =>
 				this.loggerService.warn('Failed to take screenshot', { reason }),
@@ -247,7 +246,9 @@ export class BaanReserverenService {
 				.waitForSelector('td.month.next')
 				.then((d) => d?.click())
 				.catch((e: Error) => {
-					this.loggerService.error('Failed to switch months', { error: e })
+					this.loggerService.error('Failed to switch months', {
+						error: e.message,
+					})
 					throw new RunnerNavigationMonthError(e)
 				})
 		}
@@ -259,7 +260,9 @@ export class BaanReserverenService {
 			)
 			.then((d) => d?.click())
 			.catch((e: Error) => {
-				this.loggerService.error('Failed to select day', { error: e })
+				this.loggerService.error('Failed to select day', {
+					error: e.message,
+				})
 				throw new RunnerNavigationDayError(e)
 			})
 		await this.page
@@ -270,7 +273,7 @@ export class BaanReserverenService {
 			)
 			.catch((e: Error) => {
 				this.loggerService.error('Failed to wait for selected day', {
-					error: e,
+					error: e.message,
 				})
 				throw new RunnerNavigationSelectionError(e)
 			})
