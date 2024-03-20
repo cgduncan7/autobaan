@@ -51,12 +51,14 @@ export class ReservationsWorker {
 		reservation: Reservation,
 		attemptsMade: number,
 	) {
-		if (error instanceof NoCourtAvailableError) {
+		const shouldWaitlist = error instanceof NoCourtAvailableError
+		if (shouldWaitlist) {
 			this.loggerService.warn('No court available')
+		} else {
+			this.loggerService.error('Error while performing reservation', error)
 		}
-		this.loggerService.error('Error while performing reservation', error)
 		if (
-			attemptsMade === DAILY_RESERVATIONS_ATTEMPTS &&
+			(shouldWaitlist || attemptsMade === DAILY_RESERVATIONS_ATTEMPTS) &&
 			!reservation.waitListed
 		) {
 			this.loggerService.log('Adding reservation to waiting list')
@@ -66,6 +68,8 @@ export class ReservationsWorker {
 				reservation.dateRangeEnd,
 			)
 			await this.brService.addReservationToWaitList(reservation)
+		} else {
+			throw error
 		}
 	}
 
