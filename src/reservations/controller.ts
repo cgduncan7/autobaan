@@ -5,6 +5,7 @@ import {
 	Controller,
 	Delete,
 	Get,
+	HttpException,
 	Inject,
 	Param,
 	Post,
@@ -102,13 +103,24 @@ export class ReservationsController {
 
 	@Post()
 	async createReservation(@Body() req: CreateReservationRequest) {
-		console.log(req)
 		const reservation = await this.reservationsService.create(req)
 		if (!reservation.isAvailableForReservation()) {
 			this.loggerService.debug('Reservation not available for reservation')
 			return 'Reservation saved'
 		}
 		this.loggerService.debug('Reservation is available for reservation')
+		await this.reservationsQueue.add(reservation)
+		return 'Reservation queued'
+	}
+
+	@Post(':id')
+	async performReservation(@Param('id') id: string) {
+		const reservation = await this.reservationsService.getById(id)
+		if (reservation == null) throw new HttpException('Not found', 404)
+
+		if (!reservation.isAvailableForReservation())
+			throw new HttpException('Not available', 400)
+
 		await this.reservationsQueue.add(reservation)
 		return 'Reservation queued'
 	}
