@@ -67,7 +67,7 @@ export class ReservationsWorker {
 				reservation.dateRangeStart,
 				reservation.dateRangeEnd,
 			)
-			await this.brService.addReservationToWaitList(reservation)
+			await this.addReservationToWaitList(reservation)
 		} else {
 			throw error
 		}
