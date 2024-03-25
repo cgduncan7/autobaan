@@ -69,7 +69,7 @@ export class WaitingListService {
 
 	private async handleWaitingListEmail(email: Email) {
 		const { date, startTime } = this.getWaitingListDetails(email)
-		const dateRangeStart = dayjs(`${date} ${startTime}`, 'YYYY-MM-DD HH:mm')
+		const dateRangeStart = dayjs(`${date} ${startTime}`, 'DD-MM-YYYY HH:mm')
 		this.loggerService.debug('Handling waiting list email', {
 			date,
 			startTime,
