@@ -25,9 +25,6 @@ export class ReservationsCronService {
 		@InjectQueue(RESERVATIONS_QUEUE_NAME)
 		private readonly reservationsQueue: ReservationsQueue,
 
-		@InjectQueue(MONITORING_QUEUE_NAME)
-		private readonly monitoringQueue: MonitoringQueue,
-
 		@Inject(NtfyProvider)
 		private readonly ntfyProvider: NtfyProvider,
 
@@ -55,11 +52,7 @@ export class ReservationsCronService {
 			)
 		} else {
 			this.loggerService.log('Monitoring reservations')
-			const monitorData = await this.brService.monitorCourtReservations(dayjs())
-			await this.monitoringQueue.add({
-				type: MonitorType.CourtReservations,
-				data: monitorData,
-			})
+			await this.brService.monitorCourtReservations(dayjs())
 		}
 		this.loggerService.log('handleDailyReservations ending')
 		await this.ntfyProvider.sendCronStopNotification(

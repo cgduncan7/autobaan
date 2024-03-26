@@ -19,8 +19,9 @@ export class Monitor {
 
 	@Column('datetime', {
 		nullable: false,
+		default: dayjs(),
 		transformer: {
-			to: (value: Dayjs) => value.format(),
+			to: (value?: Dayjs) => (value ?? dayjs()).format(),
 			from: (value: Date) => dayjs(value),
 		},
 	})
@@ -37,14 +38,8 @@ export class Monitor {
 	})
 	createdAt: Dayjs
 
-	@Column('blob', {
-		nullable: false,
-		transformer: {
-			to: (value) => value,
-			from: (value) => value,
-		},
-	})
-	data: unknown
+	@Column('varchar', { nullable: false })
+	data: string
 
 	constructor(partial: Partial<Monitor>) {
 		Object.assign(this, partial)

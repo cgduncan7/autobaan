@@ -1,16 +1,14 @@
 import { InjectQueue } from '@nestjs/bull'
 import { Inject, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { Queue } from 'bull'
 import { instanceToPlain } from 'class-transformer'
 import { Dayjs } from 'dayjs'
 import { ElementHandle, Page } from 'puppeteer'
 
 import dayjs from '../../common/dayjs'
 import { LoggerService } from '../../logger/service.logger'
-import { MONITORING_QUEUE_NAME } from '../../monitoring/config'
+import { MONITORING_QUEUE_NAME, MonitoringQueue } from '../../monitoring/config'
 import { MonitorType } from '../../monitoring/entity'
-import { MonitoringQueueData } from '../../monitoring/worker'
 import { Reservation } from '../../reservations/entity'
 import { EmptyPage } from '../pages/empty'
 
@@ -95,7 +93,7 @@ export class BaanReserverenService {
 
 	constructor(
 		@InjectQueue(MONITORING_QUEUE_NAME)
-		private readonly monitoringQueue: Queue<MonitoringQueueData>,
+		private readonly monitoringQueue: MonitoringQueue,
 
 		@Inject(LoggerService)
 		private readonly loggerService: LoggerService,

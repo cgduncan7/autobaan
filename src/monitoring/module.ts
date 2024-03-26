@@ -7,6 +7,7 @@ import { NtfyModule } from '../ntfy/module'
 import { MONITORING_QUEUE_NAME } from './config'
 import { Monitor } from './entity'
 import { MonitorsService } from './service'
+import { MonitoringWorker } from './worker'
 
 @Module({
 	imports: [
@@ -15,7 +16,7 @@ import { MonitorsService } from './service'
 		TypeOrmModule.forFeature([Monitor]),
 		BullModule.registerQueueAsync({ name: MONITORING_QUEUE_NAME }),
 	],
-	providers: [MonitorsService],
+	providers: [MonitorsService, MonitoringWorker],
 	exports: [MonitorsService],
 })
 export class MonitoringModule {}

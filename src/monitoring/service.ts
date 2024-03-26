@@ -11,7 +11,7 @@ export class MonitorsService {
 		private readonly monitorsRepository: Repository<Monitor>,
 	) {}
 
-	async performMonitor(type: MonitorType, data: unknown) {
+	async performMonitor(type: MonitorType, data: string) {
 		await this.monitorsRepository.save(
 			this.monitorsRepository.create({ type, data }),
 		)
