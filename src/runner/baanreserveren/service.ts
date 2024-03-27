@@ -82,8 +82,7 @@ const CourtRank = {
 	[CourtSlot.Thirteen]: 1, // no one likes upstairs
 } as const
 
-const MIN_TYPING_DELAY_MS = 10
-const MAX_TYPING_DELAY_MS = 30
+const TYPING_DELAY_MS = 5
 
 @Injectable()
 export class BaanReserverenService {
@@ -114,10 +113,7 @@ export class BaanReserverenService {
 
 	// tryna be sneaky
 	private getTypingDelay() {
-		return (
-			(MAX_TYPING_DELAY_MS - MIN_TYPING_DELAY_MS) * Math.random() +
-			MIN_TYPING_DELAY_MS
-		)
+		return TYPING_DELAY_MS
 	}
 
 	private async handleError() {
