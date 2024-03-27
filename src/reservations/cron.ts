@@ -52,7 +52,7 @@ export class ReservationsCronService {
 			)
 		} else {
 			this.loggerService.log('Monitoring reservations')
-			await this.brService.monitorCourtReservations(dayjs())
+			await this.brService.monitorCourtReservations(dayjs().add(7, 'day'))
 		}
 		this.loggerService.log('handleDailyReservations ending')
 		await this.ntfyProvider.sendCronStopNotification(
