@@ -4,7 +4,18 @@ on:
     branches:
       - main
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/hydrogen
+      - run: npm ci
+      - run: npm run test:unit
   build-image:
+    needs:
+      - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
