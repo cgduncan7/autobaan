@@ -39,6 +39,10 @@ export class RecurringReservation {
 	@Column('varchar', { length: 255, nullable: false })
 	opponentName: string
 
+	constructor(partial: Partial<RecurringReservation>) {
+		Object.assign(this, partial)
+	}
+
 	@Exclude()
 	public createReservationInAdvance(daysInAdvance = 7): Reservation {
 		const [hourStart, minuteStart] = this.timeStart.split(':')
@@ -48,11 +52,13 @@ export class RecurringReservation {
 			.set('hour', Number.parseInt(hourStart))
 			.set('minute', Number.parseInt(minuteStart))
 			.add(daysInAdvance, 'days')
+			.tz('Europe/Amsterdam', true)
 		const dateRangeEnd = dayjs()
 			.set('day', this.dayOfWeek)
 			.set('hour', Number.parseInt(hourEnd))
 			.set('minute', Number.parseInt(minuteEnd))
 			.add(daysInAdvance, 'days')
+			.tz('Europe/Amsterdam', true)
 		const reservation = new Reservation({
 			ownerId: this.ownerId,
 			dateRangeStart: dateRangeStart,
