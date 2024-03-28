@@ -12,7 +12,7 @@ describe('recurringReservations.entity', () => {
 				dayOfWeek: 2,
 			})
 			const reservation = rr.createReservationInAdvance(7)
-			expect(reservation.dateRangeStart).toEqual(dayjs('2024-01-09T18:30'))
+			expect(reservation.dateRangeStart).toEqual(dayjs('2024-01-09T17:30Z'))
 		})
 
 		it('should create reservation at same time in 7 days (DST --> NDST)', async () => {
@@ -24,7 +24,7 @@ describe('recurringReservations.entity', () => {
 				dayOfWeek: 4,
 			})
 			const reservation = rr.createReservationInAdvance(7)
-			expect(reservation.dateRangeStart).toEqual(dayjs('2024-04-04T18:30'))
+			expect(reservation.dateRangeStart).toEqual(dayjs('2024-04-04T16:30Z'))
 		})
 
 		it('should create reservation at same time in 7 days (NDST --> DST)', async () => {
@@ -36,7 +36,7 @@ describe('recurringReservations.entity', () => {
 				dayOfWeek: 4,
 			})
 			const reservation = rr.createReservationInAdvance(7)
-			expect(reservation.dateRangeStart).toEqual(dayjs('2024-10-31T18:30'))
+			expect(reservation.dateRangeStart).toEqual(dayjs('2024-10-31T17:30Z'))
 		})
 	})
 })

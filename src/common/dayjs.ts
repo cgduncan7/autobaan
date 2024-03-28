@@ -36,7 +36,7 @@ const dayjsTz = (
 	date?: string | number | Date | dayjs.Dayjs | null | undefined,
 	format?: string,
 ) => {
-	return dayjs(date, format).tz()
+	return dayjs(date, format).tz('Europe/Amsterdam')
 }
 
 export default dayjsTz
