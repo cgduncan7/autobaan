@@ -336,7 +336,7 @@ export class BaanReserverenService {
 		}
 
 		const acceptedDialogPromise = new Promise<void>((res, rej) => {
-			this.page.on('dialog', async (dialog) => {
+			this.page.once('dialog', async (dialog) => {
 				await dialog.accept().catch(rej)
 				res()
 			})
