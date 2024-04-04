@@ -606,10 +606,13 @@ export class BaanReserverenService {
 				await this.navigateToDay(date)
 			}
 			const statuses = await this.getAllCourtStatuses()
-			await this.monitoringQueue.add({
-				type: MonitorType.CourtReservations,
-				data: statuses,
-			})
+			await this.monitoringQueue.add(
+				{
+					type: MonitorType.CourtReservations,
+					data: statuses,
+				},
+				{ delay: 60 * 1000 },
+			)
 		} catch (error: unknown) {
 			this.loggerService.error(
 				`Failed to monitor court reservations: ${(error as Error).message}`,

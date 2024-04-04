@@ -4,8 +4,6 @@ import { Cron, CronExpression } from '@nestjs/schedule'
 
 import dayjs from '../common/dayjs'
 import { LoggerService } from '../logger/service.logger'
-import { MONITORING_QUEUE_NAME, MonitoringQueue } from '../monitoring/config'
-import { MonitorType } from '../monitoring/entity'
 import { NtfyProvider } from '../ntfy/provider'
 import { BaanReserverenService } from '../runner/baanreserveren/service'
 import { RESERVATIONS_QUEUE_NAME, ReservationsQueue } from './config'
