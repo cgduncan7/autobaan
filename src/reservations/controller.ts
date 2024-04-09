@@ -13,7 +13,13 @@ import {
 	UseInterceptors,
 } from '@nestjs/common'
 import { Transform, TransformationType } from 'class-transformer'
-import { IsBoolean, IsOptional, IsString } from 'class-validator'
+import {
+	IsArray,
+	IsBoolean,
+	IsOptional,
+	IsString,
+	ValidateNested,
+} from 'class-validator'
 import { Dayjs } from 'dayjs'
 
 import dayjs from '../common/dayjs'
@@ -30,6 +36,14 @@ export class GetReservationsQueryParams {
 	@IsBoolean()
 	@Transform(({ value }) => value === 'true')
 	readonly schedulable?: boolean
+}
+
+export class CreateReservationOpponent {
+	@IsString()
+	id: string
+
+	@IsString()
+	name: string
 }
 
 export class CreateReservationRequest {
@@ -62,12 +76,9 @@ export class CreateReservationRequest {
 	dateRangeEnd?: Dayjs
 
 	@IsOptional()
-	@IsString()
-	opponentId?: string
-
-	@IsOptional()
-	@IsString()
-	opponentName?: string
+	@IsArray()
+	@ValidateNested()
+	opponents?: CreateReservationOpponent[]
 }
 
 @Controller('reservations')

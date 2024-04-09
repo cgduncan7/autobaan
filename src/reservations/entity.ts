@@ -5,6 +5,11 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
 import dayjs from '../common/dayjs'
 
+export interface Opponent {
+	id: string
+	name: string
+}
+
 @Entity({ name: 'reservations' })
 export class Reservation {
 	@PrimaryGeneratedColumn('uuid')
@@ -53,11 +58,8 @@ export class Reservation {
 	})
 	dateRangeEnd: Dayjs
 
-	@Column('varchar', { length: 32, nullable: false })
-	opponentId: string
-
-	@Column('varchar', { length: 255, nullable: false })
-	opponentName: string
+	@Column('json', { nullable: false })
+	opponents: Opponent[]
 
 	@Column('boolean', { default: false })
 	waitListed: boolean

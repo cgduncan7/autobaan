@@ -9,7 +9,7 @@ import dayjs from '../../common/dayjs'
 import { LoggerService } from '../../logger/service.logger'
 import { MONITORING_QUEUE_NAME, MonitoringQueue } from '../../monitoring/config'
 import { MonitorType } from '../../monitoring/entity'
-import { Reservation } from '../../reservations/entity'
+import { Opponent, Reservation } from '../../reservations/entity'
 import { EmptyPage } from '../pages/empty'
 
 const BAAN_RESERVEREN_ROOT_URL = 'https://squashcity.baanreserveren.nl'
@@ -417,14 +417,37 @@ export class BaanReserverenService {
 			})
 	}
 
-	private async selectOpponent(id: string, name: string) {
+	private async selectOpponents(opponents: Opponent[]) {
+		try {
+			for (let idx = 0; idx < opponents.length; idx += 1) {
+				const { id, name } = opponents[idx]
+				await this.selectOpponent(id, name, idx)
+			}
+		} catch (error: unknown) {
+			if (error instanceof RunnerOwnerSearchSelectionError) {
+				this.loggerService.warn(
+					'Improper opponents selected, falling back to guest opponent',
+				)
+				return await this.selectOpponent('-1', 'Gast', 0)
+			}
+			throw error
+		}
+	}
+
+	private async selectOpponent(id: string, name: string, index: number) {
+		if (index < 0 || index > 4) {
+			throw new RunnerOwnerSearchSelectionError(
+				new Error('Invalid opponent index'),
+			)
+		}
+		const resolvedIndex = index + 2 // players[1] is the owner; players[2,3,4] are the opponents
 		this.loggerService.debug('Selecting opponent', { id, name })
-		const player2Search = await this.page
-			.waitForSelector('input:has(~ select[name="players[2]"])')
+		const playerSearch = await this.page
+			.waitForSelector(`input:has(~ select[name="players[${resolvedIndex}]"])`)
 			.catch((e: Error) => {
 				throw new RunnerOpponentSearchError(e)
 			})
-		await player2Search
+		await playerSearch
 			?.type(name, { delay: this.getTypingDelay() })
 			.catch((e: Error) => {
 				throw new RunnerOpponentSearchInputError(e)
@@ -433,7 +456,7 @@ export class BaanReserverenService {
 			throw new RunnerOpponentSearchNetworkError(e)
 		})
 		await this.page
-			.$('select.br-user-select[name="players[2]"]')
+			.$(`select.br-user-select[name="players[${resolvedIndex}]"]`)
 			.then((d) => d?.select(id))
 			.catch((e: Error) => {
 				throw new RunnerOpponentSearchSelectionError(e)
@@ -517,10 +540,7 @@ export class BaanReserverenService {
 			await this.monitorCourtReservations()
 			await this.selectAvailableTime(reservation)
 			await this.selectOwner(reservation.ownerId)
-			await this.selectOpponent(
-				reservation.opponentId,
-				reservation.opponentName,
-			)
+			await this.selectOpponents(reservation.opponents)
 			await this.confirmReservation()
 		} catch (error: unknown) {
 			await this.handleError()

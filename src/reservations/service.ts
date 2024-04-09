@@ -73,21 +73,18 @@ export class ReservationsService {
 		ownerId,
 		dateRangeStart,
 		dateRangeEnd,
-		opponentId = '-1',
-		opponentName = 'Gast',
+		opponents,
 	}: {
 		ownerId: string
 		dateRangeStart: Dayjs
 		dateRangeEnd?: Dayjs
-		opponentId?: string
-		opponentName?: string
+		opponents?: { id: string; name: string }[]
 	}) {
 		const res = this.reservationsRepository.create({
 			ownerId,
 			dateRangeStart,
 			dateRangeEnd: dateRangeEnd ?? dateRangeStart,
-			opponentId,
-			opponentName,
+			opponents: opponents ?? [{ id: '-1', name: 'Gast' }],
 		})
 		return await this.reservationsRepository.save(res)
 	}

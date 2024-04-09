@@ -3,7 +3,7 @@ import { IsEnum } from 'class-validator'
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
 import dayjs from '../common/dayjs'
-import { Reservation } from '../reservations/entity'
+import { Opponent, Reservation } from '../reservations/entity'
 
 export enum DayOfWeek {
 	Monday = 1,
@@ -33,11 +33,8 @@ export class RecurringReservation {
 	@Column('varchar', { length: 6, nullable: false })
 	timeEnd: string
 
-	@Column('varchar', { length: 32, nullable: false })
-	opponentId: string
-
-	@Column('varchar', { length: 255, nullable: false })
-	opponentName: string
+	@Column('json', { nullable: false })
+	opponents: Opponent[]
 
 	constructor(partial: Partial<RecurringReservation>) {
 		Object.assign(this, partial)
@@ -63,8 +60,7 @@ export class RecurringReservation {
 			ownerId: this.ownerId,
 			dateRangeStart: dateRangeStart,
 			dateRangeEnd: dateRangeEnd,
-			opponentId: this.opponentId,
-			opponentName: this.opponentName,
+			opponents: this.opponents,
 		})
 		return reservation
 	}

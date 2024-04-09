@@ -35,23 +35,20 @@ export class RecurringReservationsService {
 		dayOfWeek,
 		timeStart,
 		timeEnd,
-		opponentId = '-1',
-		opponentName = 'Gast',
+		opponents,
 	}: {
 		ownerId: string
 		dayOfWeek: DayOfWeek
 		timeStart: string
 		timeEnd?: string
-		opponentId?: string
-		opponentName?: string
+		opponents?: { id: string; name: string }[]
 	}) {
 		const recRes = this.recurringReservationsRepository.create({
 			ownerId,
 			dayOfWeek,
 			timeStart,
 			timeEnd: timeEnd ?? timeStart,
-			opponentId,
-			opponentName,
+			opponents: opponents ?? [{ id: '-1', name: 'Gast' }],
 		})
 		return await this.recurringReservationsRepository.save(recRes)
 	}

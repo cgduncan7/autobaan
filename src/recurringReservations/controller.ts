@@ -10,10 +10,25 @@ import {
 	Query,
 	UseInterceptors,
 } from '@nestjs/common'
-import { IsEnum, IsOptional, IsString, Matches } from 'class-validator'
+import {
+	IsArray,
+	IsEnum,
+	IsOptional,
+	IsString,
+	Matches,
+	ValidateNested,
+} from 'class-validator'
 
 import { DayOfWeek } from './entity'
 import { RecurringReservationsService } from './service'
+
+export class CreateRecurringReservationOpponent {
+	@IsString()
+	id: string
+
+	@IsString()
+	name: string
+}
 
 export class CreateRecurringReservationRequest {
 	@IsString()
@@ -32,12 +47,9 @@ export class CreateRecurringReservationRequest {
 	timeEnd?: string
 
 	@IsOptional()
-	@IsString()
-	opponentId?: string
-
-	@IsOptional()
-	@IsString()
-	opponentName?: string
+	@IsArray()
+	@ValidateNested()
+	opponents?: CreateRecurringReservationOpponent[]
 }
 
 @Controller('recurring-reservations')
