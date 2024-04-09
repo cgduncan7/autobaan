@@ -82,7 +82,7 @@ const CourtRank = {
 	[CourtSlot.Thirteen]: 1, // no one likes upstairs
 } as const
 
-const TYPING_DELAY_MS = 5
+const TYPING_DELAY_MS = 2
 
 @Injectable()
 export class BaanReserverenService {
@@ -127,23 +127,24 @@ export class BaanReserverenService {
 			)
 	}
 
+	// Check session by going to /reservations to see if we are still logged in via cookies
 	private async checkSession(username: string) {
 		this.loggerService.debug('Checking session', {
 			username,
 			session: this.session,
 		})
-		if (this.page.url().includes(BAAN_RESERVEREN_ROOT_URL)) {
-			// Check session by going to /reservations to see if we are still logged in via cookies
-			await this.navigateToReservations()
-			if (this.page.url().includes('?reason=LOGGED_IN')) {
-				return SessionAction.Login
-			}
 
-			return this.session?.username !== this.username
-				? SessionAction.Logout
-				: SessionAction.NoAction
+		if (!this.page.url().includes(BAAN_RESERVEREN_ROOT_URL)) {
+			await this.navigateToReservations()
 		}
-		return SessionAction.Login
+
+		if (this.page.url().includes('?reason=LOGGED_IN')) {
+			return SessionAction.Login
+		}
+
+		return this.session?.username !== this.username
+			? SessionAction.Logout
+			: SessionAction.NoAction
 	}
 
 	private startSession(username: string) {
@@ -202,8 +203,7 @@ export class BaanReserverenService {
 
 	private async init() {
 		this.loggerService.debug('Initializing')
-		await this.page.goto(BAAN_RESERVEREN_ROOT_URL)
-		await this.page.waitForNetworkIdle()
+		await this.navigateToReservations()
 		const action = await this.checkSession(this.username)
 		switch (action) {
 			case SessionAction.Logout:
@@ -533,6 +533,37 @@ export class BaanReserverenService {
 		await this.page.waitForNetworkIdle()
 	}
 
+	private async getAllCourtStatuses() {
+		const courts = await this.page.$$('tr > td.slot')
+		const courtStatuses: {
+			courtNumber: string
+			startTime: string
+			status: string
+			duration: string
+		}[] = []
+		for (const court of courts) {
+			const classListObj = await (
+				await court.getProperty('classList')
+			).jsonValue()
+			const classList = Object.values(classListObj)
+			const rClass = classList.filter((cl) => /r-\d{2}/.test(cl))[0]
+			const courtNumber =
+				`${CourtSlotToNumber[rClass.replace(/r-/, '') as CourtSlot]}` ??
+				'unknown court'
+			const startTime = await court
+				.$eval('div.slot-period', (e) => e.innerText.trim())
+				.catch(() => 'unknown')
+			const status = classList.includes('free') ? 'available' : 'unavailable'
+			const courtRowSpan = await (
+				await court.getProperty('rowSpan')
+			).jsonValue()
+			const duration = `${Number(courtRowSpan ?? '0') * 15} minutes`
+			courtStatuses.push({ courtNumber, startTime, status, duration }) //const d = require('dayjs'); await get(BaanReserverenService).monitorCourtReservations(d());
+		}
+
+		return courtStatuses
+	}
+
 	public async performReservation(reservation: Reservation) {
 		try {
 			await this.init()
@@ -588,37 +619,6 @@ export class BaanReserverenService {
 		}
 	}
 
-	private async getAllCourtStatuses() {
-		const courts = await this.page.$$('tr > td.slot')
-		const courtStatuses: {
-			courtNumber: string
-			startTime: string
-			status: string
-			duration: string
-		}[] = []
-		for (const court of courts) {
-			const classListObj = await (
-				await court.getProperty('classList')
-			).jsonValue()
-			const classList = Object.values(classListObj)
-			const rClass = classList.filter((cl) => /r-\d{2}/.test(cl))[0]
-			const courtNumber =
-				`${CourtSlotToNumber[rClass.replace(/r-/, '') as CourtSlot]}` ??
-				'unknown court'
-			const startTime = await court
-				.$eval('div.slot-period', (e) => e.innerText.trim())
-				.catch(() => 'unknown')
-			const status = classList.includes('free') ? 'available' : 'unavailable'
-			const courtRowSpan = await (
-				await court.getProperty('rowSpan')
-			).jsonValue()
-			const duration = `${Number(courtRowSpan ?? '0') * 15} minutes`
-			courtStatuses.push({ courtNumber, startTime, status, duration }) //const d = require('dayjs'); await get(BaanReserverenService).monitorCourtReservations(d());
-		}
-
-		return courtStatuses
-	}
-
 	public async monitorCourtReservations(date?: Dayjs, swallowError = true) {
 		try {
 			if (date) {
@@ -641,6 +641,10 @@ export class BaanReserverenService {
 				throw error
 			}
 		}
+	}
+
+	public async warmup() {
+		await this.init()
 	}
 }
 

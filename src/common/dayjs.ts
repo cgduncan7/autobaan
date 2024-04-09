@@ -24,6 +24,8 @@ export interface SerializedDateRange {
 	end: string
 }
 
+export const setDefaults = () => dayjs.tz.setDefault('Europe/Amsterdam')
+
 export const convertDateRangeStringToObject = ({
 	start,
 	end,

@@ -51,7 +51,7 @@ export class ReservationsService {
 				},
 			)
 			.andWhere(`waitListed = false`)
-			.orderBy('dateRangeStart', 'DESC')
+			.orderBy('dateRangeStart', 'ASC')
 
 		return await query.getMany()
 	}

@@ -30,7 +30,7 @@ export class ReservationsCronService {
 		private readonly loggerService: LoggerService,
 	) {}
 
-	@Cron(CronExpression.EVERY_DAY_AT_7AM, {
+	@Cron('55 06 * * *', {
 		name: 'handleDailyReservations',
 		timeZone: 'Europe/Amsterdam',
 	})
@@ -42,12 +42,36 @@ export class ReservationsCronService {
 			this.loggerService.log(
 				`Found ${reservationsToPerform.length} reservations to perform`,
 			)
-			await this.reservationsQueue.addBulk(
-				reservationsToPerform.map((r) => ({
-					data: r,
-					opts: { attempts: DAILY_RESERVATIONS_ATTEMPTS },
-				})),
-			)
+
+			// In order to make sure session is fresh and speed up some shit let's warm him up
+			await this.brService.warmup()
+
+			this.loggerService.log(`Warmed up! Waiting for go-time`)
+
+			let not7AM = true
+			const waitTime = 10
+			const time7AM = dayjs()
+				.set('hour', 7)
+				.set('minute', 0)
+				.set('second', 0)
+				.set('millisecond', 0)
+
+			while (not7AM) {
+				not7AM = time7AM.isBefore(dayjs()) && time7AM.diff(dayjs()) >= waitTime // current time is more than 100ms from 7am
+				if (!not7AM) break
+				await new Promise((res) => setTimeout(res, waitTime)) // wait for waitTime and then try again
+			}
+
+			this.loggerService.log(`It's go-time`)
+
+			for (const res of reservationsToPerform) {
+				await this.brService.performReservation(res).catch(
+					async () =>
+						await this.reservationsQueue.add(res, {
+							attempts: Math.max(DAILY_RESERVATIONS_ATTEMPTS - 1, 1),
+						}),
+				)
+			}
 		} else {
 			this.loggerService.log('Monitoring reservations')
 			await this.brService.monitorCourtReservations(dayjs().add(7, 'day'))
