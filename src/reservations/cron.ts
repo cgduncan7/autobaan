@@ -1,6 +1,7 @@
 import { InjectQueue } from '@nestjs/bull'
 import { Inject, Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
+import { Dayjs } from 'dayjs'
 
 import dayjs from '../common/dayjs'
 import { LoggerService } from '../logger/service.logger'
@@ -30,6 +31,19 @@ export class ReservationsCronService {
 		private readonly loggerService: LoggerService,
 	) {}
 
+	private async sleepUntil(time: Dayjs) {
+		let keepSleeping = true
+
+		while (keepSleeping) {
+			const now = dayjs()
+			keepSleeping = !time.isBefore(now)
+			if (!keepSleeping) break
+			await new Promise((res) => {
+				setTimeout(() => res(null), 50)
+			})
+		}
+	}
+
 	@Cron('55 06 * * *', {
 		name: 'handleDailyReservations',
 		timeZone: 'Europe/Amsterdam',
@@ -48,19 +62,13 @@ export class ReservationsCronService {
 
 			this.loggerService.log(`Warmed up! Waiting for go-time`)
 
-			let not7AM = true
-			const waitTime = 10
-			const time7AM = dayjs()
-				.set('hour', 7)
-				.set('minute', 0)
-				.set('second', 0)
-				.set('millisecond', 0)
-
-			while (not7AM) {
-				not7AM = !time7AM.isBefore(dayjs()) && time7AM.diff(dayjs()) >= waitTime // current time is more than 100ms from 7am
-				if (!not7AM) break
-				await new Promise((res) => setTimeout(res, waitTime)) // wait for waitTime and then try again
-			}
+			await this.sleepUntil(
+				dayjs()
+					.set('hour', 7)
+					.set('minute', 0)
+					.set('second', 0)
+					.set('millisecond', 0),
+			)
 
 			this.loggerService.log(`It's go-time`)
 
