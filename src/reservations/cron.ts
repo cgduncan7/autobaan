@@ -57,7 +57,7 @@ export class ReservationsCronService {
 				.set('millisecond', 0)
 
 			while (not7AM) {
-				not7AM = time7AM.isBefore(dayjs()) && time7AM.diff(dayjs()) >= waitTime // current time is more than 100ms from 7am
+				not7AM = !time7AM.isBefore(dayjs()) && time7AM.diff(dayjs()) >= waitTime // current time is more than 100ms from 7am
 				if (!not7AM) break
 				await new Promise((res) => setTimeout(res, waitTime)) // wait for waitTime and then try again
 			}
