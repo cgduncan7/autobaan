@@ -7,7 +7,10 @@ import { CustomResponseTransformInterceptor } from './common/customResponse'
 import { setDefaults } from './common/dayjs'
 
 async function bootstrap() {
-	const app = await NestFactory.create(AppModule, { abortOnError: false })
+	const app = await NestFactory.create(AppModule, {
+		abortOnError: false,
+		logger: ['error', 'warn', 'log'],
+	})
 	const config = app.get(ConfigService)
 	const port = config.get('PORT', 3000)
 	app.enableShutdownHooks()
