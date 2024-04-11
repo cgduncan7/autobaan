@@ -71,15 +71,12 @@ export class ReservationsCronService {
 			)
 
 			this.loggerService.debug(`It's go-time`)
-
-			for (const res of reservationsToPerform) {
-				await this.brService.performReservation(res).catch(
-					async () =>
-						await this.reservationsQueue.add(res, {
-							attempts: Math.max(DAILY_RESERVATIONS_ATTEMPTS - 1, 1),
-						}),
-				)
-			}
+			await this.reservationsQueue.addBulk(
+				reservationsToPerform.map((res) => ({
+					data: res,
+					opts: { attempts: DAILY_RESERVATIONS_ATTEMPTS },
+				})),
+			)
 		} else {
 			this.loggerService.debug('Monitoring reservations')
 			await this.brService.monitorCourtReservations(dayjs().add(7, 'day'))

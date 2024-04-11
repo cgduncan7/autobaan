@@ -565,7 +565,10 @@ export class BaanReserverenService {
 		return courtStatuses
 	}
 
-	public async performReservation(reservation: Reservation) {
+	public async performReservation(
+		reservation: Reservation,
+		timeSensitive = true,
+	) {
 		try {
 			await this.init()
 			await this.navigateToDay(reservation.dateRangeStart)
@@ -575,12 +578,15 @@ export class BaanReserverenService {
 			await this.selectOpponents(reservation.opponents)
 			await this.confirmReservation()
 		} catch (error: unknown) {
-			await this.handleError()
+			if (!timeSensitive) await this.handleError()
 			throw error
 		}
 	}
 
-	public async addReservationToWaitList(reservation: Reservation) {
+	public async addReservationToWaitList(
+		reservation: Reservation,
+		timeSensitive = true,
+	) {
 		try {
 			await this.init()
 			await this.navigateToWaitingList()
@@ -603,7 +609,7 @@ export class BaanReserverenService {
 
 			return waitingListId
 		} catch (error: unknown) {
-			await this.handleError()
+			if (!timeSensitive) await this.handleError()
 			throw error
 		}
 	}
