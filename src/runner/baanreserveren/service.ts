@@ -119,8 +119,9 @@ export class BaanReserverenService {
 	private async handleError() {
 		await this.page
 			.screenshot({
-				type: 'png',
-				path: `./${Date.now()}_error-screenshot.png`,
+				type: 'jpeg',
+				path: `./${Date.now()}_error-screenshot.jpeg`,
+				quality: 50,
 			})
 			.catch((reason: any) =>
 				this.loggerService.warn('Failed to take screenshot', { reason }),
