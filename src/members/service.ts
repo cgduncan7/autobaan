@@ -92,7 +92,7 @@ export class MembersService {
 			},
 		)
 		if (!redirected && response.status >= 300 && response.status < 400) {
-			this.loggerService.log('Not logged in, logging in and re-requesting')
+			this.loggerService.debug('Not logged in, logging in and re-requesting')
 			await this.login()
 			return await this.findMembers(query, true)
 		}

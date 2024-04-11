@@ -97,7 +97,7 @@ export class EmailClient {
 		numMessages: number,
 		callback: (emails: Email[]) => Promise<void>,
 	) {
-		this.loggerService.log(`Received ${numMessages} emails`)
+		this.loggerService.debug(`Received ${numMessages} emails`)
 		const mailbox = await new Promise<Imap.Box>((res) => this.getMailbox(res))
 
 		const {

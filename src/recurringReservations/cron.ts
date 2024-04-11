@@ -24,14 +24,14 @@ export class RecurringReservationsCronService {
 		timeZone: 'Europe/Amsterdam',
 	})
 	async handleRecurringReservations() {
-		this.loggerService.log('handleRecurringReservations beginning')
+		this.loggerService.debug('handleRecurringReservations beginning')
 		await this.ntfyProvider.sendCronStartNotification(
 			'handleRecurringReservations',
 		)
 		const dayOfWeek = dayjs().get('day')
 		const recurringReservationsToSchedule =
 			await this.recurringReservationsService.getByDayOfWeek(dayOfWeek)
-		this.loggerService.log(
+		this.loggerService.debug(
 			`Found ${recurringReservationsToSchedule.length} recurring reservations to schedule`,
 		)
 		for (const recurringReservation of recurringReservationsToSchedule) {
@@ -39,7 +39,7 @@ export class RecurringReservationsCronService {
 				recurringReservation,
 			)
 		}
-		this.loggerService.log('handleRecurringReservations ending')
+		this.loggerService.debug('handleRecurringReservations ending')
 		await this.ntfyProvider.sendCronStopNotification(
 			'handleRecurringReservations',
 			`Count: ${recurringReservationsToSchedule.length}`,

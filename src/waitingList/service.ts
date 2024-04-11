@@ -50,7 +50,7 @@ export class WaitingListService {
 	@Process()
 	async processEmail(job: Job<Email>) {
 		const { data: email } = job
-		this.loggerService.log('Handling email', {
+		this.loggerService.debug('Handling email', {
 			id: email.id,
 			from: email.from,
 			subject: email.subject,
@@ -90,7 +90,7 @@ export class WaitingListService {
 			return
 		}
 
-		this.loggerService.log(
+		this.loggerService.debug(
 			`Found ${reservations.length} reservations on waiting list`,
 		)
 
@@ -125,7 +125,7 @@ export class WaitingListService {
 
 	private isRelevantEmail(email: Email): boolean {
 		if (!EMAIL_SUBJECT_REGEX.test(email.subject)) {
-			this.loggerService.log('Ignoring email, irrelevant subject', {
+			this.loggerService.debug('Ignoring email, irrelevant subject', {
 				id: email.id,
 				subject: email.subject,
 			})
@@ -133,7 +133,7 @@ export class WaitingListService {
 		}
 
 		if (EMAIL_ADDRESS !== email.from) {
-			this.loggerService.log('Ignoring email, irrelevant sender', {
+			this.loggerService.debug('Ignoring email, irrelevant sender', {
 				id: email.id,
 				sender: email.from,
 			})

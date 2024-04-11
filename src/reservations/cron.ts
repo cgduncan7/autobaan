@@ -49,18 +49,18 @@ export class ReservationsCronService {
 		timeZone: 'Europe/Amsterdam',
 	})
 	async handleDailyReservations() {
-		this.loggerService.log('handleDailyReservations beginning')
+		this.loggerService.debug('handleDailyReservations beginning')
 		await this.ntfyProvider.sendCronStartNotification('handleDailyReservations')
 		const reservationsToPerform = await this.reservationService.getSchedulable()
 		if (reservationsToPerform.length > 0) {
-			this.loggerService.log(
+			this.loggerService.debug(
 				`Found ${reservationsToPerform.length} reservations to perform`,
 			)
 
 			// In order to make sure session is fresh and speed up some shit let's warm him up
 			await this.brService.warmup()
 
-			this.loggerService.log(`Warmed up! Waiting for go-time`)
+			this.loggerService.debug(`Warmed up! Waiting for go-time`)
 
 			await this.sleepUntil(
 				dayjs()
@@ -70,7 +70,7 @@ export class ReservationsCronService {
 					.set('millisecond', 0),
 			)
 
-			this.loggerService.log(`It's go-time`)
+			this.loggerService.debug(`It's go-time`)
 
 			for (const res of reservationsToPerform) {
 				await this.brService.performReservation(res).catch(
@@ -81,10 +81,10 @@ export class ReservationsCronService {
 				)
 			}
 		} else {
-			this.loggerService.log('Monitoring reservations')
+			this.loggerService.debug('Monitoring reservations')
 			await this.brService.monitorCourtReservations(dayjs().add(7, 'day'))
 		}
-		this.loggerService.log('handleDailyReservations ending')
+		this.loggerService.debug('handleDailyReservations ending')
 		await this.ntfyProvider.sendCronStopNotification(
 			'handleDailyReservations',
 			`Count: ${reservationsToPerform.length}`,
@@ -96,18 +96,18 @@ export class ReservationsCronService {
 		timeZone: 'Europe/Amsterdam',
 	})
 	async cleanUpExpiredReservations() {
-		this.loggerService.log('cleanUpExpiredReservations beginning')
+		this.loggerService.debug('cleanUpExpiredReservations beginning')
 		await this.ntfyProvider.sendCronStartNotification(
 			'cleanUpExpiredReservations',
 		)
 		const reservations = await this.reservationService.getByDate()
-		this.loggerService.log(
+		this.loggerService.debug(
 			`Found ${reservations.length} reservations to delete`,
 		)
 		for (const reservation of reservations) {
 			await this.reservationService.deleteById(reservation.id)
 		}
-		this.loggerService.log('cleanUpExpiredReservations ending')
+		this.loggerService.debug('cleanUpExpiredReservations ending')
 		await this.ntfyProvider.sendCronStopNotification(
 			'cleanUpExpiredReservations',
 			`Count: ${reservations.length}`,
