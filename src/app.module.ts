@@ -34,7 +34,7 @@ import { WaitingListModule } from './waitingList/module'
 				),
 				migrations: [],
 				autoLoadEntities: true,
-				logging: true,
+				logging: ['error', 'warn'],
 				logger: databaseLoggerService,
 			}),
 		}),
