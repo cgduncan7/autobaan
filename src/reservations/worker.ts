@@ -43,14 +43,13 @@ export class ReservationsWorker {
 			reservation.dateRangeStart,
 			reservation.dateRangeEnd,
 		)
-		await this.performReservation(reservation, job.attemptsMade, false)
+		await this.performReservation(reservation, job.attemptsMade)
 	}
 
 	private async handleReservationErrors(
 		error: Error,
 		reservation: Reservation,
 		attemptsMade: number,
-		timeSensitive = true,
 	) {
 		const shouldWaitlist = error instanceof NoCourtAvailableError
 		if (shouldWaitlist) {
@@ -68,17 +67,13 @@ export class ReservationsWorker {
 				reservation.dateRangeStart,
 				reservation.dateRangeEnd,
 			)
-			await this.addReservationToWaitList(reservation, timeSensitive)
+			await this.addReservationToWaitList(reservation)
 		} else {
 			throw error
 		}
 	}
 
-	async performReservation(
-		reservation: Reservation,
-		attemptsMade: number,
-		timeSensitive = true,
-	) {
+	async performReservation(reservation: Reservation, attemptsMade: number) {
 		try {
 			await this.brService.performReservation(reservation)
 			await this.reservationsService.deleteById(reservation.id)
@@ -87,19 +82,14 @@ export class ReservationsWorker {
 				error as Error,
 				reservation,
 				attemptsMade,
-				timeSensitive,
 			)
 		}
 	}
 
-	async addReservationToWaitList(
-		reservation: Reservation,
-		timeSensitive = true,
-	) {
+	async addReservationToWaitList(reservation: Reservation) {
 		try {
 			const waitingListId = await this.brService.addReservationToWaitList(
 				reservation,
-				timeSensitive,
 			)
 			await this.reservationsService.update(reservation.id, {
 				waitListed: true,
