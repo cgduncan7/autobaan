@@ -1,11 +1,7 @@
 import { getQueueToken } from '@nestjs/bull'
-import { ConfigModule } from '@nestjs/config'
 import { Test, TestingModule } from '@nestjs/testing'
-import { TypeOrmModule } from '@nestjs/typeorm'
 
-import { LoggerModule } from '../../../src/logger/module'
 import { LoggerService } from '../../../src/logger/service.logger'
-import { NtfyModule } from '../../../src/ntfy/module'
 import { NtfyProvider } from '../../../src/ntfy/provider'
 import {
 	RESERVATIONS_QUEUE_NAME,
@@ -15,12 +11,8 @@ import {
 	DAILY_RESERVATIONS_ATTEMPTS,
 	ReservationsCronService,
 } from '../../../src/reservations/cron'
-import { Reservation } from '../../../src/reservations/entity'
-import { ReservationsModule } from '../../../src/reservations/module'
 import { ReservationsService } from '../../../src/reservations/service'
 import { BaanReserverenService } from '../../../src/runner/baanreserveren/service'
-import { RunnerModule } from '../../../src/runner/module'
-import config from '../../config'
 
 describe('reservations.cron', () => {
 	let module: TestingModule
@@ -28,22 +20,25 @@ describe('reservations.cron', () => {
 
 	beforeAll(async () => {
 		module = await Test.createTestingModule({
-			imports: [
-				ReservationsModule,
-				RunnerModule,
-				NtfyModule,
-				LoggerModule,
-				ConfigModule.forRoot({
-					isGlobal: true,
-					ignoreEnvFile: true,
-					ignoreEnvVars: true,
-					load: [() => config],
-				}),
-				TypeOrmModule.forRoot({
-					type: 'sqlite',
-					database: ':memory:',
-					entities: [Reservation],
-				}),
+			providers: [
+				ReservationsCronService,
+				{ provide: BaanReserverenService, useValue: { warmup: jest.fn() } },
+				{ provide: LoggerService, useValue: { debug: jest.fn() } },
+				{
+					provide: getQueueToken(RESERVATIONS_QUEUE_NAME),
+					useValue: { addBulk: jest.fn(), process: jest.fn() },
+				},
+				{
+					provide: ReservationsService,
+					useValue: { getSchedulable: jest.fn() },
+				},
+				{
+					provide: NtfyProvider,
+					useValue: {
+						sendCronStartNotification: jest.fn(),
+						sendCronStopNotification: jest.fn(),
+					},
+				},
 			],
 		}).compile()
 
@@ -55,17 +50,6 @@ describe('reservations.cron', () => {
 	})
 
 	describe('handleDailyReservations', () => {
-		beforeEach(() => {
-			jest.spyOn(
-				module.get<NtfyProvider>(NtfyProvider),
-				'sendCronStartNotification',
-			)
-			jest.spyOn(
-				module.get<NtfyProvider>(NtfyProvider),
-				'sendCronStopNotification',
-			)
-		})
-
 		describe('has scheduleable reservations', () => {
 			const stubbedReservation = { id: 'abc-123' }
 			let warmupSpy: jest.SpyInstance
