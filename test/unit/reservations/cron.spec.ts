@@ -1,3 +1,4 @@
+import { getQueueToken } from '@nestjs/bull'
 import { ConfigModule } from '@nestjs/config'
 import { Test, TestingModule } from '@nestjs/testing'
 import { TypeOrmModule } from '@nestjs/typeorm'
@@ -6,12 +7,20 @@ import { LoggerModule } from '../../../src/logger/module'
 import { LoggerService } from '../../../src/logger/service.logger'
 import { NtfyModule } from '../../../src/ntfy/module'
 import { NtfyProvider } from '../../../src/ntfy/provider'
-import { ReservationsCronService } from '../../../src/reservations/cron'
+import {
+	RESERVATIONS_QUEUE_NAME,
+	ReservationsQueue,
+} from '../../../src/reservations/config'
+import {
+	DAILY_RESERVATIONS_ATTEMPTS,
+	ReservationsCronService,
+} from '../../../src/reservations/cron'
 import { Reservation } from '../../../src/reservations/entity'
 import { ReservationsModule } from '../../../src/reservations/module'
 import { ReservationsService } from '../../../src/reservations/service'
 import { BaanReserverenService } from '../../../src/runner/baanreserveren/service'
 import { RunnerModule } from '../../../src/runner/module'
+import config from '../../config'
 
 describe('reservations.cron', () => {
 	let module: TestingModule
@@ -24,7 +33,12 @@ describe('reservations.cron', () => {
 				RunnerModule,
 				NtfyModule,
 				LoggerModule,
-				ConfigModule.forRoot({ isGlobal: true }),
+				ConfigModule.forRoot({
+					isGlobal: true,
+					ignoreEnvFile: true,
+					ignoreEnvVars: true,
+					load: [() => config],
+				}),
 				TypeOrmModule.forRoot({
 					type: 'sqlite',
 					database: ':memory:',
@@ -55,7 +69,7 @@ describe('reservations.cron', () => {
 		describe('has scheduleable reservations', () => {
 			const stubbedReservation = { id: 'abc-123' }
 			let warmupSpy: jest.SpyInstance
-			let performReservationSpy: jest.SpyInstance
+			let reservationsQueueSpy: jest.SpyInstance
 			let loggerSpy: jest.SpyInstance
 			const loggerInvocationDates: { msg: string; timestamp: Date }[] = []
 
@@ -75,15 +89,17 @@ describe('reservations.cron', () => {
 					)
 					.mockReturnValue(new Promise((res) => setTimeout(res, 1000)))
 
-				performReservationSpy = jest
+				reservationsQueueSpy = jest
 					.spyOn(
-						module.get<BaanReserverenService>(BaanReserverenService),
-						'performReservation',
+						module.get<ReservationsQueue>(
+							getQueueToken(RESERVATIONS_QUEUE_NAME),
+						),
+						'addBulk',
 					)
-					.mockResolvedValue()
+					.mockResolvedValue([]) // unused so empty array
 
 				loggerSpy = jest
-					.spyOn(module.get<LoggerService>(LoggerService), 'log')
+					.spyOn(module.get<LoggerService>(LoggerService), 'debug')
 					.mockImplementation((msg: string) => {
 						loggerInvocationDates.push({ msg, timestamp: new Date() })
 					})
@@ -114,7 +130,12 @@ describe('reservations.cron', () => {
 			})
 
 			it('should perform reservations', () => {
-				expect(performReservationSpy).toHaveBeenCalledWith(stubbedReservation)
+				expect(reservationsQueueSpy).toHaveBeenCalledWith([
+					{
+						data: stubbedReservation,
+						opts: { attempts: DAILY_RESERVATIONS_ATTEMPTS },
+					},
+				])
 			})
 		})
 	})
