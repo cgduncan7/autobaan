@@ -1,6 +1,8 @@
 import { getQueueToken } from '@nestjs/bull'
 import { Test, TestingModule } from '@nestjs/testing'
+import { Dayjs } from 'dayjs'
 
+import dayjs from '../../../src/common/dayjs'
 import { LoggerService } from '../../../src/logger/service.logger'
 import { NtfyProvider } from '../../../src/ntfy/provider'
 import {
@@ -55,7 +57,7 @@ describe('reservations.cron', () => {
 			let warmupSpy: jest.SpyInstance
 			let reservationsQueueSpy: jest.SpyInstance
 			let loggerSpy: jest.SpyInstance
-			const loggerInvocationDates: { msg: string; timestamp: Date }[] = []
+			const loggerInvocationDates: { msg: string; timestamp: Dayjs }[] = []
 
 			beforeAll(async () => {
 				jest
@@ -85,7 +87,7 @@ describe('reservations.cron', () => {
 				loggerSpy = jest
 					.spyOn(module.get<LoggerService>(LoggerService), 'debug')
 					.mockImplementation((msg: string) => {
-						loggerInvocationDates.push({ msg, timestamp: new Date() })
+						loggerInvocationDates.push({ msg, timestamp: dayjs() })
 					})
 
 				jest
@@ -108,10 +110,10 @@ describe('reservations.cron', () => {
 				const { timestamp: goTimeInvocation } =
 					loggerInvocationDates.find(({ msg }) => msg === `It's go-time`) ?? {}
 				expect(goTimeInvocation).toBeDefined()
-				expect(goTimeInvocation?.getMilliseconds()).toBeLessThanOrEqual(100)
-				expect(goTimeInvocation?.getSeconds()).toEqual(0)
-				expect(goTimeInvocation?.getMinutes()).toEqual(0)
-				expect(goTimeInvocation?.getHours()).toEqual(7)
+				expect(goTimeInvocation?.get('milliseconds')).toBeLessThanOrEqual(100)
+				expect(goTimeInvocation?.get('seconds')).toEqual(0)
+				expect(goTimeInvocation?.get('minutes')).toEqual(0)
+				expect(goTimeInvocation?.get('hours')).toEqual(7)
 			})
 
 			it('should perform reservations', () => {
