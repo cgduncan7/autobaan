@@ -110,6 +110,7 @@ describe('reservations.cron', () => {
 				expect(goTimeInvocation).toBeDefined()
 				expect(goTimeInvocation?.getMilliseconds()).toBeLessThanOrEqual(100)
 				expect(goTimeInvocation?.getSeconds()).toEqual(0)
+				expect(goTimeInvocation?.getMinutes()).toEqual(0)
 				expect(goTimeInvocation?.getHours()).toEqual(7)
 			})
 
