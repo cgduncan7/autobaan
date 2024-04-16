@@ -108,9 +108,9 @@ describe('reservations.cron', () => {
 				const { timestamp: goTimeInvocation } =
 					loggerInvocationDates.find(({ msg }) => msg === `It's go-time`) ?? {}
 				expect(goTimeInvocation).toBeDefined()
-				expect(goTimeInvocation?.getHours()).toEqual(7)
-				expect(goTimeInvocation?.getSeconds()).toEqual(0)
 				expect(goTimeInvocation?.getMilliseconds()).toBeLessThanOrEqual(100)
+				expect(goTimeInvocation?.getSeconds()).toEqual(0)
+				expect(goTimeInvocation?.getHours()).toEqual(7)
 			})
 
 			it('should perform reservations', () => {
