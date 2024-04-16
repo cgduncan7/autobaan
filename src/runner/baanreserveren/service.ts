@@ -116,6 +116,18 @@ export class BaanReserverenService {
 		return TYPING_DELAY_MS
 	}
 
+	private async handleError() {
+		await this.page
+			.screenshot({
+				type: 'jpeg',
+				path: `./${Date.now()}_error-screenshot.jpeg`,
+				quality: 50,
+			})
+			.catch((reason: any) =>
+				this.loggerService.warn('Failed to take screenshot', { reason }),
+			)
+	}
+
 	// Check session by going to /reservations to see if we are still logged in via cookies
 	private async checkSession(username: string) {
 		this.loggerService.debug('Checking session', {
@@ -553,20 +565,28 @@ export class BaanReserverenService {
 		return courtStatuses
 	}
 
-	public async performReservation(reservation: Reservation) {
+	public async performReservation(
+		reservation: Reservation,
+		timeSensitive = true,
+	) {
 		try {
 			await this.init()
 			await this.navigateToDay(reservation.dateRangeStart)
+			await this.monitorCourtReservations()
 			await this.selectAvailableTime(reservation)
 			await this.selectOwner(reservation.ownerId)
 			await this.selectOpponents(reservation.opponents)
 			await this.confirmReservation()
 		} catch (error: unknown) {
+			if (!timeSensitive) await this.handleError()
 			throw error
 		}
 	}
 
-	public async addReservationToWaitList(reservation: Reservation) {
+	public async addReservationToWaitList(
+		reservation: Reservation,
+		timeSensitive = true,
+	) {
 		try {
 			await this.init()
 			await this.navigateToWaitingList()
@@ -589,6 +609,7 @@ export class BaanReserverenService {
 
 			return waitingListId
 		} catch (error: unknown) {
+			if (!timeSensitive) await this.handleError()
 			throw error
 		}
 	}
@@ -600,6 +621,7 @@ export class BaanReserverenService {
 			await this.navigateToWaitingList()
 			await this.deleteWaitingListEntryRowById(reservation.waitingListId)
 		} catch (error: unknown) {
+			await this.handleError()
 			throw error
 		}
 	}
