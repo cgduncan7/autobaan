@@ -572,7 +572,6 @@ export class BaanReserverenService {
 		try {
 			await this.init()
 			await this.navigateToDay(reservation.dateRangeStart)
-			await this.monitorCourtReservations()
 			await this.selectAvailableTime(reservation)
 			await this.selectOwner(reservation.ownerId)
 			await this.selectOpponents(reservation.opponents)
