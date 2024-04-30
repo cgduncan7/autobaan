@@ -49,7 +49,7 @@ enum CourtSlot {
 	Thirteen = '63',
 }
 
-const CourtSlotToNumber = {
+const CourtSlotToNumber: Record<CourtSlot, number> = {
 	[CourtSlot.One]: 1,
 	[CourtSlot.Two]: 2,
 	[CourtSlot.Three]: 3,
@@ -66,7 +66,7 @@ const CourtSlotToNumber = {
 } as const
 
 // Lower is better
-const CourtRank = {
+const CourtRank: Record<CourtSlot, number> = {
 	[CourtSlot.One]: 0,
 	[CourtSlot.Two]: 0,
 	[CourtSlot.Three]: 0,
@@ -81,6 +81,105 @@ const CourtRank = {
 	[CourtSlot.Twelve]: 1, // no one likes upstairs
 	[CourtSlot.Thirteen]: 1, // no one likes upstairs
 } as const
+
+enum StartTimeClass {
+	First = 'first',
+	Second = 'second',
+	Third = 'third',
+}
+
+const StartTimeClassCourtSlots: Record<StartTimeClass, readonly CourtSlot[]> = {
+	[StartTimeClass.First]: [
+		CourtSlot.One,
+		CourtSlot.Two,
+		CourtSlot.Three,
+		CourtSlot.Four,
+		CourtSlot.Five,
+	],
+	[StartTimeClass.Second]: [
+		CourtSlot.Six,
+		CourtSlot.Seven,
+		CourtSlot.Eight,
+		CourtSlot.Nine,
+		CourtSlot.Ten,
+	],
+	[StartTimeClass.Third]: [
+		CourtSlot.Eleven,
+		CourtSlot.Twelve,
+		CourtSlot.Thirteen,
+	],
+} as const
+
+const StartTimeClassStartTimes = {
+	[StartTimeClass.First]: [
+		'07:15',
+		'08:00',
+		'08:45',
+		'09:30',
+		'10:15',
+		'11:00',
+		'11:45',
+		'12:30',
+		'13:15',
+		'14:00',
+		'14:45',
+		'15:30',
+		'16:15',
+		'17:00',
+		'17:45',
+		'18:30',
+		'19:15',
+		'20:00',
+		'20:45',
+		'21:30',
+		'22:15',
+	],
+	[StartTimeClass.Second]: [
+		'07:45',
+		'08:30',
+		'09:15',
+		'10:00',
+		'10:45',
+		'11:30',
+		'12:15',
+		'13:00',
+		'13:45',
+		'14:30',
+		'15:15',
+		'16:00',
+		'16:45',
+		'17:30',
+		'18:15',
+		'19:00',
+		'19:45',
+		'20:30',
+		'21:15',
+		'22:00',
+	],
+	[StartTimeClass.Third]: [
+		'07:30',
+		'08:15',
+		'09:00',
+		'09:45',
+		'10:30',
+		'11:15',
+		'12:00',
+		'12:45',
+		'13:30',
+		'14:15',
+		'15:00',
+		'15:45',
+		'16:30',
+		'17:15',
+		'18:00',
+		'18:45',
+		'19:30',
+		'20:15',
+		'21:00',
+		'21:45',
+		'22:30',
+	],
+}
 
 const TYPING_DELAY_MS = 2
 
@@ -232,6 +331,17 @@ export class BaanReserverenService {
 				break
 		}
 		return lastDayOfMonth.add(daysToAdd, 'day')
+	}
+
+	private async navigateToReservationPrompt(courtSlot: CourtSlot, date: Dayjs) {
+		this.loggerService.debug('Navigating to reservation prompt', {
+			courtSlot,
+			date,
+		})
+		const utcSeconds = date.valueOf() / 1000
+		await this.page.goto(
+			`${BAAN_RESERVEREN_ROOT_URL}/reservations/make/${courtSlot}/${utcSeconds}`,
+		)
 	}
 
 	private async navigateToDay(date: Dayjs) {
@@ -473,7 +583,7 @@ export class BaanReserverenService {
 				throw new RunnerReservationConfirmButtonError(e)
 			})
 		await this.page
-			.waitForSelector('input#__make_submit2')
+			.waitForSelector('input#__make_submit2', { timeout: 500 }) // quick timeout here because all it is checking is that the reservation is still available
 			.then((b) => b?.click())
 			.catch((e: Error) => {
 				throw new RunnerReservationConfirmSubmitError(e)
@@ -565,6 +675,15 @@ export class BaanReserverenService {
 		return courtStatuses
 	}
 
+	private getCourtSlotsForDate(date: Dayjs) {
+		const time = date.format('HH:mm')
+		for (const [timeClass, times] of Object.entries(StartTimeClassStartTimes)) {
+			if (times.includes(time)) {
+				return StartTimeClassCourtSlots[timeClass as StartTimeClass]
+			}
+		}
+	}
+
 	public async performReservation(
 		reservation: Reservation,
 		timeSensitive = true,
@@ -579,6 +698,31 @@ export class BaanReserverenService {
 		} catch (error: unknown) {
 			if (!timeSensitive) await this.handleError()
 			throw error
+		}
+	}
+
+	public async performSpeedyReservation(reservation: Reservation) {
+		await this.init()
+		const courtSlots = this.getCourtSlotsForDate(reservation.dateRangeStart)
+
+		if (courtSlots == null) {
+			throw new NoCourtAvailableError('Improper time for courts')
+		}
+
+		for (const courtSlot of courtSlots) {
+			await this.navigateToReservationPrompt(
+				courtSlot,
+				reservation.dateRangeStart,
+			)
+			await this.selectOwner(reservation.ownerId)
+			await this.selectOpponents(reservation.opponents)
+			await this.confirmReservation().catch((error: Error) => {
+				if (error instanceof RunnerReservationConfirmSubmitError) {
+					this.loggerService.warn('Court taken, retrying', { courtSlot })
+					return
+				}
+				throw error
+			})
 		}
 	}
 

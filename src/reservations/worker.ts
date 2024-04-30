@@ -43,7 +43,7 @@ export class ReservationsWorker {
 			reservation.dateRangeStart,
 			reservation.dateRangeEnd,
 		)
-		await this.performReservation(reservation, job.attemptsMade, false)
+		await this.performReservation(reservation, job.attemptsMade, true, true)
 	}
 
 	private async handleReservationErrors(
@@ -78,9 +78,14 @@ export class ReservationsWorker {
 		reservation: Reservation,
 		attemptsMade: number,
 		timeSensitive = true,
+		speedyMode = true,
 	) {
 		try {
-			await this.brService.performReservation(reservation)
+			if (speedyMode) {
+				await this.brService.performSpeedyReservation(reservation)
+			} else {
+				await this.brService.performReservation(reservation, timeSensitive)
+			}
 			await this.reservationsService.deleteById(reservation.id)
 		} catch (error: unknown) {
 			await this.handleReservationErrors(
