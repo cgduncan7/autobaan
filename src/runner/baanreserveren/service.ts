@@ -723,7 +723,10 @@ export class BaanReserverenService {
 				}
 				throw error
 			})
+			return
 		}
+
+		throw new NoCourtAvailableError('Could not reserve court')
 	}
 
 	public async addReservationToWaitList(
