@@ -58,6 +58,19 @@ export class RecurringReservationsService {
 		return this.reservationsService.create(reservation)
 	}
 
+	async update(
+		id: string,
+		updateRequest: {
+			ownerId?: string
+			dayOfWeek?: DayOfWeek
+			timeStart?: string
+			timeEnd?: string
+			opponents?: { id: string; name: string }[]
+		},
+	) {
+		await this.recurringReservationsRepository.update({ id }, updateRequest)
+	}
+
 	async deleteById(id: string) {
 		await this.recurringReservationsRepository.delete({ id })
 	}
