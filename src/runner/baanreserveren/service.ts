@@ -558,16 +558,13 @@ export class BaanReserverenService {
 			.catch((e: Error) => {
 				throw new RunnerOpponentSearchError(e)
 			})
-		await playerSearch
-			?.type(name, { delay: this.getTypingDelay() })
-			.catch((e: Error) => {
-				throw new RunnerOpponentSearchInputError(e)
-			})
-		await this.page.waitForNetworkIdle().catch((e: Error) => {
-			throw new RunnerOpponentSearchNetworkError(e)
+		await playerSearch?.type(name).catch((e: Error) => {
+			throw new RunnerOpponentSearchInputError(e)
 		})
 		await this.page
-			.$(`select.br-user-select[name="players[${resolvedIndex}]"]`)
+			.waitForSelector(
+				`select.br-user-select[name="players[${resolvedIndex}]"]`,
+			)
 			.then((d) => d?.select(id))
 			.catch((e: Error) => {
 				throw new RunnerOpponentSearchSelectionError(e)
@@ -716,14 +713,16 @@ export class BaanReserverenService {
 			)
 			await this.selectOwner(reservation.ownerId)
 			await this.selectOpponents(reservation.opponents)
+			let errorReserving = false
 			await this.confirmReservation().catch((error: Error) => {
 				if (error instanceof RunnerReservationConfirmSubmitError) {
 					this.loggerService.warn('Court taken, retrying', { courtSlot })
-					return
+					errorReserving = true
+				} else {
+					throw error
 				}
-				throw error
 			})
-			return
+			if (!errorReserving) return
 		}
 
 		throw new NoCourtAvailableError('Could not reserve court')
