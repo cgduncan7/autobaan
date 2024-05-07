@@ -528,11 +528,15 @@ export class BaanReserverenService {
 			})
 	}
 
-	private async selectOpponents(opponents: Opponent[]) {
+	private async selectOpponents(opponents: Opponent[], speedy = false) {
 		try {
-			for (let idx = 0; idx < opponents.length; idx += 1) {
-				const { id, name } = opponents[idx]
-				await this.selectOpponent(id, name, idx)
+			if (speedy) {
+				await this.selectOpponent('-1', 'Gast', 0)
+			} else {
+				for (let idx = 0; idx < opponents.length; idx += 1) {
+					const { id, name } = opponents[idx]
+					await this.selectOpponent(id, name, idx)
+				}
 			}
 		} catch (error: unknown) {
 			if (error instanceof RunnerOwnerSearchSelectionError) {
@@ -712,7 +716,7 @@ export class BaanReserverenService {
 				reservation.dateRangeStart,
 			)
 			await this.selectOwner(reservation.ownerId)
-			await this.selectOpponents(reservation.opponents)
+			await this.selectOpponents(reservation.opponents, true)
 			let errorReserving = false
 			await this.confirmReservation().catch((error: Error) => {
 				if (error instanceof RunnerReservationConfirmSubmitError) {
