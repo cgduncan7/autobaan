@@ -339,9 +339,12 @@ export class BaanReserverenService {
 			date,
 		})
 		const utcSeconds = date.valueOf() / 1000
-		await this.page.goto(
+		const response = await this.page.goto(
 			`${BAAN_RESERVEREN_ROOT_URL}/reservations/make/${courtSlot}/${utcSeconds}`,
 		)
+		if (response == null || response.status() >= 400) {
+			throw new CourtNotAvailableError('Court taken at the given time')
+		}
 	}
 
 	private async navigateToDay(date: Dayjs) {
@@ -517,11 +520,8 @@ export class BaanReserverenService {
 
 	private async selectOwner(id: string) {
 		this.loggerService.debug('Selecting owner', { id })
-		await this.page.waitForNetworkIdle().catch((e: Error) => {
-			throw new RunnerOwnerSearchNetworkError(e)
-		})
 		await this.page
-			.$('select.br-user-select[name="players[1]"]')
+			.waitForSelector('select.br-user-select[name="players[1]"]')
 			.then((d) => d?.select(id))
 			.catch((e: Error) => {
 				throw new RunnerOwnerSearchSelectionError(e)
@@ -711,21 +711,26 @@ export class BaanReserverenService {
 		}
 
 		for (const courtSlot of courtSlots) {
-			await this.navigateToReservationPrompt(
-				courtSlot,
-				reservation.dateRangeStart,
-			)
-			await this.selectOwner(reservation.ownerId)
-			await this.selectOpponents(reservation.opponents, true)
 			let errorReserving = false
-			await this.confirmReservation().catch((error: Error) => {
-				if (error instanceof RunnerReservationConfirmSubmitError) {
+			try {
+				await this.navigateToReservationPrompt(
+					courtSlot,
+					reservation.dateRangeStart,
+				)
+				await this.selectOwner(reservation.ownerId)
+				await this.selectOpponents(reservation.opponents, true)
+				await this.confirmReservation()
+			} catch (error: unknown) {
+				if (
+					error instanceof CourtNotAvailableError ||
+					error instanceof RunnerReservationConfirmSubmitError
+				) {
 					this.loggerService.warn('Court taken, retrying', { courtSlot })
 					errorReserving = true
 				} else {
 					throw error
 				}
-			})
+			}
 			if (!errorReserving) return
 		}
 
@@ -914,6 +919,13 @@ export class NoCourtAvailableError extends Error {
 	constructor(message: string) {
 		super(message)
 		this.name = 'NoCourtAvailableError'
+	}
+}
+
+export class CourtNotAvailableError extends Error {
+	constructor(message: string) {
+		super(message)
+		this.name = 'CourtNotAvailableError'
 	}
 }
 
