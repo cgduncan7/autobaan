@@ -90,7 +90,7 @@ export class Reservation {
 	 */
 	@Exclude()
 	public isAvailableForReservation(): boolean {
-		return this.dateRangeStart.diff(dayjs(), 'day') <= 7
+		return this.dateRangeStart.diff(dayjs(), 'hour') <= 7 * 24
 	}
 
 	/**
