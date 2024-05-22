@@ -12,7 +12,7 @@ import { MonitorType } from '../../monitoring/entity'
 import { Opponent, Reservation } from '../../reservations/entity'
 import { EmptyPage } from '../pages/empty'
 
-const BAAN_RESERVEREN_ROOT_URL = 'https://squashcity.baanreserveren.nl'
+export const BAAN_RESERVEREN_ROOT_URL = 'https://squashcity.baanreserveren.nl'
 
 export enum BaanReserverenUrls {
 	Reservations = '/reservations',
@@ -33,7 +33,7 @@ interface BaanReserverenSession {
 }
 
 // TODO: Add to DB to make configurable
-enum CourtSlot {
+export enum CourtSlot {
 	One = '51',
 	Two = '52',
 	Three = '53',
@@ -67,8 +67,8 @@ const CourtSlotToNumber: Record<CourtSlot, number> = {
 
 // Lower is better
 const CourtRank: Record<CourtSlot, number> = {
-	[CourtSlot.One]: 0,
-	[CourtSlot.Two]: 0,
+	[CourtSlot.One]: 2,
+	[CourtSlot.Two]: 1,
 	[CourtSlot.Three]: 0,
 	[CourtSlot.Four]: 0,
 	[CourtSlot.Five]: 99, // shitty
@@ -77,9 +77,9 @@ const CourtRank: Record<CourtSlot, number> = {
 	[CourtSlot.Eight]: 0,
 	[CourtSlot.Nine]: 0,
 	[CourtSlot.Ten]: 0,
-	[CourtSlot.Eleven]: 1, // no one likes upstairs
-	[CourtSlot.Twelve]: 1, // no one likes upstairs
-	[CourtSlot.Thirteen]: 1, // no one likes upstairs
+	[CourtSlot.Eleven]: 10, // no one likes upstairs
+	[CourtSlot.Twelve]: 9, // no one likes upstairs
+	[CourtSlot.Thirteen]: 9, // no one likes upstairs
 } as const
 
 enum StartTimeClass {
@@ -680,7 +680,11 @@ export class BaanReserverenService {
 		const time = date.format('HH:mm')
 		for (const [timeClass, times] of Object.entries(StartTimeClassStartTimes)) {
 			if (times.includes(time)) {
-				return StartTimeClassCourtSlots[timeClass as StartTimeClass]
+				const courtSlots = [
+					...StartTimeClassCourtSlots[timeClass as StartTimeClass],
+				]
+				// sort by ranking
+				return courtSlots.sort((a, b) => CourtRank[a] - CourtRank[b])
 			}
 		}
 	}
