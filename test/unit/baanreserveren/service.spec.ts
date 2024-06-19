@@ -57,7 +57,7 @@ describe('baanreserveren.service', () => {
 	describe('performSpeedyReservation', () => {
 		it.each([
 			[18, 15, CourtSlot.Seven, CourtSlot.Six],
-			[18, 30, CourtSlot.Three, CourtSlot.One],
+			[18, 30, CourtSlot.Two, CourtSlot.Four],
 			[18, 45, CourtSlot.Twelve, CourtSlot.Thirteen],
 		])(
 			'should try highest ranked court first',
@@ -90,7 +90,7 @@ describe('baanreserveren.service', () => {
 
 		it.each([
 			[18, 15, CourtSlot.Seven, CourtSlot.Eight],
-			[18, 30, CourtSlot.Three, CourtSlot.Four],
+			[18, 30, CourtSlot.Two, CourtSlot.Four],
 			[18, 45, CourtSlot.Twelve, CourtSlot.Thirteen],
 		])(
 			'should try backup if first rank is taken',
