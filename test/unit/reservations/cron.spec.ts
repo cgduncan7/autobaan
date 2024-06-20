@@ -119,7 +119,7 @@ describe('reservations.cron', () => {
 			it('should perform reservations', () => {
 				expect(reservationsQueueSpy).toHaveBeenCalledWith([
 					{
-						data: stubbedReservation,
+						data: { reservation: stubbedReservation, speedyMode: true },
 						opts: { attempts: DAILY_RESERVATIONS_ATTEMPTS },
 					},
 				])

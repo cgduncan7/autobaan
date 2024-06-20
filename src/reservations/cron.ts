@@ -73,7 +73,7 @@ export class ReservationsCronService {
 			this.loggerService.debug(`It's go-time`)
 			await this.reservationsQueue.addBulk(
 				reservationsToPerform.map((res) => ({
-					data: res,
+					data: { reservation: res, speedyMode: true },
 					opts: { attempts: DAILY_RESERVATIONS_ATTEMPTS },
 				})),
 			)

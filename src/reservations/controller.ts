@@ -120,7 +120,7 @@ export class ReservationsController {
 			return 'Reservation saved'
 		}
 		this.loggerService.debug('Reservation is available for reservation')
-		await this.reservationsQueue.add(reservation)
+		await this.reservationsQueue.add({ reservation, speedyMode: true })
 		return 'Reservation queued'
 	}
 
@@ -132,7 +132,7 @@ export class ReservationsController {
 		if (!reservation.isAvailableForReservation())
 			throw new HttpException('Not available', 400)
 
-		await this.reservationsQueue.add(reservation)
+		await this.reservationsQueue.add({ reservation, speedyMode: true })
 		return 'Reservation queued'
 	}
 

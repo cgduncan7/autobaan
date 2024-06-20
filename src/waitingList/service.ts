@@ -95,7 +95,10 @@ export class WaitingListService {
 		)
 
 		await this.reservationsQueue.addBulk(
-			reservations.map((r) => ({ data: r, opts: { attempts: 1 } })),
+			reservations.map((r) => ({
+				data: { reservation: r, speedyMode: false },
+				opts: { attempts: 1 },
+			})),
 		)
 	}
 

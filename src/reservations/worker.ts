@@ -9,7 +9,7 @@ import {
 	BaanReserverenService,
 	NoCourtAvailableError,
 } from '../runner/baanreserveren/service'
-import { RESERVATIONS_QUEUE_NAME } from './config'
+import { RESERVATIONS_QUEUE_NAME, ReservationsJob } from './config'
 import { DAILY_RESERVATIONS_ATTEMPTS } from './cron'
 import { Reservation } from './entity'
 import { ReservationsService } from './service'
@@ -31,8 +31,8 @@ export class ReservationsWorker {
 	) {}
 
 	@Process()
-	async handleReservationJob(job: Job<Reservation>) {
-		const reservation = plainToInstance(Reservation, job.data, {
+	async handleReservationJob(job: ReservationsJob) {
+		const reservation = plainToInstance(Reservation, job.data.reservation, {
 			groups: ['password'],
 		})
 		this.loggerService.log('Handling reservation', {
@@ -43,7 +43,12 @@ export class ReservationsWorker {
 			reservation.dateRangeStart,
 			reservation.dateRangeEnd,
 		)
-		await this.performReservation(reservation, job.attemptsMade, true, true)
+		await this.performReservation(
+			reservation,
+			job.attemptsMade,
+			true,
+			job.data.speedyMode,
+		)
 	}
 
 	private async handleReservationErrors(
