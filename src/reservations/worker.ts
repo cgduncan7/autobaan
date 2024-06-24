@@ -32,9 +32,7 @@ export class ReservationsWorker {
 
 	@Process()
 	async handleReservationJob(job: ReservationsJob) {
-		const reservation = plainToInstance(Reservation, job.data.reservation, {
-			groups: ['password'],
-		})
+		const reservation = plainToInstance(Reservation, job.data.reservation)
 		this.loggerService.log('Handling reservation', {
 			reservation: instanceToPlain(reservation),
 		})
