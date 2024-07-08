@@ -5,7 +5,12 @@ import { Job, JobOptions, Queue } from 'bull'
 import { Dayjs } from 'dayjs'
 
 import { NtfyClient } from './client'
-import { MessageConfig, MessageTags, NTFY_PUBLISH_QUEUE_NAME } from './types'
+import {
+	MessageConfig,
+	MessagePriority,
+	MessageTags,
+	NTFY_PUBLISH_QUEUE_NAME,
+} from './types'
 
 @Processor(NTFY_PUBLISH_QUEUE_NAME)
 @Injectable()
@@ -36,7 +41,10 @@ export class NtfyProvider implements OnApplicationBootstrap {
 		data: Omit<MessageConfig, 'topic'>,
 	): [Omit<MessageConfig, 'topic'>, JobOptions] {
 		return [
-			data,
+			{
+				...data,
+				priority: MessagePriority.min,
+			},
 			{
 				attempts: 3,
 				removeOnComplete: true,
@@ -99,6 +107,7 @@ export class NtfyProvider implements OnApplicationBootstrap {
 	) {
 		await this.publishQueue.add(
 			...NtfyProvider.defaultJob({
+				priority: MessagePriority.default,
 				title: 'Error performing reservation',
 				message: `${reservationId} - ${startTime.format()} to ${endTime.format()} : (${
 					error.name
@@ -135,6 +144,7 @@ export class NtfyProvider implements OnApplicationBootstrap {
 	async sendEmailClientErrorNotification(errorMessage: string) {
 		await this.publishQueue.add(
 			...NtfyProvider.defaultJob({
+				priority: MessagePriority.high,
 				title: 'Email client error',
 				message: errorMessage,
 				tags: [MessageTags.exclamation],
