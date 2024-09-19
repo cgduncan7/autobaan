@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config'
 import { Job, JobOptions, Queue } from 'bull'
 import { Dayjs } from 'dayjs'
 
+import { LoggerService } from '../logger/service.logger'
 import { NtfyClient } from './client'
 import {
 	MessageConfig,
@@ -22,6 +23,9 @@ export class NtfyProvider implements OnApplicationBootstrap {
 		@Inject(NtfyClient)
 		private readonly ntfyClient: NtfyClient,
 
+		@Inject(LoggerService)
+		private readonly loggerService: LoggerService,
+
 		@InjectQueue(NTFY_PUBLISH_QUEUE_NAME)
 		private readonly publishQueue: Queue,
 	) {}
@@ -32,6 +36,7 @@ export class NtfyProvider implements OnApplicationBootstrap {
 
 	@Process()
 	async handlePublishJob(job: Job<Omit<MessageConfig, 'topic'>>) {
+		this.loggerService.debug('Handling publish job', { data: job.data })
 		await this.ntfyClient.publish({
 			...job.data,
 		})

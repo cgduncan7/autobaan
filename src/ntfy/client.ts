@@ -37,6 +37,10 @@ export class NtfyClient {
 					...message,
 				}),
 			)
+			this.loggerService.debug('Published ntfy-cation', {
+				topic: this.topic,
+				message,
+			})
 		} catch (error: unknown) {
 			this.loggerService.error('ntfy client failed', { error })
 		}
