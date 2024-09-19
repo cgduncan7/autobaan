@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { resolve } from 'path'
 
 import { EmailModule } from './email/module'
+import { HealthModule } from './health/module'
 import { LoggerMiddleware } from './logger/middleware'
 import { LoggerModule } from './logger/module'
 import { DatabaseLoggerService } from './logger/service.database_logger'
@@ -57,6 +58,7 @@ import { WaitingListModule } from './waitingList/module'
 		RunnerModule,
 		LoggerModule,
 		EmailModule,
+		HealthModule,
 		MembersModule,
 		WaitingListModule,
 		NtfyModule,
