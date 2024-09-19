@@ -7,10 +7,14 @@ import { LoggerService } from '../logger/service.logger'
 import { NtfyProvider } from '../ntfy/provider'
 import { Email } from './types'
 
+const MAX_CONNECTION_ATTEMPTS = 5
+const CONNECTION_ATTEMPT_DELAY = [0, 500, 1500, 5000, 1000]
+
 export enum EmailClientStatus {
 	NotReady,
 	Ready,
-	Error,
+	Destroying,
+	Failed,
 }
 
 @Injectable()
@@ -19,6 +23,7 @@ export class EmailClient {
 	private readonly mailboxName: string
 	private mailbox?: Imap.Box
 	private status: EmailClientStatus
+	private connectionAttempts: number
 
 	constructor(
 		@Inject(LoggerService)
@@ -30,6 +35,7 @@ export class EmailClient {
 		@Inject(ConfigService)
 		private readonly configService: ConfigService,
 	) {
+		this.connectionAttempts = 0
 		this.mailboxName = this.configService.getOrThrow<string>('EMAIL_MAILBOX')
 		this.imapClient = new Imap({
 			host: this.configService.getOrThrow('EMAIL_HOST'),
@@ -44,6 +50,7 @@ export class EmailClient {
 	}
 
 	onModuleDestroy() {
+		this.setStatus(EmailClientStatus.Destroying)
 		this.imapClient.end()
 	}
 
@@ -51,8 +58,23 @@ export class EmailClient {
 		this.status = status
 	}
 
+	public isConnected() {
+		return this.status === EmailClientStatus.Ready
+	}
+
 	private connect() {
-		this.imapClient.connect()
+		if (this.connectionAttempts > MAX_CONNECTION_ATTEMPTS) {
+			this.setStatus(EmailClientStatus.Failed)
+			return
+		}
+
+		if (this.connectionAttempts === 0) {
+			this.imapClient.connect()
+		} else {
+			const connectionDelay = CONNECTION_ATTEMPT_DELAY[this.connectionAttempts]
+			setTimeout(this.imapClient.connect, connectionDelay)
+		}
+		this.connectionAttempts += 1
 	}
 
 	private openBox() {
@@ -63,7 +85,9 @@ export class EmailClient {
 				})
 				return
 			}
-			this.loggerService.debug('Mailbox opened', { mailbox })
+			this.loggerService.debug('Mailbox opened', {
+				mailbox: { name: mailbox.name },
+			})
 			this.mailbox = mailbox
 		})
 	}
@@ -82,9 +106,11 @@ export class EmailClient {
 
 		try {
 			fn()
+			this.loggerService.debug(`Attempt succeeded`)
 		} catch (error: unknown) {
 			this.loggerService.debug(
 				`Attempting ${label} hit error at attempt ${current}`,
+				error,
 			)
 			setTimeout(
 				() => this.attempt(label, current + 1, max, delayMs, fn),
@@ -219,6 +245,7 @@ export class EmailClient {
 	private setupDefaultListeners() {
 		this.imapClient.on('ready', () => {
 			this.loggerService.debug('email client ready')
+			this.connectionAttempts = 0
 			if (this.status === EmailClientStatus.NotReady) {
 				this.setStatus(EmailClientStatus.Ready)
 				this.openBox()
@@ -226,18 +253,20 @@ export class EmailClient {
 		})
 
 		this.imapClient.on('close', () => {
-			this.loggerService.debug('email client close')
-			if (this.status !== EmailClientStatus.Error) {
-				this.loggerService.debug('email client reconnecting')
-				this.setStatus(EmailClientStatus.NotReady)
-				this.connect()
+			if (this.status === EmailClientStatus.Destroying) {
+				this.loggerService.debug('email client close due to termination')
+				return
 			}
+
+			this.loggerService.debug('email client reconnecting')
+			this.setStatus(EmailClientStatus.NotReady)
+			this.connect()
 		})
 
 		this.imapClient.on('error', async (error: Error) => {
 			this.loggerService.error(`Error with imap client ${error.message}`)
 			await this.ntfyProvider.sendEmailClientErrorNotification(error.message)
-			this.setStatus(EmailClientStatus.Error)
+			this.setStatus(EmailClientStatus.NotReady)
 		})
 	}
 

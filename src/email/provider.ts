@@ -18,6 +18,10 @@ export class EmailProvider {
 		this.registerEmailListener()
 	}
 
+	public isConnected() {
+		return this.emailClient.isConnected()
+	}
+
 	private async handleReceivedEmails(emails: Email[]) {
 		await this.emailsQueue.addBulk(emails.map((email) => ({ data: email })))
 	}
