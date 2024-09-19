@@ -52,11 +52,11 @@ export enum MessageTags {
 }
 
 export enum MessagePriority {
-	min = '1',
-	low = '2',
-	default = '3',
-	high = '4',
-	max = '5',
+	min = 1,
+	low = 2,
+	default = 3,
+	high = 4,
+	max = 5,
 }
 
 export interface MessageConfig {

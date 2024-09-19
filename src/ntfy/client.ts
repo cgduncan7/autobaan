@@ -30,17 +30,16 @@ export class NtfyClient {
 
 	async publish(message: Omit<MessageConfig, 'topic'>) {
 		try {
-			await this.httpClient.post(
+			const response = await this.httpClient.post(
 				'/',
 				JSON.stringify({
 					topic: this.topic,
 					...message,
 				}),
 			)
-			this.loggerService.debug('Published ntfy-cation', {
-				topic: this.topic,
-				message,
-			})
+			if (response.status >= 400) {
+				throw new Error(`${response.status} - ${response.statusText}`)
+			}
 		} catch (error: unknown) {
 			this.loggerService.error('ntfy client failed', { error })
 		}

@@ -36,7 +36,6 @@ export class NtfyProvider implements OnApplicationBootstrap {
 
 	@Process()
 	async handlePublishJob(job: Job<Omit<MessageConfig, 'topic'>>) {
-		this.loggerService.debug('Handling publish job', { data: job.data })
 		await this.ntfyClient.publish({
 			...job.data,
 		})
