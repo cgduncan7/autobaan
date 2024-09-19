@@ -1,4 +1,9 @@
-import { Controller, Get, Inject } from '@nestjs/common'
+import {
+	Controller,
+	Get,
+	Inject,
+	ServiceUnavailableException,
+} from '@nestjs/common'
 
 import { EmailProvider } from '../email/provider'
 
@@ -11,6 +16,11 @@ export class HealthController {
 
 	@Get()
 	getHealth() {
-		return this.emailProvider.isConnected()
+		const checks = [() => this.emailProvider.isConnected()]
+
+		const healthy = checks.every((check) => check())
+		if (!healthy) {
+			throw new ServiceUnavailableException()
+		}
 	}
 }
