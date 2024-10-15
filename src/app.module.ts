@@ -67,6 +67,6 @@ import { WaitingListModule } from './waitingList/module'
 })
 export class AppModule implements NestModule {
 	configure(consumer: MiddlewareConsumer) {
-		consumer.apply(LoggerMiddleware).forRoutes('*')
+		consumer.apply(LoggerMiddleware).exclude('/health').forRoutes('*')
 	}
 }
