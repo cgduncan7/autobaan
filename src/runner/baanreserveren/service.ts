@@ -402,7 +402,7 @@ export class BaanReserverenService {
 		await this.page
 			.goto(`${BAAN_RESERVEREN_ROOT_URL}/${BaanReserverenUrls.Reservations}`)
 			.catch((e) => {
-				throw new RunnerWaitingListNavigationError(e)
+				throw new RunningReservationsNavigationError(e)
 			})
 		await this.page.waitForNetworkIdle()
 	}
@@ -660,6 +660,7 @@ export class BaanReserverenService {
 			const classList = Object.values(classListObj)
 			const rClass = classList.filter((cl) => /r-\d{2}/.test(cl))[0]
 			const courtNumber =
+				// @ts-expect-error Can be null
 				`${CourtSlotToNumber[rClass.replace(/r-/, '') as CourtSlot]}` ??
 				'unknown court'
 			const startTime = await court
@@ -809,7 +810,21 @@ export class BaanReserverenService {
 	}
 
 	public async warmup() {
-		await this.init()
+		const attempts = 10
+		const delay = 1000
+		let currentAttempt = 1
+		while (currentAttempt < attempts) {
+			try {
+				currentAttempt++
+				await this.init()
+			} catch (err: unknown) {
+				if (err instanceof RunningReservationsNavigationError) {
+					await new Promise((res) => setTimeout(res, delay))
+				} else {
+					throw err
+				}
+			}
+		}
 	}
 }
 
@@ -882,6 +897,12 @@ export class RunnerNavigationDayError extends RunnerError {
 export class RunnerNavigationSelectionError extends RunnerError {
 	constructor(error: Error) {
 		super(error, 'RunnerNavigationSelectionError')
+	}
+}
+
+export class RunningReservationsNavigationError extends RunnerError {
+	constructor(error: Error) {
+		super(error, 'RunnerReservationsNavigationError')
 	}
 }
 
