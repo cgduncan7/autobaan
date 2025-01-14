@@ -660,7 +660,6 @@ export class BaanReserverenService {
 			const classList = Object.values(classListObj)
 			const rClass = classList.filter((cl) => /r-\d{2}/.test(cl))[0]
 			const courtNumber =
-				// @ts-expect-error Can be null
 				`${CourtSlotToNumber[rClass.replace(/r-/, '') as CourtSlot]}` ??
 				'unknown court'
 			const startTime = await court
