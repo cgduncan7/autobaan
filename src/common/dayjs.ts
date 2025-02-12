@@ -1,5 +1,6 @@
 import 'dayjs/locale/nl'
 
+import { TransformationType, TransformFnParams } from 'class-transformer'
 import * as dayjs from 'dayjs'
 import * as customParseFormat from 'dayjs/plugin/customParseFormat'
 import * as isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
@@ -39,6 +40,22 @@ const dayjsTz = (
 	format?: string,
 ) => {
 	return dayjs(date, format).tz('Europe/Amsterdam')
+}
+
+export const DayjsTransformer = ({ value, type }: TransformFnParams) => {
+	switch (type) {
+		case TransformationType.PLAIN_TO_CLASS:
+			return dayjs(value)
+		case TransformationType.CLASS_TO_PLAIN:
+			return value.format()
+		default:
+			return value
+	}
+}
+
+export const DayjsColumnTransformer = {
+	to: (value: dayjs.Dayjs) => value.format(),
+	from: (value: Date) => dayjs(value),
 }
 
 export default dayjsTz

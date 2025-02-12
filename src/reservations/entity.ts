@@ -1,9 +1,11 @@
 import { Exclude, Transform, Type } from 'class-transformer'
-import { TransformationType } from 'class-transformer'
 import { Dayjs } from 'dayjs'
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
-import dayjs from '../common/dayjs'
+import dayjs, {
+	DayjsColumnTransformer,
+	DayjsTransformer,
+} from '../common/dayjs'
 
 export interface Opponent {
 	id: string
@@ -20,42 +22,18 @@ export class Reservation {
 
 	@Column('datetime', {
 		nullable: false,
-		transformer: {
-			to: (value: Dayjs) => value.format(),
-			from: (value: Date) => dayjs(value),
-		},
+		transformer: DayjsColumnTransformer,
 	})
 	@Type(() => Dayjs)
-	@Transform(({ value, type }) => {
-		switch (type) {
-			case TransformationType.PLAIN_TO_CLASS:
-				return dayjs(value)
-			case TransformationType.CLASS_TO_PLAIN:
-				return value.format()
-			default:
-				return value
-		}
-	})
+	@Transform(DayjsTransformer)
 	dateRangeStart: Dayjs
 
 	@Column('datetime', {
 		nullable: false,
-		transformer: {
-			to: (value: Dayjs) => value.format(),
-			from: (value: Date) => dayjs(value),
-		},
+		transformer: DayjsColumnTransformer,
 	})
 	@Type(() => Dayjs)
-	@Transform(({ value, type }) => {
-		switch (type) {
-			case TransformationType.PLAIN_TO_CLASS:
-				return dayjs(value)
-			case TransformationType.CLASS_TO_PLAIN:
-				return value.format()
-			default:
-				return value
-		}
-	})
+	@Transform(DayjsTransformer)
 	dateRangeEnd: Dayjs
 
 	@Column('json', { nullable: false })
