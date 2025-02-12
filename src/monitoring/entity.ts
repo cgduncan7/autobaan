@@ -19,7 +19,6 @@ export class Monitor {
 
 	@Column('datetime', {
 		nullable: false,
-		default: dayjs(),
 		transformer: {
 			to: (value?: Dayjs) => (value ?? dayjs()).format(),
 			from: (value: Date) => dayjs(value),
