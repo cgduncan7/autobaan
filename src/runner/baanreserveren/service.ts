@@ -71,12 +71,12 @@ const CourtSlotToNumber: Record<CourtSlot, number> = {
 
 // Lower is better
 const CourtRank: Record<CourtSlot, number> = {
-	[CourtSlot.One]: 2,
-	[CourtSlot.Two]: 1, // team at squash city has this pre-booked at 19.15 on Tuesday :sad:
-	[CourtSlot.Three]: 1, // team at squash city has this pre-booked at 19.15 on Tuesday :sad:
+	[CourtSlot.One]: 0,
+	[CourtSlot.Two]: 2, // team at squash city has this pre-booked at 19.15 on Tuesday :sad:
+	[CourtSlot.Three]: 2, // team at squash city has this pre-booked at 19.15 on Tuesday :sad:
 	[CourtSlot.Four]: 0,
-	[CourtSlot.Five]: 99, // shitty
-	[CourtSlot.Six]: 99, // shitty
+	[CourtSlot.Five]: 0,
+	[CourtSlot.Six]: 0,
 	[CourtSlot.Seven]: 0,
 	[CourtSlot.Eight]: 0,
 	[CourtSlot.Nine]: 0,
