@@ -6,7 +6,7 @@ import { Repository } from 'typeorm'
 import dayjs from '../common/dayjs'
 import { LoggerService } from '../logger/service.logger'
 import { BaanReserverenService } from '../runner/baanreserveren/service'
-import { Reservation } from './entity'
+import { Reservation, ReservationStatus } from './entity'
 
 @Injectable()
 export class ReservationsService {
@@ -50,7 +50,9 @@ export class ReservationsService {
 					endDate: dayjs().add(7, 'days').toISOString(),
 				},
 			)
-			.andWhere(`waitListed = false`)
+			.andWhere('status <> :status', {
+				status: ReservationStatus.OnWaitingList,
+			})
 			.orderBy('dateRangeStart', 'ASC')
 
 		return await query.getMany()
@@ -65,7 +67,7 @@ export class ReservationsService {
 			.andWhere(`DATE(dateRangeEnd) >= DATE(:date)`, {
 				date: date.toISOString(),
 			})
-			.andWhere('waitListed = true')
+			.andWhere('status = :status', { status: ReservationStatus.OnWaitingList })
 			.getMany()
 	}
 

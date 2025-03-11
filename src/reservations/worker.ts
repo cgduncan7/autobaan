@@ -1,6 +1,5 @@
 import { Process, Processor } from '@nestjs/bull'
 import { Inject } from '@nestjs/common'
-import { Job } from 'bull'
 import { instanceToPlain, plainToInstance } from 'class-transformer'
 
 import { LoggerService } from '../logger/service.logger'
@@ -11,7 +10,7 @@ import {
 } from '../runner/baanreserveren/service'
 import { RESERVATIONS_QUEUE_NAME, ReservationsJob } from './config'
 import { DAILY_RESERVATIONS_ATTEMPTS } from './cron'
-import { Reservation } from './entity'
+import { Reservation, ReservationStatus } from './entity'
 import { ReservationsService } from './service'
 
 @Processor(RESERVATIONS_QUEUE_NAME)
@@ -63,10 +62,10 @@ export class ReservationsWorker {
 		}
 		if (
 			(shouldWaitlist || attemptsMade === DAILY_RESERVATIONS_ATTEMPTS) &&
-			!reservation.waitListed
+			reservation.status !== ReservationStatus.OnWaitingList
 		) {
 			this.loggerService.log('Adding reservation to waiting list')
-			await this.ntfyProvider.sendReservationWaitlistedNotification(
+			await this.ntfyProvider.sendReservationOnWaitingListNotification(
 				reservation.id,
 				reservation.dateRangeStart,
 				reservation.dateRangeEnd,
@@ -89,7 +88,9 @@ export class ReservationsWorker {
 			} else {
 				await this.brService.performReservation(reservation, timeSensitive)
 			}
-			await this.reservationsService.deleteById(reservation.id)
+			await this.reservationsService.update(reservation.id, {
+				status: ReservationStatus.Booked,
+			})
 		} catch (error: unknown) {
 			await this.handleReservationErrors(
 				error as Error,
@@ -105,12 +106,12 @@ export class ReservationsWorker {
 		timeSensitive = true,
 	) {
 		try {
-			const waitingListId = await this.brService.addReservationToWaitList(
+			const waitingListId = await this.brService.addReservationToWaitingList(
 				reservation,
 				timeSensitive,
 			)
 			await this.reservationsService.update(reservation.id, {
-				waitListed: true,
+				status: ReservationStatus.OnWaitingList,
 				waitingListId,
 			})
 		} catch (error: unknown) {

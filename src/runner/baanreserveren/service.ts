@@ -9,7 +9,11 @@ import dayjs from '../../common/dayjs'
 import { LoggerService } from '../../logger/service.logger'
 import { MONITORING_QUEUE_NAME, MonitoringQueue } from '../../monitoring/config'
 import { MonitorType } from '../../monitoring/entity'
-import { Opponent, Reservation } from '../../reservations/entity'
+import {
+	Opponent,
+	Reservation,
+	ReservationStatus,
+} from '../../reservations/entity'
 import { EmptyPage } from '../pages/empty'
 
 export const BAAN_RESERVEREN_ROOT_URL = 'https://squashcity.baanreserveren.nl'
@@ -741,7 +745,7 @@ export class BaanReserverenService {
 		throw new NoCourtAvailableError('Could not reserve court')
 	}
 
-	public async addReservationToWaitList(
+	public async addReservationToWaitingList(
 		reservation: Reservation,
 		timeSensitive = true,
 	) {
@@ -774,7 +778,11 @@ export class BaanReserverenService {
 
 	public async removeReservationFromWaitList(reservation: Reservation) {
 		try {
-			if (!reservation.waitListed || !reservation.waitingListId) return
+			if (
+				reservation.status !== ReservationStatus.OnWaitingList ||
+				!reservation.waitingListId
+			)
+				return
 			await this.init()
 			await this.navigateToWaitingList()
 			await this.deleteWaitingListEntryRowById(reservation.waitingListId)

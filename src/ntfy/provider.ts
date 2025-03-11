@@ -121,14 +121,14 @@ export class NtfyProvider implements OnApplicationBootstrap {
 		)
 	}
 
-	async sendReservationWaitlistedNotification(
+	async sendReservationOnWaitingListNotification(
 		reservationId: string,
 		startTime: Dayjs,
 		endTime: Dayjs,
 	) {
 		await this.publishQueue.add(
 			...NtfyProvider.defaultJob({
-				title: 'Reservation waitlisted',
+				title: 'Reservation added to waiting list',
 				message: `${reservationId} - ${startTime.format()} to ${endTime.format()}`,
 				tags: [MessageTags.badminton, MessageTags.hourglass],
 			}),
@@ -138,7 +138,7 @@ export class NtfyProvider implements OnApplicationBootstrap {
 	async sendWaitListEmailReceivedNotification(subject: string) {
 		await this.publishQueue.add(
 			...NtfyProvider.defaultJob({
-				title: 'Wait listed reservation available',
+				title: 'Reservation on waiting list has become available',
 				message: `${subject}`,
 				tags: [MessageTags.badminton, MessageTags.hourglass],
 			}),

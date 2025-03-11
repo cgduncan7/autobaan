@@ -1,4 +1,5 @@
 import { Exclude, Transform, Type } from 'class-transformer'
+import { IsEnum } from 'class-validator'
 import { Dayjs } from 'dayjs'
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
@@ -10,6 +11,12 @@ import dayjs, {
 export interface Opponent {
 	id: string
 	name: string
+}
+
+export enum ReservationStatus {
+	Pending = 'pending',
+	OnWaitingList = 'on_waiting_list',
+	Booked = 'booked',
 }
 
 @Entity({ name: 'reservations' })
@@ -39,8 +46,13 @@ export class Reservation {
 	@Column('json', { nullable: false })
 	opponents: Opponent[]
 
-	@Column('boolean', { default: false })
-	waitListed: boolean
+	@Column('varchar', {
+		length: 32,
+		nullable: false,
+		default: ReservationStatus.Pending,
+	})
+	@IsEnum(ReservationStatus)
+	status: ReservationStatus
 
 	@Column('int', { nullable: true })
 	waitingListId: number
