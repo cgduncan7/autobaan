@@ -12,73 +12,61 @@ import {
 	Query,
 	UseInterceptors,
 } from '@nestjs/common'
-import { Transform, TransformationType } from 'class-transformer'
+import { Transform } from 'class-transformer'
 import {
 	IsArray,
 	IsBoolean,
+	IsEnum,
 	IsOptional,
 	IsString,
 	ValidateNested,
 } from 'class-validator'
 import { Dayjs } from 'dayjs'
 
-import dayjs from '../common/dayjs'
+import { DayjsTransformer } from '../common/dayjs'
 import { LoggerService } from '../logger/service.logger'
 import { RESERVATIONS_QUEUE_NAME, ReservationsQueue } from './config'
+import { ReservationStatus } from './entity'
 import { ReservationsService } from './service'
 
 export class GetReservationsQueryParams {
 	@IsOptional()
 	@Transform(() => Dayjs)
-	date?: Dayjs
+	readonly date?: Dayjs
 
 	@IsOptional()
 	@IsBoolean()
 	@Transform(({ value }) => value === 'true')
 	readonly schedulable?: boolean
+
+	@IsOptional()
+	@IsEnum(ReservationStatus)
+	readonly status?: ReservationStatus
 }
 
 export class CreateReservationOpponent {
 	@IsString()
-	id: string
+	readonly id: string
 
 	@IsString()
-	name: string
+	readonly name: string
 }
 
 export class CreateReservationRequest {
 	@IsString()
-	ownerId: string
+	readonly ownerId: string
 
-	@Transform(({ value, type }) => {
-		switch (type) {
-			case TransformationType.PLAIN_TO_CLASS:
-				return dayjs(value)
-			case TransformationType.CLASS_TO_PLAIN:
-				return value.format()
-			default:
-				return value
-		}
-	})
-	dateRangeStart: Dayjs
+	@Transform(DayjsTransformer)
+	readonly dateRangeStart: Dayjs
 
 	@IsOptional()
-	@Transform(({ value, type }) => {
-		switch (type) {
-			case TransformationType.PLAIN_TO_CLASS:
-				return dayjs(value)
-			case TransformationType.CLASS_TO_PLAIN:
-				return value.format()
-			default:
-				return value
-		}
-	})
-	dateRangeEnd?: Dayjs
+	@Transform(DayjsTransformer)
+	readonly dateRangeEnd?: Dayjs
 
 	@IsOptional()
 	@IsArray()
 	@ValidateNested()
-	opponents?: CreateReservationOpponent[]
+	readonly opponents?: CreateReservationOpponent[]
 }
 
 @Controller('reservations')
@@ -97,14 +85,14 @@ export class ReservationsController {
 
 	@Get()
 	getReservations(@Query() params: GetReservationsQueryParams) {
-		const { schedulable, date } = params
+		const { schedulable, date, status } = params
 		if (schedulable) {
 			return this.reservationsService.getSchedulable()
 		}
 		if (date) {
-			return this.reservationsService.getByDate(date)
+			return this.reservationsService.getByDate(date, status)
 		}
-		return this.reservationsService.getAll()
+		return this.reservationsService.getAll(status)
 	}
 
 	@Get(':id')

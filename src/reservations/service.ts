@@ -21,19 +21,24 @@ export class ReservationsService {
 		private readonly loggerService: LoggerService,
 	) {}
 
-	async getAll() {
-		return await this.reservationsRepository.find()
+	async getAll(status?: ReservationStatus) {
+		return await this.reservationsRepository.find({ where: { status } })
 	}
 
 	async getById(id: string) {
 		return await this.reservationsRepository.findOneBy({ id })
 	}
 
-	async getByDate(date = dayjs()) {
-		return await this.reservationsRepository
+	async getByDate(date = dayjs(), status?: ReservationStatus) {
+		let qb = this.reservationsRepository
 			.createQueryBuilder()
 			.where(`DATE(dateRangeStart) = DATE(:date)`, { date: date.toISOString() })
-			.getMany()
+
+		if (status != null) {
+			qb = qb.andWhere(`status = :status`, { status })
+		}
+
+		return await qb.orderBy('dateRangeStart', 'ASC').getMany()
 	}
 
 	/**
