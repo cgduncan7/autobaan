@@ -21,6 +21,7 @@ describe('baanreserveren.service', () => {
 	beforeAll(async () => {
 		pageGotoSpy = jest
 			.fn()
+			.mockClear()
 			.mockImplementation(() => Promise.resolve({ status: () => 200 }))
 		module = await Test.createTestingModule({
 			providers: [
@@ -54,10 +55,12 @@ describe('baanreserveren.service', () => {
 		brService = module.get<BaanReserverenService>(BaanReserverenService)
 	})
 
+	beforeEach(() => pageGotoSpy.mockClear())
+
 	describe('performSpeedyReservation', () => {
 		it.each([
-			[18, 15, CourtSlot.Seven, CourtSlot.Six],
-			[18, 30, CourtSlot.Four, CourtSlot.Two],
+			[18, 15, CourtSlot.Six, CourtSlot.Seven],
+			[18, 30, CourtSlot.One, CourtSlot.Four],
 			[18, 45, CourtSlot.Twelve, CourtSlot.Thirteen],
 		])(
 			'should try highest ranked court first',
@@ -89,8 +92,8 @@ describe('baanreserveren.service', () => {
 		)
 
 		it.each([
-			[18, 15, CourtSlot.Seven, CourtSlot.Eight],
-			[18, 30, CourtSlot.Four, CourtSlot.Two],
+			[18, 15, CourtSlot.Six, CourtSlot.Seven],
+			[18, 30, CourtSlot.One, CourtSlot.Four],
 			[18, 45, CourtSlot.Twelve, CourtSlot.Thirteen],
 		])(
 			'should try backup if first rank is taken',
