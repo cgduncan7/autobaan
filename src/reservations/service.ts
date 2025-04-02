@@ -66,10 +66,7 @@ export class ReservationsService {
 	async getByDateOnWaitingList(date = dayjs()) {
 		return await this.reservationsRepository
 			.createQueryBuilder()
-			.where(`DATE(dateRangeStart) <= DATE(:date)`, {
-				date: date.toISOString(),
-			})
-			.andWhere(`DATE(dateRangeEnd) >= DATE(:date)`, {
+			.where(`DATE(dateRangeStart) = DATE(:date)`, {
 				date: date.toISOString(),
 			})
 			.andWhere('status = :status', { status: ReservationStatus.OnWaitingList })
