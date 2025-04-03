@@ -45,7 +45,7 @@ const dayjsTz = (
 export const DayjsTransformer = ({ value, type }: TransformFnParams) => {
 	switch (type) {
 		case TransformationType.PLAIN_TO_CLASS:
-			return dayjs(value)
+			return dayjsTz(value)
 		case TransformationType.CLASS_TO_PLAIN:
 			return value.format()
 		default:
@@ -55,7 +55,7 @@ export const DayjsTransformer = ({ value, type }: TransformFnParams) => {
 
 export const DayjsColumnTransformer = {
 	to: (value: dayjs.Dayjs) => value.format(),
-	from: (value: Date) => dayjs(value),
+	from: (value: Date) => dayjsTz(value),
 }
 
 export default dayjsTz
