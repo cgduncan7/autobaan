@@ -10,6 +10,8 @@ import {
 	BAAN_RESERVEREN_ROOT_URL,
 	BaanReserverenService,
 	CourtSlot,
+	StartTimeClass,
+	StartTimeClassCourtSlots,
 } from '../../../src/runner/baanreserveren/service'
 import { EmptyPage } from '../../../src/runner/pages/empty'
 
@@ -131,6 +133,42 @@ describe('baanreserveren.service', () => {
 					`${BAAN_RESERVEREN_ROOT_URL}/reservations/make/${backupCourt}/${
 						start.valueOf() / 1000
 					}`,
+				)
+			},
+		)
+	})
+
+	describe.only('getCourtSlotsForDate', () => {
+		it.each([
+			{
+				date: '2025-04-10T16:30:00.000Z',
+				expectedCourtSlots: StartTimeClassCourtSlots[StartTimeClass.First],
+			},
+			{
+				date: '2025-04-10T16:45:00.000Z',
+				expectedCourtSlots: StartTimeClassCourtSlots[StartTimeClass.Third],
+			},
+			{
+				date: '2025-04-10T17:00:00.000Z',
+				expectedCourtSlots: StartTimeClassCourtSlots[StartTimeClass.Second],
+			},
+			{
+				date: '2025-01-10T17:30:00.000Z',
+				expectedCourtSlots: StartTimeClassCourtSlots[StartTimeClass.First],
+			},
+			{
+				date: '2025-01-10T17:45:00.000Z',
+				expectedCourtSlots: StartTimeClassCourtSlots[StartTimeClass.Third],
+			},
+			{
+				date: '2025-01-10T18:00:00.000Z',
+				expectedCourtSlots: StartTimeClassCourtSlots[StartTimeClass.Second],
+			},
+		])(
+			'should get correct court slots for $date',
+			({ date, expectedCourtSlots }) => {
+				expect(brService.getCourtSlotsForDate(dayjs(date))).toEqual(
+					expect.arrayContaining(expectedCourtSlots as CourtSlot[]),
 				)
 			},
 		)

@@ -86,13 +86,16 @@ const CourtRank: Record<CourtSlot, number> = {
 	[CourtSlot.Thirteen]: 9, // no one likes upstairs
 } as const
 
-enum StartTimeClass {
+export enum StartTimeClass {
 	First = 'first',
 	Second = 'second',
 	Third = 'third',
 }
 
-const StartTimeClassCourtSlots: Record<StartTimeClass, readonly CourtSlot[]> = {
+export const StartTimeClassCourtSlots: Record<
+	StartTimeClass,
+	readonly CourtSlot[]
+> = {
 	[StartTimeClass.First]: [
 		CourtSlot.One,
 		CourtSlot.Two,
@@ -680,7 +683,7 @@ export class BaanReserverenService {
 		return courtStatuses
 	}
 
-	private getCourtSlotsForDate(date: Dayjs) {
+	public getCourtSlotsForDate(date: Dayjs) {
 		const time = date.format('HH:mm')
 		for (const [timeClass, times] of Object.entries(StartTimeClassStartTimes)) {
 			if (times.includes(time)) {
