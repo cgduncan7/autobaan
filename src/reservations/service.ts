@@ -55,8 +55,8 @@ export class ReservationsService {
 					endDate: dayjs().add(7, 'days').toISOString(),
 				},
 			)
-			.andWhere('status <> :status', {
-				status: ReservationStatus.OnWaitingList,
+			.andWhere('status = :status', {
+				statuses: ReservationStatus.Pending,
 			})
 			.orderBy('dateRangeStart', 'ASC')
 
