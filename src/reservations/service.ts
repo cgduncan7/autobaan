@@ -48,13 +48,12 @@ export class ReservationsService {
 	async getSchedulable() {
 		const query = this.reservationsRepository
 			.createQueryBuilder()
-			.where(
-				`DATE(dateRangeStart) BETWEEN DATE(:startDate) AND DATE(:endDate)`,
-				{
-					startDate: dayjs().add(1, 'days').toISOString(),
-					endDate: dayjs().add(7, 'days').toISOString(),
-				},
-			)
+			.where(`DATE(dateRangeStart) >= DATE(:startDate)`, {
+				startDate: dayjs().add(1, 'days').toISOString(),
+			})
+			.andWhere(`DATE(dateRangeStart) <= DATE(:endDate)`, {
+				endDate: dayjs().add(7, 'days').toISOString(),
+			})
 			.andWhere('status = :status', {
 				statuses: ReservationStatus.Pending,
 			})
