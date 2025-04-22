@@ -1,0 +1,10 @@
+when:
+  - branch: main
+    event: push
+
+steps:
+  - name: test
+    image: docker.io/node:hydrogen-slim
+    commands:
+      - npm ci
+      - npm run test:unit
