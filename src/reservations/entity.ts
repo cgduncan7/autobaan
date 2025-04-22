@@ -80,7 +80,11 @@ export class Reservation {
 	 */
 	@Exclude()
 	public isAvailableForReservation(): boolean {
-		return this.dateRangeStart.diff(dayjs(), 'hour') <= 7 * 24
+		const maxDateToReserve = dayjs()
+			.add(7, 'day')
+			.set('hour', 23)
+			.set('minute', 59)
+		return this.dateRangeStart.isBefore(maxDateToReserve)
 	}
 
 	/**
