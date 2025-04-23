@@ -51,12 +51,12 @@ export class ReservationsService {
 			.where(
 				`(DATE(dateRangeStart) >= DATE(:startDate) OR DATE(dateRangeStart) <= DATE(:endDate))`,
 				{
-					startDate: dayjs().add(1, 'days').toISOString(),
+					startDate: dayjs().toISOString(),
 					endDate: dayjs().add(7, 'days').toISOString(),
 				},
 			)
 			.andWhere('status = :status', {
-				statuses: ReservationStatus.Pending,
+				status: ReservationStatus.Pending,
 			})
 			.orderBy('dateRangeStart', 'ASC')
 
